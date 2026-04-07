@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI', sans-serif;
+}
+
+body{
+  display:flex;
+  background:#eef2f7;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:250px;
+  height:100vh;
+  background:linear-gradient(180deg,#2c3e94,#1f2f6e);
+  color:white;
+  padding:25px;
+  position:sticky;
+  top:0;
+}
+
+.sidebar h2{ font-size:22px; }
+.sidebar p{ font-size:12px; opacity:.7; margin-bottom:30px; }
+
+.menu{ list-style:none; }
+
+.menu li{
+  padding:12px 14px;
+  margin-bottom:10px;
+  border-radius:10px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  transition:0.3s;
+  font-size:14px;
+}
+
+.menu li i{ margin-right:10px; }
+
+.menu li:hover,
+.menu li.active{
+  background:rgba(255,255,255,0.15);
+  transform: translateX(5px);
+}
+
+/* LOGOUT */
+.logout{
+  margin-top:25px;
+  background:#e74c3c;
+}
+
+.logout:hover{
+  background:#c0392b;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:30px;
+}
+
+/* HEADER */
+.header{
+  margin-bottom:25px;
+}
+
+.header h1{
+  font-size:30px;
+  color:#2c3e50;
+}
+
+.header p{
+  color:#7f8c8d;
+}
+
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:18px;
+  margin-bottom:25px;
+}
+
+.card{
+  background:white;
+  padding:22px;
+  border-radius:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.06);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+.card h4{
+  font-size:14px;
+  color:#7f8c8d;
+  display:flex;
+  align-items:center;
+}
+
+.card h4 i{
+  margin-right:8px;
+  color:#2c3e94;
+}
+
+.card h2{
+  margin-top:10px;
+  font-size:28px;
+  color:#2c3e50;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+/* BOX */
+.activity, .quick{
+  background:white;
+  padding:22px;
+  border-radius:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.05);
+}
+
+.activity h3, .quick h3{
+  margin-bottom:15px;
+  color:#2c3e50;
+}
+
+.item{
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+}
+
+.item:last-child{
+  border:none;
+}
+
+.item i{
+  margin-right:8px;
+  color:#2c3e94;
+}
+
+.item p{
+  font-size:12px;
+  color:#7f8c8d;
+  margin-top:4px;
+}
+
+.status{
+  float:right;
+  font-size:11px;
+  padding:4px 10px;
+  border-radius:20px;
+}
+
+.pending{ background:#fff3cd; color:#856404; }
+.approved{ background:#d4edda; color:#155724; }
+
+/* QUICK ACTION */
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.btn{
+  padding:18px;
+  text-align:center;
+  border-radius:12px;
+  cursor:pointer;
+  border:1px solid #eee;
+  transition:0.3s;
+  font-size:14px;
+  background:#fafbff;
+}
+
+.btn i{
+  display:block;
+  font-size:18px;
+  margin-bottom:6px;
+  color:#2c3e94;
+}
+
+.btn:hover{
+  background:#eef2ff;
+  transform:translateY(-3px);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+  .sidebar{
+    width:200px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>Admin Portal</h2>
+  <p>Hospital Management System</p>
+
+  <ul class="menu">
+    <li class="active"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+    <li><i class="fa-solid fa-user-doctor"></i> Doctors</li>
+    <li><i class="fa-solid fa-calendar-check"></i> Appointments</li>
+    <li><i class="fa-solid fa-hospital-user"></i> Patients</li>
+
+    <!-- ICU MENU -->
+    <li><i class="fa-solid fa-heart-pulse"></i> ICU & BED</li>
+
+    <li><i class="fa-solid fa-cart-shopping"></i> Cart</li>
+
+    <li class="logout">
+      <a href="{% url 'logout' %}" style="color:white; text-decoration:none; display:block;">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+    </li>
+  </ul>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="header">
+    <h1>Dashboard</h1>
+    <p>Welcome back, Admin — Here’s your system overview.</p>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards">
+
+    <div class="card">
+      <h4><i class="fa-solid fa-user-doctor"></i> Doctors</h4>
+      <h2>45</h2>
+    </div>
+
+    <div class="card">
+      <h4><i class="fa-solid fa-calendar-day"></i> Appointments</h4>
+      <h2>127</h2>
+    </div>
+
+    <div class="card">
+      <h4><i class="fa-solid fa-bed"></i> Patients</h4>
+      <h2>1,250</h2>
+    </div>
+
+    <div class="card">
+      <h4><i class="fa-solid fa-cart-shopping"></i> Cart</h4>
+      <h2>23</h2>
+    </div>
+
+    <!-- ICU -->
+    <div class="card">
+      <h4><i class="fa-solid fa-heart-pulse"></i> ICU Beds</h4>
+      <h2>12</h2>
+    </div>
+
+    <!-- BEDS -->
+    <div class="card">
+      <h4><i class="fa-solid fa-bed-pulse"></i> Beds</h4>
+      <h2>80</h2>
+    </div>
+
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <div class="activity">
+      <h3>Recent Activity</h3>
+
+      <div class="item">
+        <i class="fa-solid fa-user-plus"></i> New doctor registration
+        <span class="status pending">pending</span>
+        <p>Dr. Ahmed Khan · 5 min ago</p>
+      </div>
+
+      <div class="item">
+        <i class="fa-solid fa-calendar-check"></i> Appointment scheduled
+        <span class="status approved">approved</span>
+        <p>Patient: Rahim · 12 min ago</p>
+      </div>
+
+    </div>
+
+    <div class="quick">
+      <h3>Quick Actions</h3>
+
+      <div class="actions">
+        <div class="btn"><i class="fa-solid fa-user-plus"></i>Add Doctor</div>
+        <div class="btn"><i class="fa-solid fa-calendar-plus"></i>Schedule</div>
+        <div class="btn"><i class="fa-solid fa-user"></i>Add Patient</div>
+        <div class="btn"><i class="fa-solid fa-cart-shopping"></i>View Cart</div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}Patient Dashboard - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+
+    .appointment-card {
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+
+    .bill-card {
+        border-left: 4px solid #ef4444;
+        transition: all 0.3s ease;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+    <!-- SAFE USER HANDLING -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">
+            Welcome back, {{ user.first_name|default:user.username }} 👋
+        </h1>
+        <p class="text-gray-600">Patient Dashboard</p>
+    </div>
+
+    <!-- SAFE PATIENT CHECK -->
+    {% if patient %}
+
+    <!-- STATS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+
+        <div class="stat-card bg-white p-6 rounded-xl">
+            <p class="text-gray-500">Upcoming Appointments</p>
+            <p class="text-3xl font-bold">{{ upcoming_appointments_count|default:0 }}</p>
+        </div>
+
+        <div class="stat-card bg-white p-6 rounded-xl">
+            <p class="text-gray-500">Medical Records</p>
+            <p class="text-3xl font-bold">{{ medical_records_count|default:0 }}</p>
+        </div>
+
+        <div class="stat-card bg-white p-6 rounded-xl">
+            <p class="text-gray-500">Pending Bills</p>
+            <p class="text-3xl font-bold text-red-600">
+                ৳{{ total_pending_amount|default:0 }}
+            </p>
+        </div>
+
+        <div class="stat-card bg-white p-6 rounded-xl">
+            <p class="text-gray-500">Assigned Doctor</p>
+            <p class="text-lg font-bold">
+                {{ patient.assigned_doctor.user.get_full_name|default:"Not assigned" }}
+            </p>
+        </div>
+
+    </div>
+
+    <!-- NEXT APPOINTMENT -->
+    {% if next_appointment %}
+    <div class="bg-purple-600 text-white p-6 rounded-xl mb-8">
+        <h2 class="text-xl font-bold mb-2">Next Appointment</h2>
+
+        <p>Doctor: {{ next_appointment.doctor.user.get_full_name }}</p>
+        <p>Date: {{ next_appointment.appointment_date }}</p>
+        <p>Department: {{ next_appointment.department.name|default:"N/A" }}</p>
+
+        <span class="inline-block mt-2 px-3 py-1 bg-white text-purple-700 rounded-full text-sm">
+            {{ next_appointment.status }}
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- RECENT APPOINTMENTS -->
+    <div class="bg-white p-6 rounded-xl mb-8">
+        <h2 class="text-xl font-bold mb-4">Recent Appointments</h2>
+
+        {% if recent_appointments %}
+            {% for appt in recent_appointments %}
+                <div class="appointment-card p-4 bg-gray-50 rounded mb-3">
+                    <p class="font-semibold">
+                        {{ appt.doctor.user.get_full_name }}
+                    </p>
+                    <p class="text-sm text-gray-600">
+                        {{ appt.appointment_date }}
+                    </p>
+                    <span class="text-xs bg-gray-200 px-2 py-1 rounded">
+                        {{ appt.status }}
+                    </span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                No appointments found
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- RECENT BILLS -->
+    <div class="bg-white p-6 rounded-xl">
+        <h2 class="text-xl font-bold mb-4">Recent Bills</h2>
+
+        {% if recent_bills %}
+            {% for bill in recent_bills %}
+                <div class="bill-card p-4 bg-gray-50 rounded mb-3">
+                    <p>{{ bill.description|default:"Bill" }}</p>
+                    <p class="font-bold text-red-600">৳{{ bill.amount }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                No bills found
+            </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+        <div class="empty-state">
+            <h2>Patient profile not found</h2>
+            <p>Please contact admin to create your profile</p>
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
