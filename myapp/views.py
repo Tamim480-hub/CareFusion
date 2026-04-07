@@ -349,8 +349,8 @@ def admin_edit_patient(request, patient_id):
 
     return render(request, 'myapp/admin_edit_patient.html', {'patient': patient})
 
-def edit_patient(request, id):
+def edit_patient():
     return HttpResponse("Edit page")
 
-def delete_patient(request, id):
+def delete_patient():
     return HttpResponse("Delete page")

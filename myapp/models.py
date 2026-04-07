@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -30,6 +32,9 @@ class UserProfile(models.Model):
     def is_patient(self):
         return self.role == 'patient'
 
+    def get_role_display(self):
+        pass
+
 
 # =============================================================================
 # 🔹 Department Model
@@ -61,6 +66,10 @@ class Department(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(args, kwargs)
+        self.patient_count = None
 
     def __str__(self):
         return self.name
@@ -122,6 +131,10 @@ class Patient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(args, kwargs)
+        self.id = None
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
@@ -176,6 +189,9 @@ class Bed(models.Model):
     def __str__(self):
         return f"Bed {self.bed_number} - {self.get_status_display()}"
 
+    def get_status_display(self):
+        pass
+
 
 # =============================================================================
 # 🔹 Appointment Model
@@ -226,6 +242,10 @@ class MedicalRecord(models.Model):
     treatment = models.TextField(blank=True, null=True)
     prescription = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(args, kwargs)
+        self.id = None
 
     def __str__(self):
         return f"Record #{self.id} - {self.patient}"
