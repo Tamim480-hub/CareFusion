@@ -1,0 +1,326 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* Back Button */
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+            color: white;
+        }
+
+        /* Doctor Card */
+        .doctor-card {
+            background: white;
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .doctor-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .doctor-avatar i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .specialization-badge {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-available {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .fee-badge {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4a90e2;
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+
+        .search-box input {
+            padding-left: 45px;
+            border-radius: 12px;
+            border: 1px solid #e0e5ec;
+            height: 45px;
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            border-color: #4a90e2;
+            box-shadow: none;
+        }
+
+        .filter-select {
+            border-radius: 12px;
+            border: 1px solid #e0e5ec;
+            height: 45px;
+            font-size: 14px;
+        }
+
+        .btn-book {
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .rating-star {
+            color: #ffc107;
+        }
+
+        @media (max-width: 768px) {
+            .doctor-card {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <!-- Header with Back Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+        <div class="text-center flex-grow-1">
+            <h2 class="fw-bold" style="color: #1a1a2e;">
+                <i class="fas fa-user-md me-2" style="color: #4a90e2;"></i>
+                Our Expert Doctors
+            </h2>
+            <p class="text-muted mb-0">Consult with our experienced medical professionals</p>
+        </div>
+        <div style="width: 100px;"></div> <!-- Spacer for centering -->
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by doctor name or specialization...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select id="specializationFilter" class="form-control filter-select">
+                <option value="">All Specializations</option>
+                {% for spec in specializations %}
+                    <option value="{{ spec.0 }}">{{ spec.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="availabilityFilter" class="form-control filter-select">
+                <option value="">All Doctors</option>
+                <option value="available">Available Today</option>
+                <option value="unavailable">Not Available</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Doctors Grid -->
+    <div class="row g-4" id="doctorsGrid">
+        {% for doctor in doctors %}
+        <div class="col-md-6 col-lg-4" 
+             data-specialization="{{ doctor.specialization }}" 
+             data-available="{{ doctor.is_available|lower }}">
+            <div class="doctor-card p-3">
+                <div class="text-center">
+                    <div class="doctor-avatar mb-3">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h5>
+                    <p class="specialization-badge mb-2">
+                        <i class="fas fa-stethoscope me-1"></i>{{ doctor.get_specialization_display }}
+                    </p>
+                    
+                    <!-- Rating -->
+                    <div class="mb-2">
+                        <i class="fas fa-star rating-star"></i>
+                        <i class="fas fa-star rating-star"></i>
+                        <i class="fas fa-star rating-star"></i>
+                        <i class="fas fa-star rating-star"></i>
+                        <i class="fas fa-star-half-alt rating-star"></i>
+                        <small class="text-muted">({{ doctor.total_reviews|default:"120" }} reviews)</small>
+                    </div>
+                    
+                    <!-- Details -->
+                    <div class="text-start mt-3">
+                        <p class="mb-1">
+                            <i class="fas fa-graduation-cap text-primary me-2"></i>
+                            <small>{{ doctor.qualification }}</small>
+                        </p>
+                        <p class="mb-1">
+                            <i class="fas fa-briefcase text-primary me-2"></i>
+                            <small>{{ doctor.experience_years }} years experience</small>
+                        </p>
+                        <p class="mb-1">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <small>{{ doctor.available_from|time:"g:i A" }} - {{ doctor.available_to|time:"g:i A" }}</small>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-taka text-primary me-2"></i>
+                            <span class="fee-badge">৳{{ doctor.consultation_fee }}</span>
+                            <small class="text-muted">/ visit</small>
+                        </p>
+                    </div>
+                    
+                    <!-- Status & Button -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        {% if doctor.is_available %}
+                            <span class="status-badge status-available">
+                                <i class="fas fa-circle me-1" style="font-size: 8px;"></i> Available Today
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-unavailable">
+                                <i class="fas fa-circle me-1" style="font-size: 8px;"></i> Not Available
+                            </span>
+                        {% endif %}
+                        
+                        <a href="{% url 'book_appointment' %}?doctor={{ doctor.id }}" class="btn btn-primary btn-book">
+                            <i class="fas fa-calendar-plus me-1"></i> Book
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-user-md fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">No doctors found</h5>
+                <p class="text-muted">Please check back later</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+        let cards = document.querySelectorAll('#doctorsGrid > div');
+        cards.forEach(card => {
+            let text = card.textContent.toLowerCase();
+            card.style.display = text.includes(value) ? '' : 'none';
+        });
+    });
+
+    // Specialization filter
+    document.getElementById('specializationFilter').addEventListener('change', function() {
+        let spec = this.value;
+        let cards = document.querySelectorAll('#doctorsGrid > div');
+        cards.forEach(card => {
+            if (!spec || card.dataset.specialization === spec) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // Availability filter
+    document.getElementById('availabilityFilter').addEventListener('change', function() {
+        let availability = this.value;
+        let cards = document.querySelectorAll('#doctorsGrid > div');
+        cards.forEach(card => {
+            if (!availability || card.dataset.available === availability) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,369 @@
+<!-- templates/myapp/my_appointments.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header with Back Button -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-circle me-3"
+                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="fas fa-calendar-check text-primary me-2"></i>
+                            My Appointments
+                        </h2>
+                        <p class="text-muted">View and manage all your scheduled appointments</p>
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4 me-2">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-plus me-2"></i>Book New Appointment
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Cards (same as before) -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Total Appointments</small>
+                                    <h3 class="mb-0">{{ appointments|length }}</h3>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-calendar fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Upcoming</small>
+                                    <h3 class="mb-0 text-success">
+                                        {% with upcoming=appointments|dictsortreversed:"appointment_date" %}
+                                            {% for apt in upcoming %}
+                                                {% if apt.appointment_date > now and apt.status != 'cancelled' %}
+                                                    {% if forloop.counter == 1 %}{{ forloop.counter }}{% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </h3>
+                                </div>
+                                <div class="bg-success bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-clock fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Completed</small>
+                                    <h3 class="mb-0 text-info">
+                                        {% for apt in appointments %}
+                                            {% if apt.status == 'completed' %}{{ forloop.counter }}{% endif %}
+                                        {% endfor %}
+                                    </h3>
+                                </div>
+                                <div class="bg-info bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-check-circle fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Cancelled</small>
+                                    <h3 class="mb-0 text-danger">
+                                        {% for apt in appointments %}
+                                            {% if apt.status == 'cancelled' %}{{ forloop.counter }}{% endif %}
+                                        {% endfor %}
+                                    </h3>
+                                </div>
+                                <div class="bg-danger bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by doctor name...">
+                        </div>
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <select id="statusFilter" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" id="dateFilter" class="form-control" placeholder="Filter by date">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-eraser me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments List -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2 text-primary"></i>
+                        Your Appointments
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="appointmentsTable">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>#ID</th>
+                                        <th>Doctor</th>
+                                        <th>Specialization</th>
+                                        <th>Date & Time</th>
+                                        <th>Symptoms</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for apt in appointments %}
+                                    <tr data-status="{{ apt.status }}" data-date="{{ apt.appointment_date|date:'Y-m-d' }}">
+                                        <td class="align-middle">
+                                            <strong>#{{ apt.id }}</strong>
+                                        </td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
+                                                    <i class="fas fa-user-md"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ apt.doctor.full_name }}</strong><br>
+                                                    <small class="text-muted">{{ apt.doctor.qualification|truncatechars:30 }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">
+                                            <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
+                                                {{ apt.doctor.get_specialization_display }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle">
+                                            <i class="far fa-calendar-alt me-1 text-muted"></i>
+                                            {{ apt.appointment_date|date:"M d, Y" }}
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="far fa-clock me-1"></i>
+                                                {{ apt.appointment_date|date:"h:i A" }}
+                                            </small>
+                                        </td>
+                                        <td class="align-middle">
+                                            {{ apt.symptoms|truncatechars:40 }}
+                                        </td>
+                                        <td class="align-middle">
+                                            {% if apt.status == 'confirmed' %}
+                                                <span class="badge bg-success rounded-pill px-3 py-2">
+                                                    <i class="fas fa-check-circle me-1"></i> Confirmed
+                                                </span>
+                                            {% elif apt.status == 'pending' %}
+                                                <span class="badge bg-warning rounded-pill px-3 py-2">
+                                                    <i class="fas fa-clock me-1"></i> Pending
+                                                </span>
+                                            {% elif apt.status == 'completed' %}
+                                                <span class="badge bg-info rounded-pill px-3 py-2">
+                                                    <i class="fas fa-check-double me-1"></i> Completed
+                                                </span>
+                                            {% elif apt.status == 'cancelled' %}
+                                                <span class="badge bg-danger rounded-pill px-3 py-2">
+                                                    <i class="fas fa-times-circle me-1"></i> Cancelled
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary rounded-pill px-3 py-2">
+                                                    {{ apt.status }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="align-middle">
+                                            {% if apt.status == 'pending' or apt.status == 'confirmed' %}
+                                                <a href="{% url 'cancel_appointment' apt.id %}"
+                                                   class="btn btn-sm btn-outline-danger rounded-pill"
+                                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                                                    <i class="fas fa-times me-1"></i> Cancel
+                                                </a>
+                                            {% elif apt.status == 'completed' %}
+                                                <button class="btn btn-sm btn-outline-info rounded-pill" disabled>
+                                                    <i class="fas fa-check me-1"></i> Done
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-secondary rounded-pill" disabled>
+                                                    <i class="fas fa-ban me-1"></i> Cancelled
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Appointments Found</h5>
+                            <p class="text-muted">You haven't booked any appointments yet.</p>
+                            <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill mt-2">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="mt-4 text-center">
+                <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4 ms-2">
+                    <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .table tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    .btn-outline-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-primary, .btn-outline-primary, .btn-outline-secondary {
+        transition: all 0.3s;
+    }
+
+    .btn-primary:hover, .btn-outline-primary:hover, .btn-outline-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+    }
+
+    .rounded-circle {
+        transition: all 0.3s;
+    }
+
+    .rounded-circle:hover {
+        background: #e9ecef;
+        transform: scale(1.05);
+    }
+</style>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#appointmentsTable tbody tr');
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(value) ? '' : 'none';
+        });
+    });
+
+    // Status filter
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        let status = this.value;
+        let rows = document.querySelectorAll('#appointmentsTable tbody tr');
+        rows.forEach(row => {
+            if (!status || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Date filter
+    document.getElementById('dateFilter').addEventListener('change', function() {
+        let date = this.value;
+        let rows = document.querySelectorAll('#appointmentsTable tbody tr');
+        rows.forEach(row => {
+            if (!date || row.dataset.date === date) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Clear all filters
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+
+        let rows = document.querySelectorAll('#appointmentsTable tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    }
+</script>
+{% endblock %}

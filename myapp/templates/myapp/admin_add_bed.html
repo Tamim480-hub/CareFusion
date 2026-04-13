@@ -1,0 +1,61 @@
+<!-- templates/myapp/admin_add_bed.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>
+                        Add New ICU Bed
+                    </h3>
+                    <p class="text-muted mt-2">Fill in the details to add a new ICU bed</p>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bed Number</label>
+                            <input type="text" name="bed_number" class="form-control" placeholder="e.g., ICU-001" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bed Type</label>
+                            <select name="bed_type" class="form-select" required>
+                                <option value="">Select bed type...</option>
+                                {% for type in bed_types %}
+                                <option value="{{ type.0 }}">{{ type.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Daily Charge (৳)</label>
+                            <input type="number" name="daily_charge" class="form-control" placeholder="e.g., 5000" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Equipment Available</label>
+                            <textarea name="equipment" class="form-control" rows="3" placeholder="List equipment available with this bed..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'admin_manage_beds' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Add Bed
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

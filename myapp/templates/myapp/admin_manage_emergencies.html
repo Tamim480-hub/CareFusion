@@ -1,0 +1,370 @@
+<!-- templates/myapp/admin_manage_emergencies.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 bg-dark text-white min-vh-100 p-3">
+            <h4 class="text-center mb-4">Admin Panel</h4>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" href="{% url 'admin_manage_patients' %}">
+                        <i class="fas fa-users"></i> Patients
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" href="{% url 'admin_manage_doctors' %}">
+                        <i class="fas fa-user-md"></i> Doctors
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" href="{% url 'admin_manage_appointments' %}">
+                        <i class="fas fa-calendar-check"></i> Appointments
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" href="{% url 'admin_manage_beds' %}">
+                        <i class="fas fa-bed"></i> ICU Beds
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white active" href="{% url 'admin_manage_emergencies' %}">
+                        <i class="fas fa-ambulance"></i> Emergencies
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" href="{% url 'admin_reports' %}">
+                        <i class="fas fa-chart-line"></i> Reports
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-ambulance text-danger me-2"></i>
+                        Emergency Requests Management
+                    </h2>
+                    <p class="text-muted">View and manage all emergency requests</p>
+                </div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Total Requests</small>
+                                    <h3 class="mb-0">{{ emergencies|length }}</h3>
+                                </div>
+                                <div class="bg-primary bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-chart-line fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Pending</small>
+                                    <h3 class="mb-0 text-warning">
+                                        {% for e in emergencies %}
+                                            {% if e.status == 'pending' %}{{ forloop.counter }}{% endif %}
+                                        {% endfor %}
+                                    </h3>
+                                </div>
+                                <div class="bg-warning bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-clock fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">In Progress</small>
+                                    <h3 class="mb-0 text-info">
+                                        {% for e in emergencies %}
+                                            {% if e.status == 'in_progress' %}{{ forloop.counter }}{% endif %}
+                                        {% endfor %}
+                                    </h3>
+                                </div>
+                                <div class="bg-info bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-spinner fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Resolved</small>
+                                    <h3 class="mb-0 text-success">
+                                        {% for e in emergencies %}
+                                            {% if e.status == 'resolved' %}{{ forloop.counter }}{% endif %}
+                                        {% endfor %}
+                                    </h3>
+                                </div>
+                                <div class="bg-success bg-opacity-10 rounded p-3">
+                                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2 mb-md-0">
+                            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by patient name...">
+                        </div>
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <select id="statusFilter" class="form-control">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <select id="priorityFilter" class="form-control">
+                                <option value="">All Priority</option>
+                                <option value="critical">Critical</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-eraser me-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergencies Table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2 text-danger"></i>
+                        Emergency Requests
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="emergenciesTable">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Age</th>
+                                    <th>Contact</th>
+                                    <th>Emergency Type</th>
+                                    <th>Priority</th>
+                                    <th>Location</th>
+                                    <th>Request Time</th>
+                                    <th>Ambulance</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emergency in emergencies %}
+                                <tr data-status="{{ emergency.status }}" data-priority="{{ emergency.priority }}">
+                                    <td class="align-middle">
+                                        <strong>#{{ emergency.id }}</strong>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-danger bg-opacity-10 text-danger me-2" style="width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-user-injured"></i>
+                                            </div>
+                                            <strong>{{ emergency.patient_name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">{{ emergency.patient_age }} yrs</td>
+                                    <td class="align-middle">
+                                        <i class="fas fa-phone me-1"></i>{{ emergency.contact_number }}
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2">
+                                            {{ emergency.emergency_type|title }}
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if emergency.priority == 'critical' %}
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">🔴 Critical</span>
+                                        {% elif emergency.priority == 'high' %}
+                                            <span class="badge bg-warning rounded-pill px-3 py-2">🟠 High</span>
+                                        {% elif emergency.priority == 'medium' %}
+                                            <span class="badge bg-info rounded-pill px-3 py-2">🟡 Medium</span>
+                                        {% else %}
+                                            <span class="badge bg-success rounded-pill px-3 py-2">🟢 Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <small>{{ emergency.location|truncatechars:30 }}</small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <small>{{ emergency.request_time|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <strong class="text-primary">{{ emergency.assigned_ambulance }}</strong>
+                                    </td>
+                                    <td class="align-middle">
+                                        <form method="POST" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="emergency_id" value="{{ emergency.id }}">
+                                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 120px; border-radius: 20px; font-size: 12px;">
+                                                <option value="pending" {% if emergency.status == 'pending' %}selected{% endif %}>⏳ Pending</option>
+                                                <option value="in_progress" {% if emergency.status == 'in_progress' %}selected{% endif %}>🚑 In Progress</option>
+                                                <option value="resolved" {% if emergency.status == 'resolved' %}selected{% endif %}>✓ Resolved</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td class="align-middle">
+                                        <button class="btn btn-sm btn-info rounded-pill" onclick="viewEmergency({{ emergency.id }})" style="transition: all 0.3s;">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="11" class="text-center py-5">
+                                        <i class="fas fa-ambulance fa-4x text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted">No Emergency Requests</h5>
+                                        <p class="text-muted">No emergency requests found in the system.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .table tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+    }
+
+    .form-select-sm {
+        font-size: 12px;
+        border-radius: 20px;
+    }
+
+    .btn-sm {
+        transition: all 0.3s;
+    }
+
+    .btn-sm:hover {
+        transform: translateY(-2px);
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#emergenciesTable tbody tr');
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(value) ? '' : 'none';
+        });
+    });
+
+    // Status filter
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        let status = this.value;
+        let rows = document.querySelectorAll('#emergenciesTable tbody tr');
+        rows.forEach(row => {
+            if (!status || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Priority filter
+    document.getElementById('priorityFilter').addEventListener('change', function() {
+        let priority = this.value;
+        let rows = document.querySelectorAll('#emergenciesTable tbody tr');
+        rows.forEach(row => {
+            if (!priority || row.dataset.priority === priority) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Clear all filters
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('priorityFilter').value = '';
+
+        let rows = document.querySelectorAll('#emergenciesTable tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+    }
+
+    // View emergency details
+    function viewEmergency(id) {
+        alert('Emergency Request #' + id + '\n\nFull details will be shown here.');
+    }
+</script>
+{% endblock %}

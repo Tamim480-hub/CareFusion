@@ -1,0 +1,366 @@
+<!-- templates/myapp/admin_add_product.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-primary {
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .image-preview:hover {
+            border-color: #667eea;
+            background: #f0f2f5;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview i {
+            font-size: 40px;
+            color: #adb5bd;
+        }
+
+        .preview-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        .required-field::after {
+            content: "*";
+            color: #dc3545;
+            margin-left: 4px;
+        }
+
+        .stock-badge {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_products' %}" class="text-decoration-none">
+                            <i class="fas fa-box me-1"></i>Products
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-plus-circle me-1"></i>Add Product
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Main Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header py-4" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                                <i class="fas fa-plus-circle fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h3 class="text-white mb-0 fw-bold">Add New Product</h3>
+                            <p class="text-white-50 mb-0">Add medicine or product to pharmacy inventory</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <!-- Left Column - Image Upload -->
+                            <div class="col-md-4 mb-4">
+                                <div class="text-center">
+                                    <div class="image-preview mx-auto" id="imagePreview" onclick="document.getElementById('productImage').click()">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <input type="file" name="product_image" id="productImage" class="d-none" accept="image/*" onchange="previewImage(this)">
+                                    <div class="preview-label mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Click to upload product image
+                                    </div>
+                                    <small class="text-muted">Supported: JPG, PNG, GIF (Max 2MB)</small>
+                                </div>
+                            </div>
+
+                            <!-- Right Column - Product Details -->
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold required-field">Product Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-2 rounded-start-12">
+                                            <i class="fas fa-tag text-primary"></i>
+                                        </span>
+                                        <input type="text" name="name" class="form-control" placeholder="Enter product name" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Category</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-2 rounded-start-12">
+                                            <i class="fas fa-th-large text-primary"></i>
+                                        </span>
+                                        <select name="category" class="form-select">
+                                            <option value="">Select category</option>
+                                            <option value="medicine">💊 Medicine</option>
+                                            <option value="equipment">🩺 Medical Equipment</option>
+                                            <option value="supplement">💪 Health Supplement</option>
+                                            <option value="personal">🧴 Personal Care</option>
+                                            <option value="other">📦 Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Description</label>
+                                    <textarea name="description" class="form-control" rows="3" placeholder="Product description, uses, ingredients..."></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold required-field">Price (৳)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-2 rounded-start-12">
+                                                <i class="fas fa-taka-sign text-success"></i>
+                                            </span>
+                                            <input type="number" name="price" class="form-control" step="0.01" placeholder="0.00" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold required-field">Stock Quantity</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-2 rounded-start-12">
+                                                <i class="fas fa-boxes text-warning"></i>
+                                            </span>
+                                            <input type="number" name="stock" class="form-control" placeholder="0" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Manufacturer</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-2 rounded-start-12">
+                                                <i class="fas fa-industry text-info"></i>
+                                            </span>
+                                            <input type="text" name="manufacturer" class="form-control" placeholder="Manufacturer name">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Prescription Required</label>
+                                        <div class="form-check form-switch mt-2">
+                                            <input class="form-check-input" type="checkbox" name="requires_prescription" id="prescriptionSwitch" style="width: 50px; height: 25px;">
+                                            <label class="form-check-label ms-2" for="prescriptionSwitch">
+                                                <span class="badge bg-danger">⚠️ Prescription Required</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Expiry Date</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-2 rounded-start-12">
+                                                <i class="fas fa-calendar-alt text-danger"></i>
+                                            </span>
+                                            <input type="date" name="expiry_date" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Status</label>
+                                        <select name="is_active" class="form-select">
+                                            <option value="true">✅ Active</option>
+                                            <option value="false">⛔ Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between gap-3 mt-4 pt-3 border-top">
+                            <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-save me-2"></i>Add Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i class="fas fa-camera fa-2x text-primary mb-2"></i>
+                            <h6>Product Image</h6>
+                            <small class="text-muted">Upload clear product image</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-tags fa-2x text-primary mb-2"></i>
+                            <h6>Set Price & Stock</h6>
+                            <small class="text-muted">Enter correct pricing and inventory</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                            <h6>Quality Check</h6>
+                            <small class="text-muted">Verify product details before adding</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Image preview function
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Product Image">`;
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+        }
+    }
+
+    // Stock quantity validation
+    document.querySelector('input[name="stock"]').addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+    });
+
+    // Price validation
+    document.querySelector('input[name="price"]').addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+    });
+</script>
+
+<style>
+    .rounded-start-12 {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .input-group-text {
+        border: 2px solid #e9ecef;
+        border-right: none;
+    }
+
+    .form-control, .form-select {
+        border-left: none;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+    }
+
+    .form-control:focus + .input-group-text,
+    .input-group:focus-within .input-group-text {
+        border-color: #667eea;
+    }
+
+    .form-check-input:checked {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .breadcrumb-item a {
+        color: #667eea;
+        transition: all 0.3s;
+    }
+
+    .breadcrumb-item a:hover {
+        color: #764ba2;
+    }
+</style>
+
+</body>
+</html>
+{% endblock %}

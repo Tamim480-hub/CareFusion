@@ -1,0 +1,87 @@
+<!-- templates/myapp/emergency_success.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg text-center rounded-4 overflow-hidden">
+                <div class="card-body p-5">
+                    <!-- Success Animation -->
+                    <div class="mb-4">
+                        <div class="success-animation">
+                            <i class="fas fa-check-circle fa-5x text-success"></i>
+                        </div>
+                    </div>
+
+                    <h2 class="fw-bold mb-3">Emergency Request Sent!</h2>
+                    <p class="text-muted mb-4">Your emergency request has been received successfully.</p>
+
+                    <!-- Emergency Details -->
+                    <div class="alert alert-info text-start">
+                        <h6 class="mb-3"><i class="fas fa-info-circle me-2"></i>Request Details:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Request ID</small>
+                                <p class="fw-bold mb-2">#{{ emergency.id }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Ambulance Number</small>
+                                <p class="fw-bold mb-2 text-primary">{{ emergency.assigned_ambulance }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Estimated Arrival</small>
+                                <p class="fw-bold mb-2">{{ emergency.estimated_arrival|date:"h:i A" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Priority</small>
+                                <p class="fw-bold mb-2 text-danger">{{ emergency.get_priority_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-ambulance me-2"></i>
+                        <strong>Ambulance is on its way!</strong> Please stay at the location.
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'patient_dashboard' %}" class="btn btn-primary rounded-pill px-4">
+                            <i class="fas fa-home me-2"></i>Back to Dashboard
+                        </a>
+                        <a href="{% url 'emergency' %}" class="btn btn-outline-danger rounded-pill px-4 ms-2">
+                            <i class="fas fa-plus me-2"></i>New Request
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-animation {
+        animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .card {
+        transition: transform 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

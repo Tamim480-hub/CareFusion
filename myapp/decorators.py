@@ -1,55 +1,27 @@
-# myapp/decorators.py - Role-Based Access Control
+# myapp/decorators.py - সম্পূর্ণ নতুন ফাইল
+
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
-from .models import UserProfile
 
-def admin_required(view_func):
-    """Decorator to restrict access to Admin users only"""
+def login_required_message(view_func):
     @wraps(view_func)
-    def _wrapper_view(request, *args, **kwargs):
-        try:
-            profile = UserProfile.objects.get(user=request.user)
-            if profile.role == 'admin' or request.user.is_superuser:
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(request, 'Access denied. Admin privileges required.')
-                return redirect('patient_dashboard')
-        except UserProfile.DoesNotExist:
-            messages.error(request, 'User profile not found.')
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please login first!')
             return redirect('login')
-    return _wrapper_view
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
-
-def patient_required(view_func):
-    """Decorator to restrict access to Patient users only"""
+# অ্যাডমিন চেক করার জন্য শুধু is_superuser ব্যবহার করুন
+def admin_only(view_func):
     @wraps(view_func)
-    def _wrapper_view(request, *args, **kwargs):
-        try:
-            profile = UserProfile.objects.get(user=request.user)
-            if profile.role == 'patient':
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(request, 'Access denied. Patient account required.')
-                return redirect('dashboard')
-        except UserProfile.DoesNotExist:
-            messages.error(request, 'User profile not found.')
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please login first!')
             return redirect('login')
-    return _wrapper_view
-
-
-def doctor_required(view_func):
-    """Decorator to restrict access to Doctor users only"""
-    @wraps(view_func)
-    def _wrapper_view(request, *args, **kwargs):
-        try:
-            profile = UserProfile.objects.get(user=request.user)
-            if profile.role == 'doctor':
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(request, 'Access denied. Doctor account required.')
-                return redirect('login')
-        except UserProfile.DoesNotExist:
-            messages.error(request, 'User profile not found.')
-            return redirect('login')
-    return _wrapper_view
+        if not request.user.is_superuser:
+            messages.error(request, 'Admin access required!')
+            return redirect('patient_dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper

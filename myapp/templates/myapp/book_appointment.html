@@ -1,0 +1,167 @@
+<!-- templates/myapp/book_appointment.html - সম্পূর্ণ ঠিক করা -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'patient_dashboard' %}" class="text-decoration-none">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'my_appointments' %}" class="text-decoration-none">
+                            <i class="fas fa-calendar me-1"></i>My Appointments
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Book Appointment
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Main Card -->
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-gradient-primary text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-plus fa-3x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h3 class="mb-0 fw-bold">Book an Appointment</h3>
+                            <p class="mb-0 opacity-75">Schedule your consultation with our expert doctors</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Doctor Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-user-md text-primary me-2"></i>Select Doctor
+                            </label>
+                            <select name="doctor_id" class="form-select form-select-lg" required>
+                                <option value="">-- Choose a doctor --</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">
+                                    Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}
+                                    ({{ doctor.get_specialization_display }}) - ৳{{ doctor.consultation_fee }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Select from our available doctors</small>
+                        </div>
+
+                        <div class="row">
+                            <!-- Date -->
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-day text-primary me-2"></i>Appointment Date
+                                </label>
+                                <input type="date" name="date" class="form-control" required>
+                                <small class="text-muted">Select a preferred date</small>
+                            </div>
+
+                            <!-- Time -->
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-clock text-primary me-2"></i>Appointment Time
+                                </label>
+                                <input type="time" name="time" class="form-control" required>
+                                <small class="text-muted">Select a preferred time (9:00 AM - 5:00 PM)</small>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-notes-medical text-primary me-2"></i>Symptoms / Description
+                            </label>
+                            <textarea name="symptoms" class="form-control" rows="4"
+                                      placeholder="Describe your symptoms, medical history, or reason for visit..."
+                                      required></textarea>
+                            <small class="text-muted">Please provide detailed information for better consultation</small>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between gap-3 mt-4">
+                            <a href="{% url 'my_appointments' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none;">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                            <h6>Flexible Timing</h6>
+                            <small class="text-muted">Choose your preferred time slot</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-stethoscope fa-2x text-primary mb-2"></i>
+                            <h6>Expert Doctors</h6>
+                            <small class="text-muted">Consult with specialized doctors</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                            <h6>Secure Booking</h6>
+                            <small class="text-muted">Your information is safe with us</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

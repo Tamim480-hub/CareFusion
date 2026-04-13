@@ -1,0 +1,91 @@
+<!-- templates/myapp/book_icu_bed.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-procedures text-primary me-2"></i>
+                        Book ICU Bed - #{{ bed.bed_number }}
+                    </h3>
+                    <p class="text-muted mt-2">Fill in the patient details to book this ICU bed</p>
+                </div>
+
+                <div class="card-body">
+                    <!-- Bed Info -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Bed Type</small><br>
+                                <strong>{{ bed.get_bed_type_display }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Daily Charge</small><br>
+                                <strong class="text-success">৳{{ bed.daily_charge }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Patient Full Name</label>
+                            <input type="text" name="patient_name" class="form-control" value="{{ request.user.get_full_name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Patient Age</label>
+                            <input type="number" name="patient_age" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Contact Number</label>
+                            <input type="tel" name="contact_number" class="form-control" value="{{ request.user.phone }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Expected Discharge Date</label>
+                            <input type="date" name="expected_discharge" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Medical Condition / Reason</label>
+                            <textarea name="condition" class="form-control" rows="4" placeholder="Describe the patient's condition..." required></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'icu_beds' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+    }
+
+    .btn-primary {
+        transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+    }
+</style>
+{% endblock %}

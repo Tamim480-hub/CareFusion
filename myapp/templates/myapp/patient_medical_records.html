@@ -1,0 +1,74 @@
+{% extends 'myapp/base.html' %}
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="fw-bold">📋 Medical Records</h2>
+        <p class="text-muted">View your medical history</p>
+    </div>
+
+    {% if records %}
+
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Doctor</th>
+                            <th>Diagnosis</th>
+                            <th>Prescription</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for record in records %}
+                        <tr>
+
+                            <td>
+                                {{ record.created_at|date:"M d, Y" }}
+                            </td>
+
+                            <td>
+                                Dr. {{ record.doctor.full_name }}
+                            </td>
+
+                            <td>
+                                {{ record.diagnosis }}
+                            </td>
+
+                            <td>
+                                {{ record.prescription }}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    {% else %}
+
+    <!-- Empty -->
+    <div class="text-center py-5">
+        <div style="font-size:60px;">📭</div>
+        <h5>No Records Found</h5>
+        <p class="text-muted">Your medical records will appear here</p>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

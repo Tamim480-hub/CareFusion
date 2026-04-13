@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Management - CareFusion Hospital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Header Section */
+        .header-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .header-title h1 i {
+            color: #4a90e2;
+            margin-right: 10px;
+        }
+
+        .header-title p {
+            color: #6c757d;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .stats-card i {
+            font-size: 35px;
+            margin-bottom: 10px;
+        }
+
+        .stats-card h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1a1a2e;
+        }
+
+        .stats-card p {
+            margin-bottom: 0;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .stats-card.total i { color: #4a90e2; }
+        .stats-card.special i { color: #43e97b; }
+        .stats-card.active i { color: #fa709a; }
+
+        /* Buttons */
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+            color: white;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            color: white;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+
+        .search-box input {
+            padding-left: 45px;
+            border-radius: 12px;
+            border: 1px solid #e0e5ec;
+            height: 45px;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+
+        .search-box input:focus {
+            border-color: #4a90e2;
+            background: white;
+            box-shadow: none;
+        }
+
+        .filter-select {
+            border-radius: 12px;
+            border: 1px solid #e0e5ec;
+            height: 45px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+
+        .filter-select:focus {
+            border-color: #4a90e2;
+            box-shadow: none;
+            background: white;
+        }
+
+        /* Table Section */
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px 25px;
+            color: white;
+        }
+
+        .table-header h5 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+        .table-header i {
+            margin-right: 10px;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 15px;
+            border-bottom: 2px solid #e9ecef;
+            text-align: center;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Doctor Avatar */
+        .doctor-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            margin: 0 auto 8px;
+        }
+
+        .doctor-info h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1a1a2e;
+        }
+
+        .doctor-info small {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        /* Badges */
+        .specialization-badge {
+            background: linear-gradient(135deg, #43e97b20, #38f9d720);
+            color: #2b8c4a;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .fee-badge {
+            background: #ffc10720;
+            color: #d4a000;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .exp-badge {
+            background: #0dcaf020;
+            color: #0c5d6e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 80px;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h5 {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #adb5bd;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-card {
+                margin-bottom: 15px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="header-title">
+                        <h1><i class="fas fa-user-md"></i>Doctor Management</h1>
+                        <p><i class="fas fa-calendar-alt me-2"></i>Manage hospital doctors, specialization & profiles</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="stats-card total">
+                                <i class="fas fa-user-md"></i>
+                                <h3>{{ doctors|length }}</h3>
+                                <p>Total Doctors</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card special">
+                                <i class="fas fa-stethoscope"></i>
+                                <h3>
+                                    {% with special=0 %}
+                                        {% for doctor in doctors %}
+                                            {{ special }}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </h3>
+                                <p>Specializations</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card active">
+                                <i class="fas fa-check-circle"></i>
+                                <h3>
+                                    {% with active=0 %}
+                                        {% for doctor in doctors %}
+                                            {% if doctor.is_available %}{{ active }}{% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </h3>
+                                <p>Active Doctors</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a href="{% url 'admin_dashboard' %}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="row align-items-center">
+                <div class="col-md-5 mb-3 mb-md-0">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search by name, specialization, email...">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <select id="specializationFilter" class="form-control filter-select">
+                        <option value="">All Specializations</option>
+                        <option value="cardiologist">Cardiologist</option>
+                        <option value="dermatologist">Dermatologist</option>
+                        <option value="neurologist">Neurologist</option>
+                        <option value="pediatrician">Pediatrician</option>
+                        <option value="orthopedic">Orthopedic</option>
+                        <option value="gynecologist">Gynecologist</option>
+                        <option value="psychiatrist">Psychiatrist</option>
+                        <option value="ent">ENT Specialist</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3 mb-md-0">
+                    <select id="statusFilter" class="form-control filter-select">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2 text-md-end">
+                    <a href="{% url 'admin_add_doctor' %}" class="btn-add">
+                        <i class="fas fa-plus"></i> Add Doctor
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-container">
+            <div class="table-header">
+                <h5><i class="fas fa-list me-2"></i>Doctor Directory</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="doctorTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Contact</th>
+                            <th>Experience</th>
+                            <th>Consultation Fee</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doctor in doctors %}
+                        <tr data-specialization="{{ doctor.specialization }}" data-status="active">
+                            <td><strong>#{{ doctor.id }}</strong></td>
+                            <td>
+                                <div class="doctor-info">
+                                    <div class="doctor-avatar">
+                                        {{ doctor.user.first_name|slice:":1" }}{{ doctor.user.last_name|slice:":1" }}
+                                    </div>
+                                    <h6>Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h6>
+                                    <small>{{ doctor.qualification|truncatechars:25 }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="specialization-badge">
+                                    <i class="fas fa-stethoscope me-1"></i> {{ doctor.get_specialization_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div>
+                                    <i class="fas fa-envelope me-1 text-muted"></i> {{ doctor.user.email }}<br>
+                                    <i class="fas fa-phone me-1 text-muted"></i> {{ doctor.user.phone|default:"N/A" }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="exp-badge">
+                                    <i class="fas fa-briefcase me-1"></i> {{ doctor.experience_years }} years
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fee-badge">
+                                    <i class="fas fa-taka me-1"></i> {{ doctor.consultation_fee }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-circle me-1" style="font-size: 8px;"></i> Active
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'admin_edit_doctor' doctor.id %}" class="btn-action btn-edit" title="Edit">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{% url 'admin_delete_doctor' doctor.id %}" class="btn-action btn-delete" title="Delete"
+                                       onclick="return confirm('Are you sure you want to delete this doctor?')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fas fa-user-md"></i>
+                                    <h5>No Doctors Found</h5>
+                                    <p>No doctors found in the system.</p>
+                                    <a href="{% url 'admin_add_doctor' %}" class="btn-add mt-3">
+                                        <i class="fas fa-plus"></i> Add First Doctor
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // Search functionality
+        $('#searchInput').on('keyup', function() {
+            var value = $(this).val().toLowerCase();
+            $('#doctorTable tbody tr').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        // Specialization filter
+        $('#specializationFilter').on('change', function() {
+            var specialization = $(this).val();
+            $('#doctorTable tbody tr').filter(function() {
+                var show = true;
+                if (specialization && $(this).data('specialization') !== specialization) {
+                    show = false;
+                }
+                $(this).toggle(show);
+            });
+        });
+
+        // Status filter
+        $('#statusFilter').on('change', function() {
+            var status = $(this).val();
+            $('#doctorTable tbody tr').filter(function() {
+                var show = true;
+                if (status === 'active' && $(this).data('status') !== 'active') {
+                    show = false;
+                }
+                if (status === 'inactive' && $(this).data('status') !== 'inactive') {
+                    show = false;
+                }
+                $(this).toggle(show);
+            });
+        });
+    </script>
+</body>
+</html>
