@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,7 +21,7 @@
             background: #f0f2f5;
         }
 
-        /* Smooth Animations */
+        /* Sidebar Styles */
         .sidebar {
             background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
@@ -32,19 +33,22 @@
             padding: 12px 15px;
             transition: all 0.3s ease;
             margin-bottom: 8px;
+            color: rgba(255,255,255,0.8) !important;
         }
 
         .nav-link:hover {
             background: rgba(255,255,255,0.1);
             transform: translateX(5px);
+            color: white !important;
         }
 
         .nav-link.active {
             background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white !important;
         }
 
-        /* Smooth Card Animations */
-        .stat-card, .report-card, .health-metric, .tip-card {
+        /* Card Styles */
+        .stat-card, .info-card, .tip-card {
             background: white;
             border-radius: 20px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -52,7 +56,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .stat-card:hover, .report-card:hover, .health-metric:hover, .tip-card:hover {
+        .stat-card:hover, .info-card:hover, .tip-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
@@ -61,7 +65,24 @@
         .welcome-banner {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
-            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
         }
 
         /* Buttons */
@@ -77,7 +98,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* Table */
+        /* Table Styles */
         .table tbody tr {
             transition: all 0.3s ease;
         }
@@ -87,7 +108,7 @@
             transform: scale(1.01);
         }
 
-        /* Avatar */
+        /* Avatar Circle */
         .avatar-circle {
             width: 45px;
             height: 45px;
@@ -97,7 +118,7 @@
             justify-content: center;
         }
 
-        /* Badges */
+        /* Badge Styles */
         .badge-status {
             padding: 5px 12px;
             border-radius: 20px;
@@ -107,6 +128,7 @@
 
         .badge-confirmed { background: #d4edda; color: #155724; }
         .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; }
         .badge-cancelled { background: #f8d7da; color: #721c24; }
 
         /* Progress Bar */
@@ -121,9 +143,26 @@
             border-radius: 10px;
         }
 
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card, .info-card, .welcome-banner {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
+            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -132,12 +171,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #888;
+            background: #667eea;
             border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: #764ba2;
         }
 
         @media (max-width: 768px) {
@@ -177,6 +216,26 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'patient_products' %}">
+                            <i class="fas fa-capsules me-3"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link text-white" href="{% url 'patient_cart' %}">
+                            <i class="fas fa-shopping-cart me-3"></i> Cart
+                            {% if cart_items_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
+                                {{ cart_items_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'icu_beds' %}">
+                            <i class="fas fa-bed me-3"></i> ICU Beds
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white" href="{% url 'profile' %}">
                             <i class="fas fa-user-circle me-3"></i> Profile
                         </a>
@@ -201,21 +260,54 @@
                         </h4>
                         <small class="text-muted">Your health dashboard</small>
                     </div>
-                    <div class="dropdown">
-                        <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
-                            <div class="avatar-circle bg-primary text-white me-2">
-                                <i class="fas fa-user"></i>
+                    <div class="d-flex align-items-center">
+                        <!-- Notification Bell -->
+                        <div class="dropdown me-3">
+                            <button class="btn btn-light rounded-circle" style="width: 45px; height: 45px; background: #f0f2f5; position: relative;" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell text-secondary"></i>
+                                {% if upcoming_appointments > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
+                                    {{ upcoming_appointments }}
+                                </span>
+                                {% endif %}
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px; width: 300px;">
+                                <div class="dropdown-header bg-light rounded-top py-3">
+                                    <strong>Notifications</strong>
+                                </div>
+                                <a class="dropdown-item py-2" href="{% url 'my_appointments' %}">
+                                    <i class="fas fa-calendar me-2 text-primary"></i> {{ upcoming_appointments }} upcoming appointments
+                                </a>
+                                {% if cart_items_count > 0 %}
+                                <a class="dropdown-item py-2" href="{% url 'patient_cart' %}">
+                                    <i class="fas fa-shopping-cart me-2 text-success"></i> {{ cart_items_count }} items in cart
+                                </a>
+                                {% endif %}
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-center text-primary" href="#">View all notifications</a>
                             </div>
-                            <i class="fas fa-chevron-down ms-1 text-muted"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
-                            <a class="dropdown-item" href="{% url 'profile' %}">
-                                <i class="fas fa-user-circle me-2"></i> Profile
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                                <i class="fas fa-sign-out-alt me-2"></i> Logout
-                            </a>
+                        </div>
+
+                        <!-- Profile Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
+                                <div class="avatar-circle bg-primary text-white me-2">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <i class="fas fa-chevron-down ms-1 text-muted"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
+                                <a class="dropdown-item" href="{% url 'profile' %}">
+                                    <i class="fas fa-user-circle me-2"></i> Profile
+                                </a>
+                                <a class="dropdown-item" href="{% url 'patient_orders' %}">
+                                    <i class="fas fa-shopping-bag me-2"></i> My Orders
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,7 +315,7 @@
 
             <!-- Main Content -->
             <div class="p-4">
-                <!-- Welcome Banner - Simplified -->
+                <!-- Welcome Banner -->
                 <div class="welcome-banner mb-4">
                     <div class="p-4">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
@@ -232,7 +324,7 @@
                                     <i class="fas fa-smile-wink text-primary" style="font-size: 28px;"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-white fw-bold mb-0">Hello, {{ patient.first_name }}!</h2>
+                                    <h2 class="text-white fw-bold mb-0">Hello, {{ patient.first_name|default:"Patient" }}!</h2>
                                     <p class="text-white-50 mb-0">Your health is our priority</p>
                                 </div>
                             </div>
@@ -245,19 +337,23 @@
                                     <small class="text-white-50">Blood Group</small>
                                     <p class="text-white fw-bold mb-0">{{ patient.blood_group|default:"N/A" }}</p>
                                 </div>
+                                <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2 text-center">
+                                    <small class="text-white-50">Age</small>
+                                    <p class="text-white fw-bold mb-0">{{ patient.age }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Stats Cards - 4 Cards Only -->
+                <!-- Stats Cards -->
                 <div class="row g-4 mb-4">
-                    <div class="col-md-3">
+                    <div class="col-md-3 col-sm-6">
                         <div class="stat-card p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Upcoming</small>
-                                    <h2 class="fw-bold text-primary mb-0">{{ upcoming_appointments }}</h2>
+                                    <small class="text-muted text-uppercase">Upcoming</small>
+                                    <h2 class="fw-bold text-primary mb-0">{{ upcoming_appointments|default:"0" }}</h2>
                                     <small>Appointments</small>
                                 </div>
                                 <div class="bg-primary bg-opacity-10 rounded-3 p-3">
@@ -266,39 +362,39 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 col-sm-6">
                         <div class="stat-card p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Pending Bills</small>
-                                    <h2 class="fw-bold text-warning mb-0">{{ pending_bills_count }}</h2>
-                                    <small>৳ {{ total_pending_amount }}</small>
+                                    <small class="text-muted text-uppercase">Completed</small>
+                                    <h2 class="fw-bold text-success mb-0">{{ completed_appointments|default:"0" }}</h2>
+                                    <small>Visits</small>
                                 </div>
-                                <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-                                    <i class="fas fa-money-bill-wave fa-2x text-warning"></i>
+                                <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                    <i class="fas fa-check-circle fa-2x text-success"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 col-sm-6">
                         <div class="stat-card p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Total Visits</small>
-                                    <h2 class="fw-bold text-info mb-0">{{ patient.appointments.count }}</h2>
-                                    <small>Lifetime</small>
+                                    <small class="text-muted text-uppercase">Total Orders</small>
+                                    <h2 class="fw-bold text-info mb-0">{{ total_orders|default:"0" }}</h2>
+                                    <small>Products</small>
                                 </div>
                                 <div class="bg-info bg-opacity-10 rounded-3 p-3">
-                                    <i class="fas fa-chart-bar fa-2x text-info"></i>
+                                    <i class="fas fa-shopping-cart fa-2x text-info"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 col-sm-6">
                         <div class="stat-card p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Health Score</small>
+                                    <small class="text-muted text-uppercase">Health Score</small>
                                     <h2 class="fw-bold text-success mb-0">85<span style="font-size: 16px;">%</span></h2>
                                     <div class="progress-custom mt-1" style="width: 80px;">
                                         <div class="progress-bar-custom" style="width: 85%; height: 4px;"></div>
@@ -321,9 +417,15 @@
                                 <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-quick">
                                     <i class="fas fa-calendar-plus me-2"></i>Book Appointment
                                 </a>
-                                <a href="{% url 'icu_beds' %}" class="btn btn-outline-info btn-quick">
-                                    <i class="fas fa-bed me-2"></i>ICU Beds
+                                <a href="{% url 'patient_products' %}" class="btn btn-outline-success btn-quick">
+                                    <i class="fas fa-capsules me-2"></i>Buy Medicines
                                 </a>
+                                <a href="{% url 'patient_cart' %}" class="btn btn-outline-info btn-quick">
+                                    <i class="fas fa-shopping-cart me-2"></i>My Cart
+                                </a>
+                               <a href="{% url 'icu_beds' %}" class="btn btn-outline-warning btn-quick">
+    <i class="fas fa-bed me-2"></i>ICU Beds
+</a>
                                 <a href="{% url 'emergency' %}" class="btn btn-danger btn-quick">
                                     <i class="fas fa-ambulance me-2"></i>Emergency
                                 </a>
@@ -341,7 +443,7 @@
                                         </div>
                                         <div>
                                             <h6 class="mb-0 fw-bold">Dr. {{ next_appointment.doctor.full_name }}</h6>
-                                            <small class="text-muted">{{ next_appointment.doctor.specialization }}</small>
+                                            <small class="text-muted">{{ next_appointment.doctor.get_specialization_display }}</small>
                                         </div>
                                     </div>
                                     <div class="mt-2 mt-md-0">
@@ -349,8 +451,10 @@
                                         <div><i class="fas fa-clock me-2 text-primary"></i>{{ next_appointment.appointment_date|date:"g:i A" }}</div>
                                     </div>
                                     <div class="mt-2 mt-md-0">
-                                        <span class="badge-status badge-confirmed">{{ next_appointment.status|title }}</span>
-                                        <a href="{% url 'cancel_appointment' next_appointment.id %}" class="btn btn-sm btn-outline-danger ms-2">Cancel</a>
+                                        <span class="badge-status badge-{{ next_appointment.status }}">{{ next_appointment.status|title }}</span>
+                                        {% if next_appointment.status == 'pending' or next_appointment.status == 'confirmed' %}
+                                            <a href="{% url 'cancel_appointment' next_appointment.id %}" class="btn btn-sm btn-outline-danger ms-2" onclick="return confirm('Are you sure?')">Cancel</a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             {% else %}
@@ -364,12 +468,12 @@
                     </div>
                 </div>
 
-                <!-- Recent Appointments Table - Simplified -->
+                <!-- Recent Appointments Table -->
                 <div class="stat-card mb-4">
                     <div class="card-header bg-white border-0 pt-4 pb-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold"><i class="fas fa-history text-primary me-2"></i>Recent Appointments</h5>
-                            <a href="{% url 'my_appointments' %}" class="btn btn-sm btn-link text-primary">View All</a>
+                            <a href="{% url 'my_appointments' %}" class="btn btn-sm btn-link text-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -377,26 +481,46 @@
                             <div class="table-responsive">
                                 <table class="table table-hover mb-0">
                                     <thead class="bg-light">
-                                        <tr><th>Doctor</th><th>Specialization</th><th>Date</th><th>Status</th><th></th></tr>
+                                        <tr>
+                                            <th>Doctor</th>
+                                            <th>Specialization</th>
+                                            <th>Date & Time</th>
+                                            <th>Status</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                        {% for apt in recent_appointments|slice:":3" %}
+                                        {% for apt in recent_appointments|slice:":5" %}
                                         <tr>
-                                            <td><strong>Dr. {{ apt.doctor.full_name }}</strong></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-info bg-opacity-10 text-info me-2" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user-md"></i>
+                                                    </div>
+                                                    <strong>Dr. {{ apt.doctor.full_name }}</strong>
+                                                </div>
+                                            </td>
                                             <td>{{ apt.doctor.get_specialization_display }}</td>
-                                            <td>{{ apt.appointment_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {{ apt.appointment_date|date:"M d, Y" }}<br>
+                                                <small class="text-muted">{{ apt.appointment_date|date:"g:i A" }}</small>
+                                            </td>
                                             <td>
                                                 {% if apt.status == 'confirmed' %}
                                                     <span class="badge-status badge-confirmed">Confirmed</span>
                                                 {% elif apt.status == 'pending' %}
                                                     <span class="badge-status badge-pending">Pending</span>
+                                                {% elif apt.status == 'completed' %}
+                                                    <span class="badge-status badge-completed">Completed</span>
                                                 {% else %}
                                                     <span class="badge-status badge-cancelled">Cancelled</span>
                                                 {% endif %}
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 {% if apt.status == 'pending' or apt.status == 'confirmed' %}
-                                                    <a href="{% url 'cancel_appointment' apt.id %}" class="btn btn-sm btn-outline-danger">Cancel</a>
+                                                    <a href="{% url 'cancel_appointment' apt.id %}" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Cancel this appointment?')">
+                                                        <i class="fas fa-times me-1"></i> Cancel
+                                                    </a>
                                                 {% endif %}
                                             </td>
                                         </tr>
@@ -407,14 +531,72 @@
                         {% else %}
                             <div class="text-center py-4">
                                 <i class="fas fa-calendar-times fa-3x text-muted mb-2"></i>
-                                <p>No appointments yet</p>
-                                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm">Book Now</a>
+                                <p class="mb-0">No appointments yet</p>
+                                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm mt-2 rounded-pill">Book Now</a>
                             </div>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Health Tips - 3 Simple Tips -->
+                <!-- Recent Orders Section -->
+                <div class="stat-card mb-4">
+                    <div class="card-header bg-white border-0 pt-4 pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold"><i class="fas fa-shopping-bag text-primary me-2"></i>Recent Orders</h5>
+                            <a href="{% url 'patient_orders' %}" class="btn btn-sm btn-link text-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if recent_orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Total Amount</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in recent_orders|slice:":5" %}
+                                        <tr>
+                                            <td><strong>#{{ order.order_number }}</strong></td>
+                                            <td>৳{{ order.total_amount }}</td>
+                                            <td>{{ order.created_at|date:"M d, Y" }}<br><small class="text-muted">{{ order.created_at|date:"g:i A" }}</small></td>
+                                            <td>
+                                                {% if order.status == 'delivered' %}
+                                                    <span class="badge-status badge-completed">Delivered</span>
+                                                {% elif order.status == 'confirmed' %}
+                                                    <span class="badge-status badge-confirmed">Confirmed</span>
+                                                {% elif order.status == 'pending' %}
+                                                    <span class="badge-status badge-pending">Pending</span>
+                                                {% else %}
+                                                    <span class="badge-status badge-cancelled">Cancelled</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{% url 'patient_orders' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                    <i class="fas fa-eye me-1"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-shopping-bag fa-3x text-muted mb-2"></i>
+                                <p class="mb-0">No orders yet</p>
+                                <a href="{% url 'patient_products' %}" class="btn btn-primary btn-sm mt-2 rounded-pill">Start Shopping</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Health Tips Section -->
                 <div class="row g-3">
                     <div class="col-md-4">
                         <div class="tip-card p-3">
@@ -424,7 +606,7 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-0">Healthy Eating</h6>
-                                    <small class="text-muted">Balanced diet</small>
+                                    <small class="text-muted">Balanced diet for better health</small>
                                 </div>
                             </div>
                         </div>
@@ -437,7 +619,7 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-0">Stay Active</h6>
-                                    <small class="text-muted">Daily exercise</small>
+                                    <small class="text-muted">30 min daily exercise</small>
                                 </div>
                             </div>
                         </div>
@@ -450,7 +632,7 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-0">Sleep Well</h6>
-                                    <small class="text-muted">7-8 hours</small>
+                                    <small class="text-muted">7-8 hours daily</small>
                                 </div>
                             </div>
                         </div>
@@ -462,7 +644,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
 {% endblock %}

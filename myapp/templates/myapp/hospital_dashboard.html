@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareFusion - Hospital Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+            color: white !important;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white !important;
+        }
+
+        /* Avatar Circle */
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Card Styles */
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* Quick Action Buttons */
+        .btn-quick {
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-quick:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Table Styles */
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-confirmed { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
+        .badge-pending { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; border-left: 3px solid #17a2b8; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card, .welcome-banner {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #357abd;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <div class="text-center mb-4">
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+                    <small class="text-white-50">Hospital Admin Portal</small>
+                </div>
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" href="{% url 'hospital_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_doctors' %}">
+                            <i class="fas fa-user-md me-3"></i> Doctors
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_patients' %}">
+                            <i class="fas fa-users me-3"></i> Patients
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_appointments' %}">
+                            <i class="fas fa-calendar-check me-3"></i> Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_beds' %}">
+                            <i class="fas fa-bed me-3"></i> ICU Beds
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                            <i class="fas fa-sign-out-alt me-3"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4" style="background: #f0f2f5;">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1 fw-bold">
+                        <i class="fas fa-building text-primary me-2"></i>
+                        {{ hospital.name }}
+                    </h2>
+                    <p class="text-muted mb-0">Hospital Admin Dashboard</p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
+                        <div class="avatar-circle bg-primary text-white me-2">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="fw-semibold">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Welcome Banner -->
+            <div class="welcome-banner mb-4">
+                <div class="p-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle bg-white shadow-sm me-3">
+                                <i class="fas fa-chart-line text-primary" style="font-size: 28px;"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-white fw-bold mb-0">Welcome, {{ user.first_name|default:"Admin" }}!</h2>
+                                <p class="text-white-50 mb-0">Here's what's happening at {{ hospital.name }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-2 mt-md-0">
+                            <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2 text-center">
+                                <small class="text-white-50">Hospital Code</small>
+                                <p class="text-white fw-bold mb-0">{{ hospital.code }}</p>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2 text-center">
+                                <small class="text-white-50">Phone</small>
+                                <p class="text-white fw-bold mb-0">{{ hospital.phone }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">Total Doctors</small>
+                                <h2 class="fw-bold text-primary mb-0">{{ doctors_count|default:"0" }}</h2>
+                                <small class="text-success">
+                                    <i class="fas fa-user-md me-1"></i> Active
+                                </small>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-user-md fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">Total Patients</small>
+                                <h2 class="fw-bold text-success mb-0">{{ patients_count|default:"0" }}</h2>
+                                <small class="text-success">
+                                    <i class="fas fa-users me-1"></i> Registered
+                                </small>
+                            </div>
+                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-users fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">Appointments</small>
+                                <h2 class="fw-bold text-info mb-0">{{ appointments_count|default:"0" }}</h2>
+                                <small class="text-info">
+                                    <i class="fas fa-calendar me-1"></i> Total
+                                </small>
+                            </div>
+                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-calendar-check fa-2x text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">ICU Beds</small>
+                                <h2 class="fw-bold text-warning mb-0">{{ available_beds|default:"0" }}/{{ beds_count|default:"0" }}</h2>
+                                <small class="text-success">
+                                    <i class="fas fa-bed me-1"></i> Available
+                                </small>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                                <i class="fas fa-bed fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-12">
+                    <div class="stat-card p-3">
+                        <h5 class="mb-3 fw-bold">
+                            <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
+                        </h5>
+                        <div class="row g-2">
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{% url 'hospital_doctors' %}" class="btn btn-outline-primary w-100 btn-quick">
+                                    <i class="fas fa-user-md me-2"></i>Manage Doctors
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{% url 'hospital_patients' %}" class="btn btn-outline-success w-100 btn-quick">
+                                    <i class="fas fa-users me-2"></i>Manage Patients
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{% url 'hospital_appointments' %}" class="btn btn-outline-info w-100 btn-quick">
+                                    <i class="fas fa-calendar me-2"></i>Manage Appointments
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{% url 'hospital_beds' %}" class="btn btn-outline-warning w-100 btn-quick">
+                                    <i class="fas fa-bed me-2"></i>Manage ICU Beds
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Data Tables -->
+            <div class="row g-4">
+                <!-- Recent Patients -->
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="card-header bg-white border-0 pt-4 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold"><i class="fas fa-user-plus text-primary me-2"></i>Recent Patients</h5>
+                                <a href="{% url 'hospital_patients' %}" class="btn btn-sm btn-link text-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Patient Name</th>
+                                            <th>Phone</th>
+                                            <th>Registered</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for patient in recent_patients %}
+                                        <tr>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                    <strong>{{ patient.full_name }}</strong>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">{{ patient.phone|default:"N/A" }}</td>
+                                            <td class="align-middle">{{ patient.created_at|date:"M d, Y" }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4">
+                                                <i class="fas fa-users fa-3x text-muted mb-2"></i>
+                                                <p class="mb-0">No patients found</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Appointments -->
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="card-header bg-white border-0 pt-4 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold"><i class="fas fa-calendar-alt text-primary me-2"></i>Recent Appointments</h5>
+                                <a href="{% url 'hospital_appointments' %}" class="btn btn-sm btn-link text-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Patient</th>
+                                            <th>Doctor</th>
+                                            <th>Date & Time</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for apt in recent_appointments %}
+                                        <tr>
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-info bg-opacity-10 text-info me-2" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                    <strong>{{ apt.patient.full_name }}</strong>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">Dr. {{ apt.doctor.full_name }}</td>
+                                            <td class="align-middle">
+                                                {{ apt.appointment_date|date:"M d, Y" }}<br>
+                                                <small class="text-muted">{{ apt.appointment_date|date:"g:i A" }}</small>
+                                            </td>
+                                            <td class="align-middle">
+                                                {% if apt.status == 'confirmed' %}
+                                                    <span class="badge-status badge-confirmed">Confirmed</span>
+                                                {% elif apt.status == 'pending' %}
+                                                    <span class="badge-status badge-pending">Pending</span>
+                                                {% elif apt.status == 'completed' %}
+                                                    <span class="badge-status badge-completed">Completed</span>
+                                                {% else %}
+                                                    <span class="badge-status badge-cancelled">Cancelled</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4">
+                                                <i class="fas fa-calendar-times fa-3x text-muted mb-2"></i>
+                                                <p class="mb-0">No appointments found</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Info Footer -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="stat-card p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="fw-bold mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Hospital Information</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Address</small>
+                                        <p class="mb-0">{{ hospital.address }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> Phone</small>
+                                        <p class="mb-0">{{ hospital.phone }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted"><i class="fas fa-envelope me-1"></i> Email</small>
+                                        <p class="mb-0">{{ hospital.email }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <div class="bg-primary bg-opacity-10 rounded-3 p-3 d-inline-block">
+                                    <i class="fas fa-chart-line text-primary me-2"></i>
+                                    <span class="fw-bold">Active Since: {{ hospital.created_at|date:"F Y" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

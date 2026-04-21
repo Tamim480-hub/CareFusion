@@ -6,6 +6,7 @@
 <html>
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -29,40 +30,46 @@
             transition: all 0.3s;
         }
 
-        .nav-link {
+        .sidebar .nav-link {
             border-radius: 12px;
             padding: 12px 15px;
             transition: all 0.3s;
             margin-bottom: 8px;
+            color: rgba(255,255,255,0.8) !important;
+            font-weight: 500;
         }
 
-        .nav-link:hover {
+        .sidebar .nav-link:hover {
             background: rgba(255,255,255,0.1) !important;
             transform: translateX(5px);
+            color: white !important;
         }
 
-        .nav-link.active {
+        .sidebar .nav-link.active {
             background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white !important;
         }
 
         /* Card Styles */
         .stat-card {
             border-radius: 20px;
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
+            position: relative;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
         .info-card {
             border-radius: 20px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
             border: none;
             background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .info-card:hover {
@@ -71,16 +78,11 @@
         }
 
         /* Table Styles */
-        .table-container {
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
         .table thead th {
             background: #f8f9fa;
             color: #495057;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             padding: 15px;
@@ -98,38 +100,26 @@
         }
 
         .table tbody td {
-            padding: 15px;
+            padding: 12px 15px;
             vertical-align: middle;
             font-size: 14px;
         }
 
         /* Badge Styles */
         .badge-status {
-            padding: 6px 12px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .badge-confirmed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-completed {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .badge-cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        .badge-confirmed { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
+        .badge-pending { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; border-left: 3px solid #17a2b8; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
 
         /* Avatar Styles */
         .avatar-circle {
@@ -143,7 +133,23 @@
             font-size: 16px;
         }
 
-        /* Scrollbar Styles */
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card, .info-card {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -155,18 +161,26 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #888;
+            background: #4a90e2;
             border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: #357abd;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 min-height: auto;
+            }
+
+            .stat-card .card-body {
+                padding: 15px;
+            }
+
+            .stat-card h2 {
+                font-size: 28px !important;
             }
         }
     </style>
@@ -183,42 +197,47 @@
                         <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
                     </div>
                     <h5 class="text-white mb-1">CareFusion</h5>
-                    <small class="text-white-50">Admin Portal</small>
+                    <small class="text-white-50">Super Admin Portal</small>
                 </div>
 
                 <ul class="nav nav-pills flex-column">
                     <li class="nav-item">
-                        <a class="nav-link text-white active" href="{% url 'admin_dashboard' %}">
+                        <a class="nav-link active" href="{% url 'admin_dashboard' %}">
                             <i class="fas fa-tachometer-alt me-3"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'admin_manage_patients' %}">
+                        <a class="nav-link" href="{% url 'admin_manage_patients' %}">
                             <i class="fas fa-users me-3"></i> Patients
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'admin_manage_doctors' %}">
+                        <a class="nav-link" href="{% url 'admin_manage_doctors' %}">
                             <i class="fas fa-user-md me-3"></i> Doctors
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'admin_manage_appointments' %}">
+                        <a class="nav-link" href="{% url 'admin_manage_appointments' %}">
                             <i class="fas fa-calendar-check me-3"></i> Appointments
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'admin_manage_beds' %}">
+                        <a class="nav-link" href="{% url 'admin_manage_beds' %}">
                             <i class="fas fa-bed me-3"></i> ICU Beds
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'admin_manage_emergencies' %}">
+                        <a class="nav-link" href="{% url 'admin_manage_emergencies' %}">
                             <i class="fas fa-ambulance me-3"></i> Emergencies
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'admin_reports' %}">
+                        <a class="nav-link" href="{% url 'admin_products' %}">
+                            <i class="fas fa-box me-3"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin_reports' %}">
                             <i class="fas fa-chart-line me-3"></i> Reports
                         </a>
                     </li>
@@ -238,7 +257,7 @@
                 <div class="d-flex justify-content-between w-100 align-items-center">
                     <div>
                         <h4 class="mb-0" style="font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #4a90e2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                            Welcome back, {{ current_user.first_name|default:"Admin" }}!
+                            Welcome back, {{ user.first_name|default:"Admin" }}!
                         </h4>
                         <small class="text-muted">Here's what's happening with your hospital today</small>
                     </div>
@@ -253,18 +272,18 @@
                                 </span>
                                 {% endif %}
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px; width: 300px;">
+                            <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px; width: 320px;">
                                 <div class="dropdown-header bg-light rounded-top py-3">
-                                    <strong>Notifications</strong>
+                                    <strong><i class="fas fa-bell me-2"></i>Notifications</strong>
                                 </div>
-                                <a class="dropdown-item py-2" href="#">
-                                    <i class="fas fa-calendar me-2 text-primary"></i> {{ today_appointments }} appointments today
+                                <a class="dropdown-item py-2" href="{% url 'admin_manage_appointments' %}">
+                                    <i class="fas fa-calendar me-2 text-primary"></i> {{ today_appointments|default:"0" }} appointments today
                                 </a>
                                 <a class="dropdown-item py-2" href="{% url 'admin_manage_emergencies' %}">
-                                    <i class="fas fa-ambulance me-2 text-danger"></i> {{ emergency_requests }} emergency requests
+                                    <i class="fas fa-ambulance me-2 text-danger"></i> {{ emergency_requests|default:"0" }} emergency requests
                                 </a>
-                                <a class="dropdown-item py-2" href="#">
-                                    <i class="fas fa-bed me-2 text-info"></i> {{ available_beds }} beds available
+                                <a class="dropdown-item py-2" href="{% url 'admin_manage_beds' %}">
+                                    <i class="fas fa-bed me-2 text-info"></i> {{ available_beds|default:"0" }} beds available
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item text-center text-primary" href="#">View all notifications</a>
@@ -278,8 +297,8 @@
                                     <i class="fas fa-user"></i>
                                 </div>
                                 <div class="text-start">
-                                    <small class="text-muted d-block">Admin</small>
-                                    <strong>{{ current_user.username|default:"Admin" }}</strong>
+                                    <small class="text-muted d-block">Super Admin</small>
+                                    <strong>{{ user.username|default:"Admin" }}</strong>
                                 </div>
                                 <i class="fas fa-chevron-down ms-2 text-muted"></i>
                             </button>
@@ -303,15 +322,17 @@
             <!-- Main Content Area -->
             <div class="p-4">
                 <!-- Stats Cards Row 1 -->
-                <div class="row mb-4">
-                    <div class="col-md-3 mb-3">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
                         <div class="stat-card">
                             <div class="card-body" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <small class="text-white-50">TOTAL PATIENTS</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_patients }}</h2>
-                                        <small class="mt-2 d-block">+12% from last month</small>
+                                        <small class="text-white-50 text-uppercase">Total Patients</small>
+                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_patients|default:"0" }}</h2>
+                                        <small class="text-white-50 mt-2 d-block">
+                                            <i class="fas fa-arrow-up me-1"></i> +12% from last month
+                                        </small>
                                     </div>
                                     <div>
                                         <i class="fas fa-users" style="font-size: 48px; opacity: 0.3;"></i>
@@ -320,14 +341,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3">
                         <div class="stat-card">
                             <div class="card-body" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <small class="text-white-50">TOTAL DOCTORS</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_doctors }}</h2>
-                                        <small class="mt-2 d-block">+5 new this month</small>
+                                        <small class="text-white-50 text-uppercase">Total Doctors</small>
+                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_doctors|default:"0" }}</h2>
+                                        <small class="text-white-50 mt-2 d-block">
+                                            <i class="fas fa-plus me-1"></i> +5 new this month
+                                        </small>
                                     </div>
                                     <div>
                                         <i class="fas fa-user-md" style="font-size: 48px; opacity: 0.3;"></i>
@@ -336,14 +359,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3">
                         <div class="stat-card">
                             <div class="card-body" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <small class="text-white-50">AVAILABLE BEDS</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ available_beds }}/{{ total_beds }}</h2>
-                                        <small class="mt-2 d-block">{{ available_beds }} beds available</small>
+                                        <small class="text-white-50 text-uppercase">Available Beds</small>
+                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ available_beds|default:"0" }}/{{ total_beds|default:"0" }}</h2>
+                                        <small class="text-white-50 mt-2 d-block">
+                                            <i class="fas fa-bed me-1"></i> {{ available_beds|default:"0" }} beds available
+                                        </small>
                                     </div>
                                     <div>
                                         <i class="fas fa-bed" style="font-size: 48px; opacity: 0.3;"></i>
@@ -352,17 +377,19 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3">
                         <div class="stat-card">
                             <div class="card-body" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <small class="text-white-50">TODAY'S REVENUE</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 32px; font-weight: 700;">৳{{ today_revenue|default:"0" }}</h2>
-                                        <small class="mt-2 d-block">+23% from yesterday</small>
+                                        <small class="text-white-50 text-uppercase">Total Orders</small>
+                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_orders|default:"0" }}</h2>
+                                        <small class="text-white-50 mt-2 d-block">
+                                            <i class="fas fa-chart-line me-1"></i> +23% from yesterday
+                                        </small>
                                     </div>
                                     <div>
-                                        <i class="fas fa-chart-line" style="font-size: 48px; opacity: 0.3;"></i>
+                                        <i class="fas fa-shopping-cart" style="font-size: 48px; opacity: 0.3;"></i>
                                     </div>
                                 </div>
                             </div>
@@ -371,15 +398,17 @@
                 </div>
 
                 <!-- Stats Cards Row 2 -->
-                <div class="row mb-4">
-                    <div class="col-md-4 mb-3">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
                         <div class="info-card h-100">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <small class="text-muted text-uppercase">Today's Appointments</small>
-                                        <h3 class="mt-2 mb-0" style="font-weight: 700;">{{ today_appointments }}</h3>
-                                        <small class="text-success">+8 from yesterday</small>
+                                        <h3 class="mt-2 mb-0" style="font-weight: 700;">{{ today_appointments|default:"0" }}</h3>
+                                        <small class="text-success">
+                                            <i class="fas fa-arrow-up me-1"></i> +8 from yesterday
+                                        </small>
                                     </div>
                                     <div class="bg-primary bg-opacity-10 rounded p-3">
                                         <i class="fas fa-calendar-day fa-2x text-primary"></i>
@@ -388,14 +417,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-4">
                         <div class="info-card h-100">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <small class="text-muted text-uppercase">Pending Appointments</small>
-                                        <h3 class="mt-2 mb-0" style="font-weight: 700;">{{ pending_appointments }}</h3>
-                                        <small class="text-warning">Needs attention</small>
+                                        <h3 class="mt-2 mb-0" style="font-weight: 700;">{{ pending_appointments|default:"0" }}</h3>
+                                        <small class="text-warning">
+                                            <i class="fas fa-clock me-1"></i> Needs attention
+                                        </small>
                                     </div>
                                     <div class="bg-warning bg-opacity-10 rounded p-3">
                                         <i class="fas fa-clock fa-2x text-warning"></i>
@@ -404,14 +435,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-4">
                         <div class="info-card h-100">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <small class="text-muted text-uppercase">Emergency Requests</small>
-                                        <h3 class="mt-2 mb-0" style="font-weight: 700; color: #dc3545;">{{ emergency_requests }}</h3>
-                                        <small class="text-danger">Immediate action required!</small>
+                                        <h3 class="mt-2 mb-0" style="font-weight: 700; color: #dc3545;">{{ emergency_requests|default:"0" }}</h3>
+                                        <small class="text-danger">
+                                            <i class="fas fa-exclamation-circle me-1"></i> Immediate action!
+                                        </small>
                                     </div>
                                     <div class="bg-danger bg-opacity-10 rounded p-3">
                                         <i class="fas fa-ambulance fa-2x text-danger"></i>
@@ -423,11 +456,13 @@
                 </div>
 
                 <!-- Charts Section -->
-                <div class="row mb-4">
-                    <div class="col-md-8 mb-3">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
                         <div class="info-card">
                             <div class="card-header bg-white border-0 pt-4">
-                                <h5 class="mb-0">Patient Analytics</h5>
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="fas fa-chart-line text-primary me-2"></i>Patient Analytics
+                                </h5>
                                 <small class="text-muted">Monthly patient registration trend</small>
                             </div>
                             <div class="card-body">
@@ -435,28 +470,34 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-4">
                         <div class="info-card">
                             <div class="card-header bg-white border-0 pt-4">
-                                <h5 class="mb-0">Department Distribution</h5>
-                                <small class="text-muted">Doctors by specialization</small>
+                                <h5 class="mb-0 fw-bold">
+                                    <i class="fas fa-chart-pie text-primary me-2"></i>Appointment Status
+                                </h5>
+                                <small class="text-muted">Current appointment distribution</small>
                             </div>
                             <div class="card-body">
-                                <canvas id="departmentChart" height="250"></canvas>
+                                <canvas id="appointmentChart" height="250"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recent Data Tables -->
-                <div class="row">
+                <div class="row g-4">
                     <!-- Recent Patients Table -->
-                    <div class="col-md-6 mb-4">
+                    <div class="col-md-6">
                         <div class="info-card">
                             <div class="card-header bg-white border-0 pt-4">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0"><i class="fas fa-user-plus me-2 text-primary"></i>Recent Patients</h5>
-                                    <a href="{% url 'admin_manage_patients' %}" class="btn btn-sm btn-outline-primary rounded-pill">View All</a>
+                                    <h5 class="mb-0 fw-bold">
+                                        <i class="fas fa-user-plus text-primary me-2"></i>Recent Patients
+                                    </h5>
+                                    <a href="{% url 'admin_manage_patients' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        View All <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -464,16 +505,15 @@
                                     <table class="table table-hover mb-0">
                                         <thead class="bg-light">
                                             <tr>
-                                                <th class="border-0">Patient Name</th>
-                                                <th class="border-0">Contact</th>
-                                                <th class="border-0">Registered</th>
-                                                <th class="border-0">Status</th>
+                                                <th>Patient Name</th>
+                                                <th>Phone</th>
+                                                <th>Registered</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for patient in recent_patients %}
                                             <tr>
-                                                <td class="align-middle">
+                                                <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
                                                             <i class="fas fa-user"></i>
@@ -481,25 +521,14 @@
                                                         <strong>{{ patient.get_full_name }}</strong>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle">
-                                                    <i class="fas fa-phone me-1 text-muted"></i>
-                                                    {{ patient.phone|default:"N/A" }}
-                                                </td>
-                                                <td class="align-middle">
-                                                    <i class="far fa-calendar-alt me-1 text-muted"></i>
-                                                    {{ patient.date_joined|date:"M d, Y" }}
-                                                </td>
-                                                <td class="align-middle">
-                                                    <span class="badge-status badge-confirmed">
-                                                        <i class="fas fa-check-circle me-1"></i> Active
-                                                    </span>
-                                                </td>
+                                                <td>{{ patient.phone|default:"N/A" }}</td>
+                                                <td>{{ patient.created_at|date:"M d, Y" }}</td>
                                             </tr>
                                             {% empty %}
                                             <tr>
-                                                <td colspan="4" class="text-center text-muted py-4">
-                                                    <i class="fas fa-users fa-3x mb-3 d-block"></i>
-                                                    No patients found
+                                                <td colspan="3" class="text-center py-4">
+                                                    <i class="fas fa-users fa-3x text-muted mb-2"></i>
+                                                    <p class="mb-0">No patients found</p>
                                                 </td>
                                             </tr>
                                             {% endfor %}
@@ -510,13 +539,17 @@
                         </div>
                     </div>
 
-                    <!-- Recent Appointments Table - ঠিক করা অংশ -->
-                    <div class="col-md-6 mb-4">
+                    <!-- Recent Appointments Table -->
+                    <div class="col-md-6">
                         <div class="info-card">
                             <div class="card-header bg-white border-0 pt-4">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-primary"></i>Recent Appointments</h5>
-                                    <a href="{% url 'admin_manage_appointments' %}" class="btn btn-sm btn-outline-primary rounded-pill">View All</a>
+                                    <h5 class="mb-0 fw-bold">
+                                        <i class="fas fa-calendar-alt text-primary me-2"></i>Recent Appointments
+                                    </h5>
+                                    <a href="{% url 'admin_manage_appointments' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        View All <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -524,16 +557,16 @@
                                     <table class="table table-hover mb-0">
                                         <thead class="bg-light">
                                             <tr>
-                                                <th class="border-0">Patient Name</th>
-                                                <th class="border-0">Doctor Name</th>
-                                                <th class="border-0">Date & Time</th>
-                                                <th class="border-0">Status</th>
+                                                <th>Patient</th>
+                                                <th>Doctor</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for apt in recent_appointments %}
                                             <tr>
-                                                <td class="align-middle">
+                                                <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar-circle bg-info bg-opacity-10 text-info me-2">
                                                             <i class="fas fa-user"></i>
@@ -541,52 +574,33 @@
                                                         <strong>{{ apt.patient.get_full_name }}</strong>
                                                     </div>
                                                 </td>
-                                                <td class="align-middle">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
-                                                            <i class="fas fa-user-md"></i>
-                                                        </div>
-                                                        {{ apt.doctor.full_name }}
-                                                    </div>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <i class="far fa-calendar-alt me-1 text-muted"></i>
-                                                    {{ apt.appointment_date|date:"M d, Y" }}
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        <i class="far fa-clock me-1"></i>
-                                                        {{ apt.appointment_date|date:"h:i A" }}
-                                                    </small>
-                                                </td>
-                                                <td class="align-middle">
+                                                <td>Dr. {{ apt.doctor.full_name }}</td>
+                                                <td>{{ apt.appointment_date|date:"M d, Y" }}</td>
+                                                <td>
                                                     {% if apt.status == 'confirmed' %}
                                                         <span class="badge-status badge-confirmed">
-                                                            <i class="fas fa-check-circle me-1"></i> Confirmed
+                                                            <i class="fas fa-check-circle"></i> Confirmed
                                                         </span>
                                                     {% elif apt.status == 'pending' %}
                                                         <span class="badge-status badge-pending">
-                                                            <i class="fas fa-clock me-1"></i> Pending
+                                                            <i class="fas fa-clock"></i> Pending
                                                         </span>
                                                     {% elif apt.status == 'completed' %}
                                                         <span class="badge-status badge-completed">
-                                                            <i class="fas fa-check-double me-1"></i> Completed
-                                                        </span>
-                                                    {% elif apt.status == 'cancelled' %}
-                                                        <span class="badge-status badge-cancelled">
-                                                            <i class="fas fa-times-circle me-1"></i> Cancelled
+                                                            <i class="fas fa-check-double"></i> Completed
                                                         </span>
                                                     {% else %}
-                                                        <span class="badge-status" style="background: #e9ecef; color: #495057;">
-                                                            {{ apt.status }}
+                                                        <span class="badge-status badge-cancelled">
+                                                            <i class="fas fa-times-circle"></i> Cancelled
                                                         </span>
                                                     {% endif %}
                                                 </td>
                                             </tr>
                                             {% empty %}
                                             <tr>
-                                                <td colspan="4" class="text-center text-muted py-4">
-                                                    <i class="fas fa-calendar-times fa-3x mb-3 d-block"></i>
-                                                    No appointments found
+                                                <td colspan="4" class="text-center py-4">
+                                                    <i class="fas fa-calendar-times fa-3x text-muted mb-2"></i>
+                                                    <p class="mb-0">No appointments found</p>
                                                 </td>
                                             </tr>
                                             {% endfor %}
@@ -599,13 +613,15 @@
                 </div>
 
                 <!-- Quick Actions Footer -->
-                <div class="row">
+                <div class="row mt-4">
                     <div class="col-12">
                         <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                             <div class="card-body p-4">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
-                                        <h5 class="text-white mb-2">Need to add new staff or resources?</h5>
+                                        <h5 class="text-white mb-2">
+                                            <i class="fas fa-rocket me-2"></i>Need to add new staff or resources?
+                                        </h5>
                                         <p class="text-white-50 mb-0">Quickly add doctors, manage appointments, or update bed availability from here.</p>
                                     </div>
                                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -636,11 +652,15 @@
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
                 label: 'New Patients',
-                data: [65, 78, 82, 91, 88, 95, 102, 108, 115, 122, 130, 145],
+                data: {{ patient_chart_data|default:"[65, 78, 82, 91, 88, 95, 102, 108, 115, 122, 130, 145]" }},
                 borderColor: '#4a90e2',
                 backgroundColor: 'rgba(74, 144, 226, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointBackgroundColor: '#4a90e2',
+                pointBorderColor: '#fff',
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         },
         options: {
@@ -649,21 +669,44 @@
             plugins: {
                 legend: {
                     position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#e9ecef'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
     });
 
-    // Department Chart
-    const ctx2 = document.getElementById('departmentChart').getContext('2d');
+    // Appointment Status Chart
+    const ctx2 = document.getElementById('appointmentChart').getContext('2d');
     new Chart(ctx2, {
         type: 'doughnut',
         data: {
-            labels: ['Cardiology', 'Neurology', 'Pediatrics', 'Orthopedic', 'Others'],
+            labels: ['Confirmed', 'Pending', 'Completed', 'Cancelled'],
             datasets: [{
-                data: [12, 8, 10, 7, 5],
-                backgroundColor: ['#4a90e2', '#f093fb', '#4facfe', '#fa709a', '#43e97b'],
-                borderWidth: 0
+                data: [
+                    {{ confirmed_appointments|default:"0" }},
+                    {{ pending_appointments|default:"0" }},
+                    {{ completed_appointments|default:"0" }},
+                    {{ cancelled_appointments|default:"0" }}
+                ],
+                backgroundColor: ['#28a745', '#ffc107', '#17a2b8', '#dc3545'],
+                borderWidth: 0,
+                hoverOffset: 10
             }]
         },
         options: {
@@ -672,12 +715,26 @@
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
                 }
             }
         }
     });
 </script>
-
 </body>
 </html>
 {% endblock %}

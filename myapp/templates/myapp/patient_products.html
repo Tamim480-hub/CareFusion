@@ -1,0 +1,353 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="fas fa-capsules text-primary me-3"></i>
+            Our Healthcare Products
+        </h1>
+        <p class="text-muted lead">Quality medicines and healthcare essentials at affordable prices</p>
+    </div>
+
+    {% if products %}
+    <!-- Products Grid -->
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card product-card border-0 shadow-sm h-100">
+                <!-- Product Image -->
+                <div class="product-image-wrapper">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}"
+                             class="product-img"
+                             alt="{{ product.name }}"
+                             loading="lazy">
+                    {% else %}
+                        <div class="product-placeholder">
+                            <i class="fas fa-capsules fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+
+                    <!-- Stock Badge -->
+                    {% if product.stock > 0 %}
+                        <span class="stock-badge in-stock">
+                            <i class="fas fa-check-circle me-1"></i> In Stock
+                        </span>
+                    {% else %}
+                        <span class="stock-badge out-of-stock">
+                            <i class="fas fa-times-circle me-1"></i> Out of Stock
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Product Details -->
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-2">{{ product.name }}</h5>
+
+                    {% if product.description %}
+                        <p class="card-text text-muted small mb-3">{{ product.description|truncatechars:60 }}</p>
+                    {% else %}
+                        <p class="card-text text-muted small mb-3">Premium quality healthcare product</p>
+                    {% endif %}
+
+                    <!-- Price and Stock Info -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="price-tag">৳{{ product.price }}</span>
+                            <small class="text-muted d-block">per piece</small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">
+                                <i class="fas fa-boxes me-1"></i>
+                                {{ product.stock }} left
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer with Action Button -->
+                <div class="card-footer bg-white border-0 pb-4 px-4">
+                    {% if product.stock > 0 %}
+                        <a href="{% url 'patient_add_to_cart' product.id %}"
+                           class="btn btn-primary w-100 rounded-pill add-to-cart-btn">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            Add to Cart
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary w-100 rounded-pill" disabled>
+                            <i class="fas fa-times-circle me-2"></i>
+                            Out of Stock
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Load More / Pagination Section (Optional) -->
+    {% if products|length > 8 %}
+    <div class="text-center mt-5 pt-3">
+        <button class="btn btn-outline-primary rounded-pill px-5 load-more-btn">
+            <i class="fas fa-sync-alt me-2"></i>
+            Load More Products
+        </button>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State - No Products -->
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-box-open fa-5x text-muted mb-3"></i>
+                        <h3 class="mb-3">No Products Available</h3>
+                        <p class="text-muted mb-4">
+                            We're currently updating our product inventory.
+                            Please check back soon for healthcare essentials!
+                        </p>
+                        {% if user.is_superuser %}
+                            <a href="/admin/myapp/product/add/" class="btn btn-primary btn-lg rounded-pill px-5">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Add Products
+                            </a>
+                        {% else %}
+                            <a href="{% url 'patient_dashboard' %}" class="btn btn-primary btn-lg rounded-pill px-5">
+                                <i class="fas fa-home me-2"></i>
+                                Back to Dashboard
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Product Card Styles */
+    .product-card {
+        transition: all 0.3s ease-in-out;
+        overflow: hidden;
+        border-radius: 16px;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Product Image Wrapper */
+    .product-image-wrapper {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.05);
+    }
+
+    .product-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    /* Stock Badge */
+    .stock-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .in-stock {
+        color: #198754;
+        border-left: 3px solid #198754;
+    }
+
+    .out-of-stock {
+        color: #dc3545;
+        border-left: 3px solid #dc3545;
+    }
+
+    /* Price Tag */
+    .price-tag {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #198754;
+    }
+
+    /* Add to Cart Button */
+    .add-to-cart-btn {
+        transition: all 0.3s ease;
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .add-to-cart-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    /* Load More Button */
+    .load-more-btn {
+        transition: all 0.3s ease;
+        padding: 12px 30px;
+        font-weight: 500;
+    }
+
+    .load-more-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+    }
+
+    /* Animation for Cards */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .product-card {
+        animation: fadeInUp 0.6s ease-out;
+        animation-fill-mode: both;
+    }
+
+    /* Staggered Animation Delays */
+    .product-card:nth-child(1) { animation-delay: 0.1s; }
+    .product-card:nth-child(2) { animation-delay: 0.15s; }
+    .product-card:nth-child(3) { animation-delay: 0.2s; }
+    .product-card:nth-child(4) { animation-delay: 0.25s; }
+    .product-card:nth-child(5) { animation-delay: 0.3s; }
+    .product-card:nth-child(6) { animation-delay: 0.35s; }
+    .product-card:nth-child(7) { animation-delay: 0.4s; }
+    .product-card:nth-child(8) { animation-delay: 0.45s; }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .product-image-wrapper {
+            height: 180px;
+        }
+
+        .price-tag {
+            font-size: 1.25rem;
+        }
+
+        .product-card .card-body {
+            padding: 1rem;
+        }
+
+        .stock-badge {
+            font-size: 10px;
+            padding: 3px 10px;
+        }
+    }
+
+    /* Hover Effects */
+    .product-card .card-title {
+        transition: color 0.3s ease;
+    }
+
+    .product-card:hover .card-title {
+        color: #0d6efd;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #0d6efd;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #0a58ca;
+    }
+</style>
+
+<script>
+    // Add to Cart Success Message with Animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Optional: Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
+                this.disabled = true;
+
+                // Reset after navigation (will redirect anyway)
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 2000);
+            });
+        });
+
+        // Load More Products Functionality (if needed)
+        const loadMoreBtn = document.querySelector('.load-more-btn');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                // AJAX call to load more products
+                // Implementation depends on your pagination setup
+                console.log('Load more products clicked');
+            });
+        }
+    });
+
+    // Lazy loading images
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                observer.unobserve(img);
+            }
+        });
+    });
+
+    document.querySelectorAll('.product-img').forEach(img => {
+        if (img.dataset.src) {
+            imageObserver.observe(img);
+        }
+    });
+</script>
+{% endblock %}

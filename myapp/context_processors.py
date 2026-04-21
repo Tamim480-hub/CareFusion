@@ -1,13 +1,12 @@
 # myapp/context_processors.py
-
 from .models import Cart
 
 def cart_count(request):
+    """কার্টের আইটেম সংখ্যা টেমপ্লেটে পাঠান"""
     if request.user.is_authenticated:
         try:
-            cart = Cart.objects.get(user=request.user)
-            count = cart.items.count()
-        except Cart.DoesNotExist:
-            count = 0
-        return {'cart_count': count}
-    return {'cart_count': 0}
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            return {'cart_items_count': cart.total_items}
+        except:
+            return {'cart_items_count': 0}
+    return {'cart_items_count': 0}

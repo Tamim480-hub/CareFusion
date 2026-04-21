@@ -1,129 +1,276 @@
-{% extends 'myapp/base.html' %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareFusion - My Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block content %}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+        }
 
-<div class="container py-5">
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold">📅 My Appointments</h2>
-            <p class="text-muted mb-0">Manage and track your appointments</p>
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+            color: white !important;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white !important;
+        }
+
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-confirmed { background: #d4edda; color: #155724; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <div class="text-center mb-4">
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+                    <small class="text-white-50">Patient Portal</small>
+                </div>
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" href="{% url 'my_appointments' %}">
+                            <i class="fas fa-calendar-check me-3"></i> Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'doctor_list' %}">
+                            <i class="fas fa-user-md me-3"></i> Find Doctors
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_products' %}">
+                            <i class="fas fa-capsules me-3"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_cart' %}">
+                            <i class="fas fa-shopping-cart me-3"></i> Cart
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle me-3"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                            <i class="fas fa-sign-out-alt me-3"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
 
-        <a href="{% url 'book_appointment' %}" class="btn btn-primary shadow-sm">
-            <i class="fas fa-plus"></i> Book Appointment
-        </a>
-    </div>
-
-    {% if appointments %}
-
-    <!-- Card -->
-    <div class="card border-0 shadow-lg rounded-4">
-        <div class="card-body p-4">
-
-            <div class="table-responsive">
-
-                <table class="table align-middle table-hover">
-
-                    <thead class="table-light">
-                        <tr class="text-muted">
-                            <th>Doctor</th>
-                            <th>Date & Time</th>
-                            <th>Status</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        {% for apt in appointments %}
-                        <tr class="border-bottom">
-
-                            <!-- Doctor -->
-                            <td>
-                                <div class="fw-semibold text-dark">
-                                    👨‍⚕️ Dr. {{ apt.doctor.full_name }}
-                                </div>
-                            </td>
-
-                            <!-- Date -->
-                            <td>
-                                <div class="fw-medium">
-                                    {{ apt.appointment_date|date:"M d, Y" }}
-                                </div>
-                                <small class="text-muted">
-                                    {{ apt.appointment_date|time:"g:i A" }}
-                                </small>
-                            </td>
-
-                            <!-- Status -->
-                            <td>
-                                {% if apt.status == 'confirmed' %}
-                                    <span class="badge rounded-pill bg-success px-3 py-2">
-                                        ✔ Confirmed
-                                    </span>
-                                {% elif apt.status == 'pending' %}
-                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2">
-                                        ⏳ Pending
-                                    </span>
-                                {% elif apt.status == 'completed' %}
-                                    <span class="badge rounded-pill bg-info px-3 py-2">
-                                        ✔ Completed
-                                    </span>
-                                {% else %}
-                                    <span class="badge rounded-pill bg-danger px-3 py-2">
-                                        ✖ Cancelled
-                                    </span>
-                                {% endif %}
-                            </td>
-
-                            <!-- Action -->
-                            <td class="text-end">
-
-                                {% if apt.status == 'pending' or apt.status == 'confirmed' %}
-                                    <a href="{% url 'cancel_appointment' apt.id %}"
-                                       class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                       Cancel
-                                    </a>
-                                {% else %}
-                                    <span class="text-muted small">No Action</span>
-                                {% endif %}
-
-                            </td>
-
-                        </tr>
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4" style="background: #f0f2f5;">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        <i class="fas fa-calendar-check text-primary me-2"></i>
+                        My Appointments
+                    </h2>
+                    <p class="text-muted mb-0">Manage and track your appointments</p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
+                        <div class="avatar-circle bg-primary text-white me-2">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="fw-semibold">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
             </div>
 
+            <!-- Header Actions -->
+            <div class="d-flex justify-content-end mb-4">
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                </a>
+            </div>
+
+            {% if appointments %}
+            <!-- Appointments Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-list text-primary me-2"></i>
+                            Your Appointments
+                        </h5>
+                        <span class="badge bg-primary rounded-pill px-3 py-2">
+                            {{ appointments|length }} Total
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th class="text-center pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in appointments %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
+                                                <i class="fas fa-user-md"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="fw-semibold">Dr. {{ apt.doctor.full_name }}</strong><br>
+                                                <small class="text-muted">{{ apt.doctor.specialization }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ apt.appointment_date|date:"M d, Y" }}</div>
+                                        <small class="text-muted">{{ apt.appointment_date|time:"g:i A" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if apt.status == 'confirmed' %}
+                                            <span class="badge-status badge-confirmed">✔ Confirmed</span>
+                                        {% elif apt.status == 'pending' %}
+                                            <span class="badge-status badge-pending">⏳ Pending</span>
+                                        {% elif apt.status == 'completed' %}
+                                            <span class="badge-status badge-completed">✔ Completed</span>
+                                        {% else %}
+                                            <span class="badge-status badge-cancelled">✖ Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        {% if apt.status == 'pending' or apt.status == 'confirmed' %}
+                                            <a href="{% url 'cancel_appointment' apt.id %}" 
+                                               class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                               onclick="return confirm('Cancel this appointment?')">
+                                                Cancel
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted small">No Action</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-3" style="font-size: 60px;">📭</div>
+                <h5 class="fw-semibold">No Appointments Yet</h5>
+                <p class="text-muted">You haven't booked any appointments.</p>
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill mt-2 px-4">
+                    <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
-
-    {% else %}
-
-    <!-- Empty State -->
-    <div class="text-center py-5">
-
-        <div class="mb-3" style="font-size: 60px;">
-            📭
-        </div>
-
-        <h5 class="fw-semibold">No Appointments Yet</h5>
-        <p class="text-muted">You haven't booked any appointments.</p>
-
-        <a href="{% url 'book_appointment' %}" class="btn btn-primary mt-2">
-            Book Your First Appointment
-        </a>
-
-    </div>
-
-    {% endif %}
-
 </div>
 
-{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

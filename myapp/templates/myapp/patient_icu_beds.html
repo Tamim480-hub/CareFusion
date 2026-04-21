@@ -1,0 +1,39 @@
+{% extends 'myapp/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">ICU Beds at {{ hospital.name }}</h2>
+    
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <div class="alert alert-info">
+                <strong>Summary:</strong> {{ available_beds }} / {{ total_beds }} beds available
+            </div>
+        </div>
+        
+        {% for bed in beds %}
+        <div class="col-md-4 mb-3">
+            <div class="card {% if bed.is_available %}border-success{% else %}border-secondary{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Bed #{{ bed.bed_number }}</h5>
+                    <p class="card-text">
+                        <strong>Type:</strong> {{ bed.get_bed_type_display }}<br>
+                        <strong>Daily Charge:</strong> ৳{{ bed.daily_charge }}<br>
+                        <strong>Equipment:</strong> {{ bed.equipment|default:"Standard" }}
+                    </p>
+                    {% if bed.is_available %}
+                        <a href="{% url 'patient_book_icu_bed' bed.id %}" class="btn btn-success">Book Now</a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled>Not Available</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No ICU beds found.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

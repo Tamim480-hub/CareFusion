@@ -1,0 +1,333 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="fas fa-credit-card text-primary me-3"></i>
+            Checkout
+        </h1>
+        <p class="text-muted lead">Complete your order securely</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Checkout Form -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle text-primary me-2"></i>
+                        Shipping Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="checkoutForm">
+                        {% csrf_token %}
+                        
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label fw-semibold">
+                                <i class="fas fa-user me-2 text-muted"></i>Full Name
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg rounded-3" 
+                                   id="full_name" 
+                                   name="full_name" 
+                                   value="{{ request.user.get_full_name|default:request.user.username }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">
+                                <i class="fas fa-envelope me-2 text-muted"></i>Email Address
+                            </label>
+                            <input type="email" 
+                                   class="form-control form-control-lg rounded-3" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ request.user.email }}"
+                                   required>
+                        </div>
+                        
+                        <!-- Phone Number -->
+                        <div class="mb-3">
+                            <label for="phone" class="form-label fw-semibold">
+                                <i class="fas fa-phone me-2 text-muted"></i>Phone Number
+                            </label>
+                            <input type="tel" 
+                                   class="form-control form-control-lg rounded-3" 
+                                   id="phone" 
+                                   name="phone" 
+                                   placeholder="Enter your phone number"
+                                   required>
+                        </div>
+                        
+                        <!-- Address -->
+                        <div class="mb-3">
+                            <label for="address" class="form-label fw-semibold">
+                                <i class="fas fa-location-dot me-2 text-muted"></i>Shipping Address
+                            </label>
+                            <textarea class="form-control form-control-lg rounded-3" 
+                                      id="address" 
+                                      name="address" 
+                                      rows="3" 
+                                      placeholder="Enter your full address"
+                                      required></textarea>
+                        </div>
+                        
+                        <!-- Special Instructions -->
+                        <div class="mb-4">
+                            <label for="notes" class="form-label fw-semibold">
+                                <i class="fas fa-pen me-2 text-muted"></i>Special Instructions (Optional)
+                            </label>
+                            <textarea class="form-control rounded-3" 
+                                      id="notes" 
+                                      name="notes" 
+                                      rows="2" 
+                                      placeholder="Any special delivery instructions?"></textarea>
+                        </div>
+                        
+                        <!-- Payment Method -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-credit-card me-2 text-muted"></i>Payment Method
+                            </label>
+                            <div class="payment-methods">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="cash_on_delivery" value="cod" checked>
+                                    <label class="form-check-label" for="cash_on_delivery">
+                                        <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                        Cash on Delivery
+                                        <small class="text-muted d-block">Pay when you receive the order</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="bkash" value="bkash">
+                                    <label class="form-check-label" for="bkash">
+                                        <i class="fas fa-mobile-alt text-primary me-2"></i>
+                                        bKash
+                                        <small class="text-muted d-block">Pay via bKash mobile banking</small>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                    <label class="form-check-label" for="card">
+                                        <i class="fas fa-credit-card text-info me-2"></i>
+                                        Credit/Debit Card
+                                        <small class="text-muted d-block">Visa, Mastercard, Amex</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Place Order
+                            </button>
+                            <a href="{% url 'patient_cart' %}" class="btn btn-outline-secondary rounded-pill">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Back to Cart
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 position-sticky" style="top: 100px;">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt text-primary me-2"></i>
+                        Order Summary
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Items List -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Items in your cart</h6>
+                        {% for item in items %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <div>
+                                <span class="fw-semibold">{{ item.product.name }}</span>
+                                <small class="text-muted d-block">Quantity: {{ item.quantity }}</small>
+                            </div>
+                            <span class="fw-semibold">৳{{ item.subtotal }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Price Breakdown -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span>৳{{ total }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Shipping Fee</span>
+                            <span class="text-success">Free</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tax (0%)</span>
+                            <span>৳0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Discount</span>
+                            <span class="text-danger">-৳0</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Total Amount -->
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold fs-5">Total Amount</span>
+                        <span class="fw-bold fs-3 text-success">৳{{ total }}</span>
+                    </div>
+                    
+                    <!-- Delivery Info -->
+                    <div class="alert alert-info rounded-3">
+                        <i class="fas fa-truck me-2"></i>
+                        <strong>Free Delivery</strong>
+                        <p class="small mb-0 mt-1">Estimated delivery: 2-3 business days</p>
+                    </div>
+                    
+                    <!-- Secure Payment Guarantee -->
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-lock me-1 text-success"></i>
+                            Secure Payment Guaranteed
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Form Styles */
+    .form-control, .form-select {
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    
+    /* Payment Methods */
+    .payment-methods {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .display-5 {
+            font-size: 1.8rem;
+        }
+        
+        .form-control-lg {
+            font-size: 1rem;
+        }
+    }
+    
+    /* Button Hover Effects */
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    }
+    
+    /* Order Summary Scroll */
+    .position-sticky {
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+    
+    .position-sticky::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .position-sticky::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .position-sticky::-webkit-scrollbar-thumb {
+        background: #198754;
+        border-radius: 10px;
+    }
+</style>
+
+<script>
+    // Form validation before submit
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+        
+        if (!phone || phone.length < 11) {
+            e.preventDefault();
+            alert('Please enter a valid phone number (minimum 11 digits)');
+            return false;
+        }
+        
+        if (!address || address.length < 10) {
+            e.preventDefault();
+            alert('Please enter your complete shipping address');
+            return false;
+        }
+        
+        // Show loading state on button
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        submitBtn.disabled = true;
+    });
+    
+    // Auto-fill user data if available
+    document.addEventListener('DOMContentLoaded', function() {
+        // If user has phone in profile, auto-fill
+        const userPhone = "{{ request.user.phone|default:'' }}";
+        if (userPhone) {
+            document.getElementById('phone').value = userPhone;
+        }
+        
+        // If user has address in profile, auto-fill
+        const userAddress = "{{ request.user.address|default:'' }}";
+        if (userAddress) {
+            document.getElementById('address').value = userAddress;
+        }
+    });
+</script>
+{% endblock %}

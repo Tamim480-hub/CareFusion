@@ -1,108 +1,397 @@
-<!-- templates/myapp/my_appointments.html -->
-{% extends 'myapp/base.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareFusion - My Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
 
-{% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-12">
-            <!-- Header with Back Button -->
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+            color: white !important;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white !important;
+        }
+
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--light) !important;
+            transform: scale(1.05);
+        }
+
+        .action-btn {
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .hover-card {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+            border-left: 3px solid var(--success);
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 3px solid var(--warning);
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 3px solid var(--info);
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 3px solid var(--danger);
+        }
+
+        .cancel-btn {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cancel-btn:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .specialization-badge {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .table tbody tr:hover {
+            background: var(--light);
+            transform: scale(1.01);
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            .table {
+                font-size: 12px;
+            }
+            .status-badge {
+                font-size: 9px;
+                padding: 3px 8px;
+            }
+            .cancel-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <div class="text-center mb-4">
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+                    <small class="text-white-50">Patient Portal</small>
+                </div>
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" href="{% url 'my_appointments' %}">
+                            <i class="fas fa-calendar-check me-3"></i> Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'doctor_list' %}">
+                            <i class="fas fa-user-md me-3"></i> Find Doctors
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_products' %}">
+                            <i class="fas fa-capsules me-3"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2 position-relative">
+                        <a class="nav-link" href="{% url 'patient_cart' %}">
+                            <i class="fas fa-shopping-cart me-3"></i> Cart
+                            {% if cart_items_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
+                                {{ cart_items_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle me-3"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                            <i class="fas fa-sign-out-alt me-3"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4" style="background: #f0f2f5;">
+            <!-- Top Bar -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="d-flex align-items-center">
-                    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-circle me-3"
-                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-circle me-3 back-btn">
                         <i class="fas fa-arrow-left"></i>
                     </a>
                     <div>
-                        <h2 class="mb-1">
+                        <h2 class="mb-1 fw-bold" style="background: linear-gradient(135deg, var(--dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                             <i class="fas fa-calendar-check text-primary me-2"></i>
                             My Appointments
                         </h2>
-                        <p class="text-muted">View and manage all your scheduled appointments</p>
+                        <p class="text-muted mb-0">View and manage all your scheduled appointments</p>
                     </div>
                 </div>
-                <div>
-                    <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4 me-2">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                    </a>
-                    <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4">
-                        <i class="fas fa-plus me-2"></i>Book New Appointment
-                    </a>
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
+                        <div class="avatar-circle bg-primary text-white me-2">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="fw-semibold">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Stats Cards (same as before) -->
-            <div class="row mb-4">
-                <div class="col-md-3 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-end mb-4">
+                <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4 me-2 action-btn">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4 action-btn">
+                    <i class="fas fa-calendar-plus me-2"></i>Book New
+                </a>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="card border-0 shadow-sm rounded-4 hover-card">
+                        <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Total Appointments</small>
-                                    <h3 class="mb-0">{{ appointments|length }}</h3>
+                                    <small class="text-muted text-uppercase">Total</small>
+                                    <h3 class="mb-0 fw-bold">{{ appointments|length }}</h3>
                                 </div>
-                                <div class="bg-primary bg-opacity-10 rounded p-3">
+                                <div class="bg-primary bg-opacity-10 rounded-3 p-3">
                                     <i class="fas fa-calendar fa-2x text-primary"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
+                <div class="col-md-3 col-sm-6">
+                    <div class="card border-0 shadow-sm rounded-4 hover-card">
+                        <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Upcoming</small>
-                                    <h3 class="mb-0 text-success">
-                                        {% with upcoming=appointments|dictsortreversed:"appointment_date" %}
-                                            {% for apt in upcoming %}
-                                                {% if apt.appointment_date > now and apt.status != 'cancelled' %}
-                                                    {% if forloop.counter == 1 %}{{ forloop.counter }}{% endif %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endwith %}
+                                    <small class="text-muted text-uppercase">Confirmed</small>
+                                    <h3 class="mb-0 fw-bold text-success">
+                                        {% for apt in appointments %}{% if apt.status == 'confirmed' %}{{ forloop.counter }}{% endif %}{% endfor %}
                                     </h3>
                                 </div>
-                                <div class="bg-success bg-opacity-10 rounded p-3">
-                                    <i class="fas fa-clock fa-2x text-success"></i>
+                                <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                    <i class="fas fa-check-circle fa-2x text-success"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
+                <div class="col-md-3 col-sm-6">
+                    <div class="card border-0 shadow-sm rounded-4 hover-card">
+                        <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Completed</small>
-                                    <h3 class="mb-0 text-info">
-                                        {% for apt in appointments %}
-                                            {% if apt.status == 'completed' %}{{ forloop.counter }}{% endif %}
-                                        {% endfor %}
+                                    <small class="text-muted text-uppercase">Pending</small>
+                                    <h3 class="mb-0 fw-bold text-warning">
+                                        {% for apt in appointments %}{% if apt.status == 'pending' %}{{ forloop.counter }}{% endif %}{% endfor %}
                                     </h3>
                                 </div>
-                                <div class="bg-info bg-opacity-10 rounded p-3">
-                                    <i class="fas fa-check-circle fa-2x text-info"></i>
+                                <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                                    <i class="fas fa-clock fa-2x text-warning"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
+                <div class="col-md-3 col-sm-6">
+                    <div class="card border-0 shadow-sm rounded-4 hover-card">
+                        <div class="card-body p-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <small class="text-muted">Cancelled</small>
-                                    <h3 class="mb-0 text-danger">
-                                        {% for apt in appointments %}
-                                            {% if apt.status == 'cancelled' %}{{ forloop.counter }}{% endif %}
-                                        {% endfor %}
+                                    <small class="text-muted text-uppercase">Cancelled</small>
+                                    <h3 class="mb-0 fw-bold text-danger">
+                                        {% for apt in appointments %}{% if apt.status == 'cancelled' %}{{ forloop.counter }}{% endif %}{% endfor %}
                                     </h3>
                                 </div>
-                                <div class="bg-danger bg-opacity-10 rounded p-3">
+                                <div class="bg-danger bg-opacity-10 rounded-3 p-3">
                                     <i class="fas fa-times-circle fa-2x text-danger"></i>
                                 </div>
                             </div>
@@ -112,154 +401,135 @@
             </div>
 
             <!-- Filters -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-2 mb-md-0">
-                            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by doctor name...">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search by doctor name...">
+                            </div>
                         </div>
-                        <div class="col-md-3 mb-2 mb-md-0">
-                            <select id="statusFilter" class="form-control">
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select">
                                 <option value="">All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
+                                <option value="pending">⏳ Pending</option>
+                                <option value="confirmed">✓ Confirmed</option>
+                                <option value="completed">✓✓ Completed</option>
+                                <option value="cancelled">✗ Cancelled</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <input type="date" id="dateFilter" class="form-control" placeholder="Filter by date">
                         </div>
                         <div class="col-md-2">
-                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                                <i class="fas fa-eraser me-1"></i>Clear Filters
+                            <button class="btn btn-outline-secondary w-100 rounded-pill" onclick="clearFilters()">
+                                <i class="fas fa-eraser me-1"></i>Clear
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Appointments List -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 pt-4">
-                    <h5 class="mb-0">
-                        <i class="fas fa-list me-2 text-primary"></i>
-                        Your Appointments
-                    </h5>
+            <!-- Appointments Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-list text-primary me-2"></i>
+                            Your Appointments
+                        </h5>
+                        <span class="badge bg-primary rounded-pill px-3 py-2">{{ appointments|length }} Total</span>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     {% if appointments %}
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="appointmentsTable">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th>#ID</th>
-                                        <th>Doctor</th>
-                                        <th>Specialization</th>
-                                        <th>Date & Time</th>
-                                        <th>Symptoms</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for apt in appointments %}
-                                    <tr data-status="{{ apt.status }}" data-date="{{ apt.appointment_date|date:'Y-m-d' }}">
-                                        <td class="align-middle">
-                                            <strong>#{{ apt.id }}</strong>
-                                        </td>
-                                        <td class="align-middle">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
-                                                    <i class="fas fa-user-md"></i>
-                                                </div>
-                                                <div>
-                                                    <strong>{{ apt.doctor.full_name }}</strong><br>
-                                                    <small class="text-muted">{{ apt.doctor.qualification|truncatechars:30 }}</small>
-                                                </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="appointmentsTable">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">#ID</th>
+                                    <th>Doctor</th>
+                                    <th>Specialization</th>
+                                    <th>Date & Time</th>
+                                    <th>Symptoms</th>
+                                    <th>Status</th>
+                                    <th class="text-center pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in appointments %}
+                                <tr data-status="{{ apt.status }}" data-date="{{ apt.appointment_date|date:'Y-m-d' }}">
+                                    <td class="ps-4 align-middle"><span class="fw-bold text-primary">#{{ apt.id }}</span></td>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user-md"></i>
                                             </div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
-                                                {{ apt.doctor.get_specialization_display }}
-                                            </span>
-                                        </td>
-                                        <td class="align-middle">
-                                            <i class="far fa-calendar-alt me-1 text-muted"></i>
-                                            {{ apt.appointment_date|date:"M d, Y" }}
-                                            <br>
-                                            <small class="text-muted">
-                                                <i class="far fa-clock me-1"></i>
-                                                {{ apt.appointment_date|date:"h:i A" }}
-                                            </small>
-                                        </td>
-                                        <td class="align-middle">
-                                            {{ apt.symptoms|truncatechars:40 }}
-                                        </td>
-                                        <td class="align-middle">
-                                            {% if apt.status == 'confirmed' %}
-                                                <span class="badge bg-success rounded-pill px-3 py-2">
-                                                    <i class="fas fa-check-circle me-1"></i> Confirmed
-                                                </span>
-                                            {% elif apt.status == 'pending' %}
-                                                <span class="badge bg-warning rounded-pill px-3 py-2">
-                                                    <i class="fas fa-clock me-1"></i> Pending
-                                                </span>
-                                            {% elif apt.status == 'completed' %}
-                                                <span class="badge bg-info rounded-pill px-3 py-2">
-                                                    <i class="fas fa-check-double me-1"></i> Completed
-                                                </span>
-                                            {% elif apt.status == 'cancelled' %}
-                                                <span class="badge bg-danger rounded-pill px-3 py-2">
-                                                    <i class="fas fa-times-circle me-1"></i> Cancelled
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-secondary rounded-pill px-3 py-2">
-                                                    {{ apt.status }}
-                                                </span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="align-middle">
-                                            {% if apt.status == 'pending' or apt.status == 'confirmed' %}
-                                                <a href="{% url 'cancel_appointment' apt.id %}"
-                                                   class="btn btn-sm btn-outline-danger rounded-pill"
-                                                   onclick="return confirm('Are you sure you want to cancel this appointment?')">
-                                                    <i class="fas fa-times me-1"></i> Cancel
-                                                </a>
-                                            {% elif apt.status == 'completed' %}
-                                                <button class="btn btn-sm btn-outline-info rounded-pill" disabled>
-                                                    <i class="fas fa-check me-1"></i> Done
-                                                </button>
-                                            {% else %}
-                                                <button class="btn btn-sm btn-outline-secondary rounded-pill" disabled>
-                                                    <i class="fas fa-ban me-1"></i> Cancelled
-                                                </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                            <div>
+                                                <strong class="fw-semibold">Dr. {{ apt.doctor.full_name }}</strong><br>
+                                                <small class="text-muted">{{ apt.doctor.specialization|title }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="specialization-badge">{{ apt.doctor.get_specialization_display }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="fw-medium">{{ apt.appointment_date|date:"M d, Y" }}</div>
+                                        <small class="text-muted"><i class="far fa-clock me-1"></i>{{ apt.appointment_date|date:"g:i A" }}</small>
+                                    </td>
+                                    <td class="align-middle symptoms-text">{{ apt.symptoms|truncatechars:40|default:"No symptoms mentioned" }}</td>
+                                    <td class="align-middle">
+                                        {% if apt.status == 'confirmed' %}
+                                            <span class="status-badge status-confirmed"><i class="fas fa-check-circle me-1"></i> Confirmed</span>
+                                        {% elif apt.status == 'pending' %}
+                                            <span class="status-badge status-pending"><i class="fas fa-clock me-1"></i> Pending</span>
+                                        {% elif apt.status == 'completed' %}
+                                            <span class="status-badge status-completed"><i class="fas fa-check-double me-1"></i> Completed</span>
+                                        {% else %}
+                                            <span class="status-badge status-cancelled"><i class="fas fa-times-circle me-1"></i> Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center pe-4 align-middle">
+                                        {% if apt.status == 'pending' or apt.status == 'confirmed' %}
+                                            <a href="{% url 'cancel_appointment' apt.id %}" class="cancel-btn" onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                                                <i class="fas fa-times me-1"></i> Cancel
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
-                            <h5 class="text-muted">No Appointments Found</h5>
-                            <p class="text-muted">You haven't booked any appointments yet.</p>
-                            <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill mt-2">
-                                <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
-                            </a>
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
+                                <i class="fas fa-calendar-times fa-3x text-muted"></i>
+                            </div>
                         </div>
+                        <h5 class="text-muted fw-bold">No Appointments Found</h5>
+                        <p class="text-muted mb-3">You haven't booked any appointments yet.</p>
+                        <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Bottom Navigation -->
             <div class="mt-4 text-center">
-                <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-primary rounded-pill px-4">
+                <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-primary rounded-pill px-4 me-2">
                     <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                 </a>
-                <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4 ms-2">
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary rounded-pill px-4">
                     <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
                 </a>
             </div>
@@ -267,56 +537,7 @@
     </div>
 </div>
 
-<style>
-    .avatar-circle {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 18px;
-    }
-
-    .table tbody tr {
-        transition: all 0.3s;
-        cursor: pointer;
-    }
-
-    .table tbody tr:hover {
-        background: #f8f9fa;
-        transform: scale(1.01);
-    }
-
-    .badge {
-        font-weight: 500;
-    }
-
-    .btn-outline-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-    }
-
-    .btn-primary, .btn-outline-primary, .btn-outline-secondary {
-        transition: all 0.3s;
-    }
-
-    .btn-primary:hover, .btn-outline-primary:hover, .btn-outline-secondary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
-    }
-
-    .rounded-circle {
-        transition: all 0.3s;
-    }
-
-    .rounded-circle:hover {
-        background: #e9ecef;
-        transform: scale(1.05);
-    }
-</style>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Search functionality
     document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -359,11 +580,11 @@
         document.getElementById('searchInput').value = '';
         document.getElementById('statusFilter').value = '';
         document.getElementById('dateFilter').value = '';
-
         let rows = document.querySelectorAll('#appointmentsTable tbody tr');
         rows.forEach(row => {
             row.style.display = '';
         });
     }
 </script>
-{% endblock %}
+</body>
+</html>
