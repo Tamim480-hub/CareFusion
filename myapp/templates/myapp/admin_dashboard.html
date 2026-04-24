@@ -1,15 +1,35 @@
-{% extends 'myapp/base.html' %}
-{% load static %}
-
-{% block content %}
 <!DOCTYPE html>
-<html>
+{% load static %}
+<html lang="bn">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard - CareFusion</title>
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -18,169 +38,135 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
-            overflow-x: hidden;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
         }
 
         /* Sidebar Styles */
         .sidebar {
             background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            z-index: 1000;
+            overflow-y: auto;
         }
 
-        .sidebar .nav-link {
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .nav-link {
             border-radius: 12px;
-            padding: 12px 15px;
-            transition: all 0.3s;
+            padding: 12px 18px;
+            transition: all 0.3s ease;
             margin-bottom: 8px;
             color: rgba(255,255,255,0.8) !important;
-            font-weight: 500;
+            text-decoration: none;
+            display: block;
         }
 
-        .sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.1) !important;
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
             transform: translateX(5px);
             color: white !important;
         }
 
-        .sidebar .nav-link.active {
+        .nav-link.active {
             background: linear-gradient(135deg, #4a90e2, #357abd);
             color: white !important;
+            box-shadow: 0 4px 15px rgba(74,144,226,0.3);
         }
 
         /* Card Styles */
         .stat-card {
+            background: white;
             border-radius: 20px;
-            overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::after {
+            transform: scaleX(1);
         }
 
         .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
-        .info-card {
-            border-radius: 20px;
-            transition: all 0.3s;
-            border: none;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .gradient-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .gradient-warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .gradient-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
-        .info-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        /* Table Styles */
-        .table thead th {
-            background: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 15px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .table tbody tr {
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .table tbody tr:hover {
-            background: #f8f9fa;
-            transform: scale(1.01);
-        }
-
-        .table tbody td {
-            padding: 12px 15px;
-            vertical-align: middle;
-            font-size: 14px;
-        }
-
-        /* Badge Styles */
-        .badge-status {
+        .badge-custom {
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
         }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
 
-        .badge-confirmed { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
-        .badge-pending { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
-        .badge-completed { background: #d1ecf1; color: #0c5460; border-left: 3px solid #17a2b8; }
-        .badge-cancelled { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
-
-        /* Avatar Styles */
         .avatar-circle {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
         }
 
-        /* Animation */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .stat-card, .info-card {
+        .stat-card {
             animation: fadeInUp 0.5s ease-out;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #4a90e2;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #357abd;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
+                position: relative;
+                width: 100%;
                 min-height: auto;
             }
-
-            .stat-card .card-body {
-                padding: 15px;
-            }
-
-            .stat-card h2 {
-                font-size: 28px !important;
+            .main-content {
+                margin-left: 0;
             }
         }
     </style>
@@ -193,56 +179,39 @@
         <div class="col-md-3 col-lg-2 sidebar">
             <div class="p-3">
                 <div class="text-center mb-4">
-                    <div class="mb-3">
-                        <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
-                    </div>
-                    <h5 class="text-white mb-1">CareFusion</h5>
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
                     <small class="text-white-50">Super Admin Portal</small>
                 </div>
 
                 <ul class="nav nav-pills flex-column">
-                    <li class="nav-item">
+                    <li class="nav-item mb-2">
                         <a class="nav-link active" href="{% url 'admin_dashboard' %}">
                             <i class="fas fa-tachometer-alt me-3"></i> Dashboard
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_manage_patients' %}">
-                            <i class="fas fa-users me-3"></i> Patients
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'admin_manage_hospitals' %}">
+                            <i class="fas fa-hospital me-3"></i> Hospitals
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_manage_doctors' %}">
-                            <i class="fas fa-user-md me-3"></i> Doctors
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'admin_manage_hospital_admins' %}">
+                            <i class="fas fa-user-shield me-3"></i> Hospital Admins
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_manage_appointments' %}">
-                            <i class="fas fa-calendar-check me-3"></i> Appointments
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'super_admin_pharmacy_admins' %}">
+                            <i class="fas fa-capsules me-3"></i> Pharmacy Admins
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_manage_beds' %}">
-                            <i class="fas fa-bed me-3"></i> ICU Beds
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_manage_emergencies' %}">
-                            <i class="fas fa-ambulance me-3"></i> Emergencies
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_products' %}">
-                            <i class="fas fa-box me-3"></i> Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_reports' %}">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'admin_hospital_reports' %}">
                             <i class="fas fa-chart-line me-3"></i> Reports
                         </a>
                     </li>
                     <li class="nav-item mt-4 pt-3 border-top border-secondary">
-                        <a class="nav-link text-white" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
                             <i class="fas fa-sign-out-alt me-3"></i> Logout
                         </a>
                     </li>
@@ -251,390 +220,303 @@
         </div>
 
         <!-- Main Content -->
-        <div class="col-md-9 col-lg-10" style="background: #f0f2f5;">
-            <!-- Top Navbar -->
-            <nav class="navbar navbar-light bg-white px-4 py-3 shadow-sm" style="border-radius: 0 0 20px 20px;">
-                <div class="d-flex justify-content-between w-100 align-items-center">
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <div>
+                    <h2 class="fw-bold text-dark mb-1">Super Admin Dashboard</h2>
+                    <p class="text-muted">Welcome back, {{ user.first_name|default:user.username }}!</p>
+                </div>
+                <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
+                    <div class="avatar-circle gradient-primary text-white fw-bold shadow-sm" style="font-size: 1.2rem;">
+                        {{ user.first_name|default:user.username|slice:":1"|upper }}
+                    </div>
                     <div>
-                        <h4 class="mb-0" style="font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #4a90e2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                            Welcome back, {{ user.first_name|default:"Admin" }}!
-                        </h4>
-                        <small class="text-muted">Here's what's happening with your hospital today</small>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <!-- Notifications -->
-                        <div class="dropdown">
-                            <button class="btn btn-light rounded-circle" style="width: 45px; height: 45px; background: #f0f2f5; position: relative;" data-bs-toggle="dropdown">
-                                <i class="fas fa-bell text-secondary"></i>
-                                {% if emergency_requests > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
-                                    {{ emergency_requests }}
-                                </span>
-                                {% endif %}
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px; width: 320px;">
-                                <div class="dropdown-header bg-light rounded-top py-3">
-                                    <strong><i class="fas fa-bell me-2"></i>Notifications</strong>
-                                </div>
-                                <a class="dropdown-item py-2" href="{% url 'admin_manage_appointments' %}">
-                                    <i class="fas fa-calendar me-2 text-primary"></i> {{ today_appointments|default:"0" }} appointments today
-                                </a>
-                                <a class="dropdown-item py-2" href="{% url 'admin_manage_emergencies' %}">
-                                    <i class="fas fa-ambulance me-2 text-danger"></i> {{ emergency_requests|default:"0" }} emergency requests
-                                </a>
-                                <a class="dropdown-item py-2" href="{% url 'admin_manage_beds' %}">
-                                    <i class="fas fa-bed me-2 text-info"></i> {{ available_beds|default:"0" }} beds available
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-center text-primary" href="#">View all notifications</a>
-                            </div>
-                        </div>
-
-                        <!-- Profile Dropdown -->
-                        <div class="dropdown ms-3">
-                            <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
-                                <div class="avatar-circle bg-primary text-white me-2" style="width: 45px; height: 45px;">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="text-start">
-                                    <small class="text-muted d-block">Super Admin</small>
-                                    <strong>{{ user.username|default:"Admin" }}</strong>
-                                </div>
-                                <i class="fas fa-chevron-down ms-2 text-muted"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
-                                <a class="dropdown-item" href="{% url 'profile' %}">
-                                    <i class="fas fa-user-circle me-2"></i> My Profile
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cog me-2"></i> Settings
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                </a>
-                            </div>
-                        </div>
+                        <p class="fw-semibold text-dark mb-0">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="small text-muted">Super Administrator</p>
                     </div>
                 </div>
-            </nav>
+            </div>
 
-            <!-- Main Content Area -->
-            <div class="p-4">
-                <!-- Stats Cards Row 1 -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="card-body" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-white-50 text-uppercase">Total Patients</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_patients|default:"0" }}</h2>
-                                        <small class="text-white-50 mt-2 d-block">
-                                            <i class="fas fa-arrow-up me-1"></i> +12% from last month
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-users" style="font-size: 48px; opacity: 0.3;"></i>
-                                    </div>
-                                </div>
+            <!-- Stats Cards Row 1 -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Total Hospitals</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_hospitals|default:"0" }}</h2>
+                                <p class="small text-success mt-2 mb-0">
+                                    <i class="fas fa-check-circle me-1"></i>Active: {{ active_hospitals|default:"0" }}
+                                </p>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="card-body" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-white-50 text-uppercase">Total Doctors</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_doctors|default:"0" }}</h2>
-                                        <small class="text-white-50 mt-2 d-block">
-                                            <i class="fas fa-plus me-1"></i> +5 new this month
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-user-md" style="font-size: 48px; opacity: 0.3;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="card-body" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-white-50 text-uppercase">Available Beds</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ available_beds|default:"0" }}/{{ total_beds|default:"0" }}</h2>
-                                        <small class="text-white-50 mt-2 d-block">
-                                            <i class="fas fa-bed me-1"></i> {{ available_beds|default:"0" }} beds available
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-bed" style="font-size: 48px; opacity: 0.3;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="card-body" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-white-50 text-uppercase">Total Orders</small>
-                                        <h2 class="mb-0 mt-2" style="font-size: 42px; font-weight: 700;">{{ total_orders|default:"0" }}</h2>
-                                        <small class="text-white-50 mt-2 d-block">
-                                            <i class="fas fa-chart-line me-1"></i> +23% from yesterday
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <i class="fas fa-shopping-cart" style="font-size: 48px; opacity: 0.3;"></i>
-                                    </div>
-                                </div>
+                            <div class="gradient-primary rounded-3 p-3">
+                                <i class="fas fa-hospital text-white fs-3"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Stats Cards Row 2 -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-4">
-                        <div class="info-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <small class="text-muted text-uppercase">Today's Appointments</small>
-                                        <h3 class="mt-2 mb-0" style="font-weight: 700;">{{ today_appointments|default:"0" }}</h3>
-                                        <small class="text-success">
-                                            <i class="fas fa-arrow-up me-1"></i> +8 from yesterday
-                                        </small>
-                                    </div>
-                                    <div class="bg-primary bg-opacity-10 rounded p-3">
-                                        <i class="fas fa-calendar-day fa-2x text-primary"></i>
-                                    </div>
-                                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Hospital Admins</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_hospital_admins|default:"0" }}</h2>
+                                <p class="small text-success mt-2 mb-0">
+                                    <i class="fas fa-user-check me-1"></i>Active: {{ active_admins|default:"0" }}
+                                </p>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="info-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <small class="text-muted text-uppercase">Pending Appointments</small>
-                                        <h3 class="mt-2 mb-0" style="font-weight: 700;">{{ pending_appointments|default:"0" }}</h3>
-                                        <small class="text-warning">
-                                            <i class="fas fa-clock me-1"></i> Needs attention
-                                        </small>
-                                    </div>
-                                    <div class="bg-warning bg-opacity-10 rounded p-3">
-                                        <i class="fas fa-clock fa-2x text-warning"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="info-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <small class="text-muted text-uppercase">Emergency Requests</small>
-                                        <h3 class="mt-2 mb-0" style="font-weight: 700; color: #dc3545;">{{ emergency_requests|default:"0" }}</h3>
-                                        <small class="text-danger">
-                                            <i class="fas fa-exclamation-circle me-1"></i> Immediate action!
-                                        </small>
-                                    </div>
-                                    <div class="bg-danger bg-opacity-10 rounded p-3">
-                                        <i class="fas fa-ambulance fa-2x text-danger"></i>
-                                    </div>
-                                </div>
+                            <div class="gradient-success rounded-3 p-3">
+                                <i class="fas fa-user-shield text-white fs-3"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts Section -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-8">
-                        <div class="info-card">
-                            <div class="card-header bg-white border-0 pt-4">
-                                <h5 class="mb-0 fw-bold">
-                                    <i class="fas fa-chart-line text-primary me-2"></i>Patient Analytics
-                                </h5>
-                                <small class="text-muted">Monthly patient registration trend</small>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Pharmacy Admins</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_pharmacy_admins|default:"0" }}</h2>
+                                <p class="small text-info mt-2 mb-0">
+                                    <i class="fas fa-user-check me-1"></i>Active: {{ active_pharmacy_admins|default:"0" }}
+                                </p>
                             </div>
-                            <div class="card-body">
-                                <canvas id="patientChart" height="250"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="info-card">
-                            <div class="card-header bg-white border-0 pt-4">
-                                <h5 class="mb-0 fw-bold">
-                                    <i class="fas fa-chart-pie text-primary me-2"></i>Appointment Status
-                                </h5>
-                                <small class="text-muted">Current appointment distribution</small>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="appointmentChart" height="250"></canvas>
+                            <div class="gradient-info rounded-3 p-3">
+                                <i class="fas fa-capsules text-white fs-3"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Data Tables -->
-                <div class="row g-4">
-                    <!-- Recent Patients Table -->
-                    <div class="col-md-6">
-                        <div class="info-card">
-                            <div class="card-header bg-white border-0 pt-4">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0 fw-bold">
-                                        <i class="fas fa-user-plus text-primary me-2"></i>Recent Patients
-                                    </h5>
-                                    <a href="{% url 'admin_manage_patients' %}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                        View All <i class="fas fa-arrow-right ms-1"></i>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Total Patients</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_patients|default:"0" }}</h2>
+                                <p class="small text-warning mt-2 mb-0">
+                                    <i class="fas fa-users me-1"></i>Registered
+                                </p>
+                            </div>
+                            <div class="gradient-warning rounded-3 p-3">
+                                <i class="fas fa-users text-white fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards Row 2 -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Total Doctors</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_doctors|default:"0" }}</h2>
+                                <p class="small text-info mt-2 mb-0">
+                                    <i class="fas fa-user-md me-1"></i>All hospitals
+                                </p>
+                            </div>
+                            <div class="gradient-info rounded-3 p-3">
+                                <i class="fas fa-user-md text-white fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Total Orders</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_orders|default:"0" }}</h2>
+                                <p class="small text-primary mt-2 mb-0">
+                                    <i class="fas fa-shopping-cart me-1"></i>All orders
+                                </p>
+                            </div>
+                            <div class="gradient-primary rounded-3 p-3">
+                                <i class="fas fa-shopping-cart text-white fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Total Appointments</p>
+                                <h2 class="fw-bold text-dark mb-0">{{ total_appointments|default:"0" }}</h2>
+                                <p class="small text-success mt-2 mb-0">
+                                    <i class="fas fa-calendar me-1"></i>All time
+                                </p>
+                            </div>
+                            <div class="gradient-success rounded-3 p-3">
+                                <i class="fas fa-calendar-check text-white fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted small mb-1">Total Revenue</p>
+                                <h2 class="fw-bold text-dark mb-0">৳{{ total_revenue|default:"0" }}</h2>
+                                <p class="small text-danger mt-2 mb-0">
+                                    <i class="fas fa-chart-line me-1"></i>Lifetime earning
+                                </p>
+                            </div>
+                            <div class="gradient-danger rounded-3 p-3">
+                                <i class="fas fa-chart-line text-white fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Hospitals Table -->
+            <div class="bg-white rounded-4 shadow-sm mb-4">
+                <div class="p-4 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-semibold text-dark mb-0">
+                            <i class="fas fa-hospital text-primary me-2"></i>
+                            Recent Hospitals
+                        </h5>
+                        <a href="{% url 'admin_manage_hospitals' %}" class="btn btn-sm btn-link text-primary">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Hospital Name</th>
+                                <th>Code</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hospital in recent_hospitals %}
+                            <tr>
+                                <td class="align-middle"><strong>{{ hospital.name }}</strong></td>
+                                <td class="align-middle"><code>{{ hospital.code }}</code></td>
+                                <td class="align-middle">{{ hospital.phone|default:"N/A" }}</td>
+                                <td class="align-middle">
+                                    {% if hospital.is_active %}
+                                        <span class="badge-custom badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge-custom badge-warning">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">{{ hospital.created_at|date:"M d, Y" }}</td>
+                                <td class="align-middle">
+                                    <a href="{% url 'admin_hospital_detail' hospital.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="fas fa-eye me-1"></i> View
                                     </a>
-                                </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th>Patient Name</th>
-                                                <th>Phone</th>
-                                                <th>Registered</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for patient in recent_patients %}
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
-                                                            <i class="fas fa-user"></i>
-                                                        </div>
-                                                        <strong>{{ patient.get_full_name }}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>{{ patient.phone|default:"N/A" }}</td>
-                                                <td>{{ patient.created_at|date:"M d, Y" }}</td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr>
-                                                <td colspan="3" class="text-center py-4">
-                                                    <i class="fas fa-users fa-3x text-muted mb-2"></i>
-                                                    <p class="mb-0">No patients found</p>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No hospitals found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                    <!-- Recent Appointments Table -->
-                    <div class="col-md-6">
-                        <div class="info-card">
-                            <div class="card-header bg-white border-0 pt-4">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0 fw-bold">
-                                        <i class="fas fa-calendar-alt text-primary me-2"></i>Recent Appointments
-                                    </h5>
-                                    <a href="{% url 'admin_manage_appointments' %}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                        View All <i class="fas fa-arrow-right ms-1"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th>Patient</th>
-                                                <th>Doctor</th>
-                                                <th>Date</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for apt in recent_appointments %}
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar-circle bg-info bg-opacity-10 text-info me-2">
-                                                            <i class="fas fa-user"></i>
-                                                        </div>
-                                                        <strong>{{ apt.patient.get_full_name }}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>Dr. {{ apt.doctor.full_name }}</td>
-                                                <td>{{ apt.appointment_date|date:"M d, Y" }}</td>
-                                                <td>
-                                                    {% if apt.status == 'confirmed' %}
-                                                        <span class="badge-status badge-confirmed">
-                                                            <i class="fas fa-check-circle"></i> Confirmed
-                                                        </span>
-                                                    {% elif apt.status == 'pending' %}
-                                                        <span class="badge-status badge-pending">
-                                                            <i class="fas fa-clock"></i> Pending
-                                                        </span>
-                                                    {% elif apt.status == 'completed' %}
-                                                        <span class="badge-status badge-completed">
-                                                            <i class="fas fa-check-double"></i> Completed
-                                                        </span>
-                                                    {% else %}
-                                                        <span class="badge-status badge-cancelled">
-                                                            <i class="fas fa-times-circle"></i> Cancelled
-                                                        </span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr>
-                                                <td colspan="4" class="text-center py-4">
-                                                    <i class="fas fa-calendar-times fa-3x text-muted mb-2"></i>
-                                                    <p class="mb-0">No appointments found</p>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Recent Hospital Admins Table -->
+            <div class="bg-white rounded-4 shadow-sm mb-4">
+                <div class="p-4 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-semibold text-dark mb-0">
+                            <i class="fas fa-user-shield text-primary me-2"></i>
+                            Recent Hospital Admins
+                        </h5>
+                        <a href="{% url 'admin_manage_hospital_admins' %}" class="btn btn-sm btn-link text-primary">
+                            View All <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
                     </div>
                 </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Admin Name</th>
+                                <th>Email</th>
+                                <th>Hospital</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for admin in recent_admins %}
+                            <tr>
+                                <td class="align-middle"><strong>{{ admin.user.get_full_name|default:admin.user.username }}</strong></td>
+                                <td class="align-middle">{{ admin.user.email }}</td>
+                                <td class="align-middle">{{ admin.hospital.name }}</td>
+                                <td class="align-middle">
+                                    {% if admin.is_active %}
+                                        <span class="badge-custom badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge-custom badge-warning">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">{{ admin.created_at|date:"M d, Y" }}</td>
+                                <td class="align-middle">
+                                    <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No hospital admins found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                <!-- Quick Actions Footer -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <div class="card-body p-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-8">
-                                        <h5 class="text-white mb-2">
-                                            <i class="fas fa-rocket me-2"></i>Need to add new staff or resources?
-                                        </h5>
-                                        <p class="text-white-50 mb-0">Quickly add doctors, manage appointments, or update bed availability from here.</p>
-                                    </div>
-                                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                        <a href="{% url 'admin_add_doctor' %}" class="btn btn-light rounded-pill px-4 me-2">
-                                            <i class="fas fa-user-md me-2"></i>Add Doctor
-                                        </a>
-                                        <a href="{% url 'admin_add_bed' %}" class="btn btn-outline-light rounded-pill px-4">
-                                            <i class="fas fa-bed me-2"></i>Add Bed
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Quick Actions -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="stat-card p-3 text-center">
+                        <a href="{% url 'admin_manage_hospitals' %}" class="text-decoration-none">
+                            <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                            <h6 class="fw-bold mb-0">Add New Hospital</h6>
+                            <small class="text-muted">Create a new hospital</small>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card p-3 text-center">
+                        <a href="{% url 'super_admin_pharmacy_admins' %}" class="text-decoration-none">
+                            <i class="fas fa-plus-circle fa-2x text-info mb-2"></i>
+                            <h6 class="fw-bold mb-0">Add Pharmacy Admin</h6>
+                            <small class="text-muted">Create a pharmacy admin</small>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card p-3 text-center">
+                        <a href="{% url 'admin_manage_hospital_admins' %}" class="text-decoration-none">
+                            <i class="fas fa-user-plus fa-2x text-success mb-2"></i>
+                            <h6 class="fw-bold mb-0">Add Hospital Admin</h6>
+                            <small class="text-muted">Create a hospital admin</small>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -643,98 +525,5 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Patient Chart
-    const ctx1 = document.getElementById('patientChart').getContext('2d');
-    new Chart(ctx1, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-                label: 'New Patients',
-                data: {{ patient_chart_data|default:"[65, 78, 82, 91, 88, 95, 102, 108, 115, 122, 130, 145]" }},
-                borderColor: '#4a90e2',
-                backgroundColor: 'rgba(74, 144, 226, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#4a90e2',
-                pointBorderColor: '#fff',
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: '#e9ecef'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-
-    // Appointment Status Chart
-    const ctx2 = document.getElementById('appointmentChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'doughnut',
-        data: {
-            labels: ['Confirmed', 'Pending', 'Completed', 'Cancelled'],
-            datasets: [{
-                data: [
-                    {{ confirmed_appointments|default:"0" }},
-                    {{ pending_appointments|default:"0" }},
-                    {{ completed_appointments|default:"0" }},
-                    {{ cancelled_appointments|default:"0" }}
-                ],
-                backgroundColor: ['#28a745', '#ffc107', '#17a2b8', '#dc3545'],
-                borderWidth: 0,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        usePointStyle: true
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            let value = context.raw || 0;
-                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-</script>
 </body>
 </html>
-{% endblock %}

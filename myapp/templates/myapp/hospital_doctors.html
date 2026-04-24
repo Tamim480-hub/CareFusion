@@ -1,37 +1,78 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareFusion - Manage Doctors</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --gray: #6c757d;
         }
 
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
         .sidebar {
             background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
             min-height: 100vh;
         }
 
         .nav-link {
             border-radius: 12px;
-            padding: 12px 15px;
+            padding: 12px 18px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
             color: rgba(255,255,255,0.8) !important;
+            text-decoration: none;
+            display: block;
         }
 
         .nav-link:hover {
             background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
             color: white !important;
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, #4a90e2, #357abd);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white !important;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
         }
 
         .avatar-circle {
@@ -47,16 +88,28 @@
             background: white;
             border-radius: 20px;
             transition: all 0.3s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 15px;
         }
 
         .table tbody tr:hover {
             background: #f8f9fa;
             transform: scale(1.01);
+            transition: all 0.3s;
         }
 
         .btn-sm {
@@ -67,206 +120,229 @@
             transform: translateY(-2px);
         }
 
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+        }
+
+        .modal-header {
+            border-radius: 20px 20px 0 0;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 15px;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
+                position: relative;
+                width: 100%;
                 min-height: auto;
+            }
+            .main-content {
+                margin-left: 0;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="container-fluid p-0">
-    <div class="row g-0">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar">
-            <div class="p-3">
-                <div class="text-center mb-4">
-                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
-                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
-                    <small class="text-white-50">Hospital Admin</small>
-                </div>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Hospital Admin</small>
+        </div>
 
-                <ul class="nav nav-pills flex-column">
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_dashboard' %}">
-                            <i class="fas fa-tachometer-alt me-3"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link active" href="{% url 'hospital_doctors' %}">
-                            <i class="fas fa-user-md me-3"></i> Doctors
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_patients' %}">
-                            <i class="fas fa-users me-3"></i> Patients
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_appointments' %}">
-                            <i class="fas fa-calendar-check me-3"></i> Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_beds' %}">
-                            <i class="fas fa-bed me-3"></i> ICU Beds
-                        </a>
-                    </li>
-                    <li class="nav-item mt-4 pt-3 border-top border-secondary">
-                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
-                            <i class="fas fa-sign-out-alt me-3"></i> Logout
-                        </a>
-                    </li>
-                </ul>
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'hospital_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_patients' %}">
+                    <i class="fas fa-users me-3"></i> Patients
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_orders' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Orders
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid p-0">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="fas fa-user-md text-primary me-2"></i>Manage Doctors
+                </h2>
+                <p class="text-muted mb-0">{{ hospital.name }}</p>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                <i class="fas fa-plus-circle me-2"></i>Add New Doctor
+            </button>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Total Doctors</small>
+                            <h3 class="mb-0 fw-bold text-primary">{{ doctors|length }}</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-user-md fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Available</small>
+                            <h3 class="mb-0 fw-bold text-success">{{ available_doctors|default:0 }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Specializations</small>
+                            <h3 class="mb-0 fw-bold text-info">{{ specializations_count|default:0 }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-tag fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold">
-                        <i class="fas fa-user-md text-primary me-2"></i>
-                        Manage Doctors
-                    </h2>
-                    <p class="text-muted mb-0">{{ hospital.name }}</p>
-                </div>
-                <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
-                    <i class="fas fa-plus me-2"></i>Add New Doctor
-                </button>
+        <!-- Doctors Table -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-list me-2 text-primary"></i>Doctors List
+                </h5>
             </div>
-
-            <!-- Statistics -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Total Doctors</small>
-                                <h3 class="mb-0 fw-bold">{{ doctors|length }}</h3>
-                            </div>
-                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                                <i class="fas fa-user-md fa-2x text-primary"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Available</small>
-                                <h3 class="mb-0 fw-bold text-success">
-                                    {% for d in doctors %}{% if d.is_available %}{{ forloop.counter }}{% endif %}{% endfor %}
-                                </h3>
-                            </div>
-                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                                <i class="fas fa-check-circle fa-2x text-success"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Specializations</small>
-                                <h3 class="mb-0 fw-bold text-info">
-                                    {{ doctors|dictsort:"specialization"|length }}
-                                </h3>
-                            </div>
-                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
-                                <i class="fas fa-tag fa-2x text-info"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Doctors Table -->
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="fas fa-list me-2 text-primary"></i>
-                        Doctors List
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Doctor</th>
-                                    <th>Specialization</th>
-                                    <th>Qualification</th>
-                                    <th>Experience</th>
-                                    <th>Fee</th>
-                                    <th>Status</th>
-                                    <th class="text-center pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for doctor in doctors %}
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
-                                                <i class="fas fa-user-md"></i>
-                                            </div>
-                                            <div>
-                                                <strong>Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</strong><br>
-                                                <small class="text-muted">{{ doctor.user.email }}</small>
-                                            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Doctor</th>
+                                <th>Specialization</th>
+                                <th>Qualification</th>
+                                <th>Experience</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th class="text-center pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doctor in doctors %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
+                                            <i class="fas fa-user-md"></i>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
-                                            {{ doctor.get_specialization_display }}
+                                        <div>
+                                            <strong>Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</strong><br>
+                                            <small class="text-muted">{{ doctor.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                        {{ doctor.get_specialization_display }}
+                                    </span>
+                                </td>
+                                <td>{{ doctor.qualification|default:"MBBS" }}<br><small class="text-muted">{{ doctor.user.phone|default:"N/A" }}</small></td>
+                                <td>{{ doctor.experience_years }} yrs</td>
+                                <td><strong class="text-success">৳{{ doctor.consultation_fee }}</strong></td>
+                                <td>
+                                    {% if doctor.is_available %}
+                                        <span class="badge bg-success rounded-pill px-3 py-2">
+                                            <i class="fas fa-check-circle me-1"></i> Available
                                         </span>
-                                    </td>
-                                    <td>{{ doctor.qualification|default:"MBBS" }}</br><small>{{ doctor.user.phone|default:"N/A" }}</small></td>
-                                    <td>{{ doctor.experience_years }} yrs</br><small>Experience</small></td>
-                                    <td><strong class="text-success">৳{{ doctor.consultation_fee }}</strong></td>
-                                    <td>
-                                        {% if doctor.is_available %}
-                                            <span class="badge bg-success rounded-pill px-3 py-2">
-                                                <i class="fas fa-check-circle me-1"></i> Available
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-danger rounded-pill px-3 py-2">
-                                                <i class="fas fa-times-circle me-1"></i> Unavailable
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center pe-4">
-                                        <form method="POST" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
-                                            <button type="submit" name="action" value="toggle" class="btn btn-sm btn-warning rounded-pill mb-1"
-                                                    onclick="return confirm('Toggle doctor availability?')">
-                                                <i class="fas fa-sync-alt me-1"></i> Toggle
-                                            </button>
-                                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger rounded-pill"
-                                                    onclick="return confirm('Delete this doctor?')">
-                                                <i class="fas fa-trash me-1"></i> Delete
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <i class="fas fa-user-md fa-4x text-muted mb-3"></i>
-                                        <h5 class="text-muted">No Doctors Found</h5>
-                                        <p class="text-muted">Click "Add New Doctor" to add your first doctor.</p>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                    {% else %}
+                                        <span class="badge bg-danger rounded-pill px-3 py-2">
+                                            <i class="fas fa-times-circle me-1"></i> Unavailable
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center pe-4">
+                                    <form method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                                        <button type="submit" name="action" value="toggle" class="btn btn-sm btn-warning rounded-pill mb-1"
+                                                onclick="return confirm('Toggle doctor availability?')">
+                                            <i class="fas fa-sync-alt me-1"></i> Toggle
+                                        </button>
+                                        <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger rounded-pill"
+                                                onclick="return confirm('Delete this doctor? This action cannot be undone!')">
+                                            <i class="fas fa-trash me-1"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="fas fa-user-md fa-4x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Doctors Found</h5>
+                                    <p class="text-muted">Click "Add New Doctor" to add your first doctor.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -275,44 +351,54 @@
 
 <!-- Add Doctor Modal -->
 <div class="modal fade" id="addDoctorModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content rounded-4">
-            <div class="modal-header border-0 bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                <h5 class="modal-title fw-bold">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <h5 class="modal-title fw-bold text-white">
                     <i class="fas fa-user-md me-2"></i>Add New Doctor
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST">
+            <form method="POST" action="{% url 'hospital_doctors' %}">
                 {% csrf_token %}
+                <input type="hidden" name="action" value="add">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="add">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">First Name</label>
+                            <label class="form-label fw-semibold">First Name *</label>
                             <input type="text" name="first_name" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Last Name</label>
+                            <label class="form-label fw-semibold">Last Name *</label>
                             <input type="text" name="last_name" class="form-control" required>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Email</label>
-                            <input type="email" name="email" class="form-control" required>
+                            <label class="form-label fw-semibold">Username *</label>
+                            <input type="text" name="username" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Password</label>
-                            <input type="password" name="password" class="form-control" required>
+                            <label class="form-label fw-semibold">Email *</label>
+                            <input type="email" name="email" class="form-control" required>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Specialization</label>
+                            <label class="form-label fw-semibold">Password *</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Phone</label>
+                            <input type="text" name="phone" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Specialization *</label>
                             <select name="specialization" class="form-select" required>
                                 <option value="">Select Specialization</option>
-                                {% for value, label in specializations %}
+                                {% for value, label in specialization_choices %}
                                 <option value="{{ value }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
@@ -325,23 +411,58 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Experience (Years)</label>
-                            <input type="number" name="experience" class="form-control" min="0">
+                            <input type="number" name="experience_years" class="form-control" min="0" value="0">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Consultation Fee (৳)</label>
-                            <input type="number" name="fee" class="form-control" min="0">
+                            <input type="number" name="consultation_fee" class="form-control" min="0" value="500">
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Available From</label>
+                            <input type="time" name="available_from" class="form-control" value="09:00">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Available To</label>
+                            <input type="time" name="available_to" class="form-control" value="17:00">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Bio</label>
+                        <textarea name="bio" class="form-control" rows="2" placeholder="Doctor's biography..."></textarea>
+                    </div>
+
+                    <!-- Auto Schedule Info -->
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <strong>Schedule will be auto-generated!</strong><br>
+                        <small>Default schedule (Monday-Saturday, {{ default_start_time|default:"09:00" }} - {{ default_end_time|default:"17:00" }}) will be created automatically for this doctor.</small>
+                    </div>
                 </div>
-                <div class="modal-footer border-0 pb-4 pe-4">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Add Doctor</button>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-save me-2"></i>Add Doctor
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Auto hide alerts
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
 </body>
 </html>

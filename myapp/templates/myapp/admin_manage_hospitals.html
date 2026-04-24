@@ -1,0 +1,304 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Manage Hospitals - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hospital-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .hospital-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .status-active { background: #d4edda; color: #155724; }
+    .status-inactive { background: #f8d7da; color: #721c24; }
+    .action-btn {
+        transition: all 0.3s ease;
+    }
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Super Admin Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'admin_manage_hospitals' %}">
+                    <i class="fas fa-hospital me-3"></i> Hospitals
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'admin_manage_hospital_admins' %}">
+                    <i class="fas fa-user-shield me-3"></i> Hospital Admins
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'admin_hospital_reports' %}">
+                    <i class="fas fa-chart-line me-3"></i> Reports
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-hospital text-primary me-2"></i>Manage Hospitals
+            </h2>
+            <p class="text-muted">Create, edit, and manage all hospitals in the system</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addHospitalModal">
+                <i class="fas fa-plus-circle me-2"></i>Add New Hospital
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card p-3 text-center">
+                <h3 class="fw-bold text-primary mb-0">{{ total_hospitals }}</h3>
+                <small class="text-muted">Total Hospitals</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card p-3 text-center">
+                <h3 class="fw-bold text-success mb-0">{{ active_hospitals }}</h3>
+                <small class="text-muted">Active Hospitals</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card p-3 text-center">
+                <h3 class="fw-bold text-danger mb-0">{{ inactive_hospitals }}</h3>
+                <small class="text-muted">Inactive Hospitals</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="bg-white rounded-4 shadow-sm p-3 mb-4">
+        <form method="GET" class="d-flex gap-2">
+            <input type="text" name="search" class="form-control rounded-pill"
+                   placeholder="Search by name, code, address..." value="{{ search }}">
+            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                <i class="fas fa-search me-2"></i>Search
+            </button>
+            {% if search %}
+            <a href="{% url 'admin_manage_hospitals' %}" class="btn btn-outline-secondary rounded-pill">
+                <i class="fas fa-times me-2"></i>Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Hospitals Grid -->
+    <div class="row g-4">
+        {% for hospital in hospitals %}
+        <div class="col-md-6 col-lg-4">
+            <div class="hospital-card bg-white shadow-sm">
+                <div class="p-3" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-white">
+                            <i class="fas fa-building fa-2x"></i>
+                        </div>
+                        <div>
+                            {% if hospital.is_active %}
+                                <span class="status-badge status-active">Active</span>
+                            {% else %}
+                                <span class="status-badge status-inactive">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h5 class="fw-bold mb-1">{{ hospital.name }}</h5>
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-code me-1"></i> Code: {{ hospital.code }}
+                    </p>
+                    <div class="mb-2">
+                        <small class="text-muted d-block">
+                            <i class="fas fa-map-marker-alt me-1"></i> {{ hospital.address|truncatechars:50 }}
+                        </small>
+                        <small class="text-muted d-block">
+                            <i class="fas fa-phone me-1"></i> {{ hospital.phone|default:"N/A" }}
+                        </small>
+                        <small class="text-muted d-block">
+                            <i class="fas fa-envelope me-1"></i> {{ hospital.email|default:"N/A" }}
+                        </small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i> Created: {{ hospital.created_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{% url 'admin_hospital_detail' hospital.id %}" class="btn btn-sm btn-outline-info rounded-pill flex-grow-1">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#editModal{{ hospital.id }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <form method="POST" action="{% url 'admin_manage_hospitals' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="hospital_id" value="{{ hospital.id }}">
+                            {% if hospital.is_active %}
+                                <button type="submit" name="action" value="toggle" class="btn btn-sm btn-outline-warning rounded-pill" onclick="return confirm('Deactivate this hospital?')">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            {% else %}
+                                <button type="submit" name="action" value="toggle" class="btn btn-sm btn-outline-success rounded-pill" onclick="return confirm('Activate this hospital?')">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            {% endif %}
+                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Delete this hospital?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal{{ hospital.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-edit me-2"></i>Edit Hospital
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{% url 'admin_manage_hospitals' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="hospital_id" value="{{ hospital.id }}">
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Hospital Name *</label>
+                                <input type="text" name="name" class="form-control" value="{{ hospital.name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Hospital Code *</label>
+                                <input type="text" name="code" class="form-control" value="{{ hospital.code }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Address</label>
+                                <textarea name="address" class="form-control" rows="2">{{ hospital.address }}</textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Phone</label>
+                                    <input type="text" name="phone" class="form-control" value="{{ hospital.phone }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Email</label>
+                                    <input type="email" name="email" class="form-control" value="{{ hospital.email }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-hospital fa-5x text-muted mb-3 opacity-25"></i>
+                <h4 class="text-muted">No Hospitals Found</h4>
+                <p class="text-muted">Click "Add New Hospital" to create your first hospital.</p>
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addHospitalModal">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Hospital
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Hospital Modal -->
+<div class="modal fade" id="addHospitalModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Hospital
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_manage_hospitals' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hospital Name *</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Hospital Code *</label>
+                        <input type="text" name="code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Address</label>
+                        <textarea name="address" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Phone</label>
+                            <input type="text" name="phone" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Add Hospital</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

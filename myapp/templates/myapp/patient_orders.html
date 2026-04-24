@@ -1,383 +1,223 @@
 {% extends 'myapp/base.html' %}
 {% load static %}
 
+{% block title %}My Orders - Pharmacy{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .order-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 15px 20px;
+        color: white;
+    }
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-processing { background: #d1ecf1; color: #0c5460; }
+    .status-ready { background: #cce5ff; color: #004085; }
+    .status-shipped { background: #d4edda; color: #155724; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+
+    .order-items {
+        padding: 20px;
+    }
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    .order-footer {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-top: 1px solid #e0e0e0;
+    }
+    .filter-btn {
+        transition: all 0.3s;
+        border-radius: 30px;
+        padding: 8px 20px;
+        margin: 0 5px 10px;
+    }
+    .filter-btn:hover, .filter-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <!-- Page Header -->
-    <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold mb-3">
-            <i class="fas fa-shopping-bag text-primary me-3"></i>
-            My Orders
-        </h1>
-        <p class="text-muted lead">Track and manage your orders</p>
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="fw-bold">
+                <i class="fas fa-shopping-cart text-primary me-2"></i>My Orders
+            </h2>
+            <p class="text-muted">Track and manage your pharmacy orders</p>
+        </div>
     </div>
 
+    <!-- Filter Buttons -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex flex-wrap">
+                <a href="?status=" class="btn filter-btn {% if not current_status %}active{% endif %}">
+                    All Orders
+                </a>
+                <a href="?status=pending" class="btn filter-btn {% if current_status == 'pending' %}active{% endif %}">
+                    Pending
+                </a>
+                <a href="?status=confirmed" class="btn filter-btn {% if current_status == 'confirmed' %}active{% endif %}">
+                    Confirmed
+                </a>
+                <a href="?status=processing" class="btn filter-btn {% if current_status == 'processing' %}active{% endif %}">
+                    Processing
+                </a>
+                <a href="?status=shipped" class="btn filter-btn {% if current_status == 'shipped' %}active{% endif %}">
+                    Shipped
+                </a>
+                <a href="?status=delivered" class="btn filter-btn {% if current_status == 'delivered' %}active{% endif %}">
+                    Delivered
+                </a>
+                <a href="?status=cancelled" class="btn filter-btn {% if current_status == 'cancelled' %}active{% endif %}">
+                    Cancelled
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
     {% if orders %}
         {% for order in orders %}
-        <div class="card border-0 shadow-lg rounded-4 mb-4">
-            <!-- Order Header -->
-            <div class="card-header bg-white border-0 pt-4 px-4">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h6 class="mb-1">
-                            <i class="fas fa-receipt text-primary me-2"></i>
-                            Order #{{ order.order_number }}
+        <div class="order-card shadow-sm">
+            <div class="order-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h6 class="mb-0">
+                            <i class="fas fa-receipt me-2"></i>Order #{{ order.order_number }}
                         </h6>
-                        <small class="text-muted">
-                            <i class="fas fa-calendar-alt me-1"></i>
-                            Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"g:i A" }}
-                        </small>
+                        <small class="opacity-75">Placed on {{ order.created_at|date:"d M Y, h:i A" }}</small>
                     </div>
-                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
-                        <!-- Status Badge -->
-                        {% if order.status == 'pending' %}
-                            <span class="badge bg-warning rounded-pill px-3 py-2">
-                                <i class="fas fa-clock me-1"></i> Pending
-                            </span>
-                        {% elif order.status == 'confirmed' %}
-                            <span class="badge bg-info rounded-pill px-3 py-2">
-                                <i class="fas fa-check-circle me-1"></i> Confirmed
-                            </span>
-                        {% elif order.status == 'delivered' %}
-                            <span class="badge bg-success rounded-pill px-3 py-2">
-                                <i class="fas fa-truck me-1"></i> Delivered
-                            </span>
-                        {% elif order.status == 'cancelled' %}
-                            <span class="badge bg-danger rounded-pill px-3 py-2">
-                                <i class="fas fa-times-circle me-1"></i> Cancelled
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-body p-4">
-                <!-- Order Items -->
-                <div class="table-responsive mb-4">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Product</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in order.items.all %}
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-light rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                            <i class="fas fa-capsules fa-2x text-muted"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0">{{ item.product.name }}</h6>
-                                            <small class="text-muted">SKU: {{ item.product.id }}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>{{ item.quantity }}</td>
-                                <td>৳{{ item.price }}</td>
-                                <td class="fw-bold">৳{{ item.price|floatformat:2|add:item.quantity }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Order Details -->
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="bg-light rounded-3 p-3">
-                            <h6 class="mb-2">
-                                <i class="fas fa-location-dot text-primary me-2"></i>
-                                Shipping Address
-                            </h6>
-                            <p class="mb-0 text-muted">{{ order.shipping_address }}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="bg-light rounded-3 p-3">
-                            <h6 class="mb-2">
-                                <i class="fas fa-phone text-primary me-2"></i>
-                                Contact Information
-                            </h6>
-                            <p class="mb-0 text-muted">{{ order.phone }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Footer -->
-            <div class="card-footer bg-white border-0 pb-4 px-4">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                                  <!-- Cancel Order Button - Temporary Disabled -->
-                <!--
-                {% if order.status == 'pending' %}
-                <a href="{% url 'patient_cancel_order' order.id %}"
-                   class="btn btn-outline-danger rounded-pill"
-                   onclick="return confirm('Are you sure you want to cancel this order?')">
-                    <i class="fas fa-times-circle me-1"></i> Cancel Order
-                </a>
-                {% endif %}
-                -->
-                            
-                            {% if order.status == 'delivered' %}
-                            <button type="button" 
-                                    class="btn btn-outline-success rounded-pill"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#reviewModal{{ order.id }}">
-                                <i class="fas fa-star me-1"></i> Write a Review
-                            </button>
+                    <div>
+                        <span class="status-badge status-{{ order.status }}">
+                            {% if order.status == 'pending' %}
+                                <i class="fas fa-clock me-1"></i>Pending
+                            {% elif order.status == 'confirmed' %}
+                                <i class="fas fa-check-circle me-1"></i>Confirmed
+                            {% elif order.status == 'processing' %}
+                                <i class="fas fa-spinner me-1"></i>Processing
+                            {% elif order.status == 'ready' %}
+                                <i class="fas fa-box me-1"></i>Ready
+                            {% elif order.status == 'shipped' %}
+                                <i class="fas fa-truck me-1"></i>Shipped
+                            {% elif order.status == 'delivered' %}
+                                <i class="fas fa-check-double me-1"></i>Delivered
+                            {% elif order.status == 'cancelled' %}
+                                <i class="fas fa-times-circle me-1"></i>Cancelled
                             {% endif %}
-                        </div>
+                        </span>
                     </div>
-                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                        <h5 class="mb-0">
-                            Total Amount: 
-                            <span class="text-success">৳{{ order.total_amount }}</span>
-                        </h5>
+                </div>
+            </div>
+
+            <div class="order-items">
+                {% for item in order.items.all %}
+                <div class="order-item">
+                    <div>
+                        <strong>{{ item.product.name }}</strong>
+                        <br>
+                        <small class="text-muted">Qty: {{ item.quantity }}</small>
+                    </div>
+                    <div class="text-end">
+                        <strong>৳{{ item.subtotal|floatformat:2 }}</strong>
+                        <br>
+                        <small class="text-muted">@ ৳{{ item.price|floatformat:2 }} each</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="order-footer">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <span class="text-muted">Delivery Address:</span>
+                        <small>{{ order.shipping_address }}</small>
+                        <br>
+                        <span class="text-muted">Phone:</span>
+                        <small>{{ order.phone }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div><strong>Total Amount:</strong> <span class="text-primary fs-5">৳{{ order.total_amount|floatformat:2 }}</span></div>
+                        <div><small>Payment: {{ order.get_payment_method_display }}</small></div>
+                        {% if order.status == 'pending' %}
+                        <button onclick="cancelOrder({{ order.id }})" class="btn btn-sm btn-danger mt-2">
+                            <i class="fas fa-times me-1"></i>Cancel Order
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'patient_order_detail' order.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
         {% endfor %}
-
-        <!-- Pagination -->
-        {% if orders.has_other_pages %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if orders.has_previous %}
-                <li class="page-item">
-                    <a class="page-link rounded-circle mx-1" href="?page={{ orders.previous_page_number }}">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </li>
-                {% endif %}
-
-                {% for i in orders.paginator.page_range %}
-                    {% if orders.number == i %}
-                    <li class="page-item active">
-                        <span class="page-link rounded-circle mx-1">{{ i }}</span>
-                    </li>
-                    {% else %}
-                    <li class="page-item">
-                        <a class="page-link rounded-circle mx-1" href="?page={{ i }}">{{ i }}</a>
-                    </li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if orders.has_next %}
-                <li class="page-item">
-                    <a class="page-link rounded-circle mx-1" href="?page={{ orders.next_page_number }}">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
-
     {% else %}
-    <!-- Empty State - No Orders -->
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-lg rounded-4 text-center">
-                <div class="card-body p-5">
-                    <div class="mb-4">
-                        <i class="fas fa-shopping-bag fa-5x text-muted mb-3"></i>
-                        <h3 class="mb-3">No Orders Yet</h3>
-                        <p class="text-muted mb-4">
-                            You haven't placed any orders yet. Start shopping to see your orders here!
-                        </p>
-                        <a href="{% url 'patient_products' %}" class="btn btn-primary btn-lg rounded-pill px-5">
-                            <i class="fas fa-shopping-cart me-2"></i>
-                            Start Shopping
-                        </a>
-                    </div>
-                    
-                    <!-- Quick Links -->
-                    <div class="mt-4 pt-3 border-top">
-                        <div class="row g-2">
-                            <div class="col">
-                                <a href="{% url 'patient_products' %}" class="text-decoration-none small">
-                                    <i class="fas fa-capsules me-1"></i> Browse Products
-                                </a>
-                            </div>
-                            <div class="col">
-                                <a href="{% url 'patient_cart' %}" class="text-decoration-none small">
-                                    <i class="fas fa-shopping-cart me-1"></i> View Cart
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-3 opacity-25"></i>
+            <h4 class="text-muted">No Orders Found</h4>
+            <p class="text-muted">You haven't placed any orders yet.</p>
+            <a href="{% url 'pharmacy_products_list' %}" class="btn btn-primary rounded-pill mt-3">
+                <i class="fas fa-store me-2"></i>Start Shopping
+            </a>
         </div>
-    </div>
     {% endif %}
 </div>
 
-<!-- Review Modal (for delivered orders) -->
-{% for order in orders %}
-<div class="modal fade" id="reviewModal{{ order.id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content rounded-4">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">
-                    <i class="fas fa-star text-warning me-2"></i>
-                    Write a Review
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{% url 'patient_submit_review' order.id %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Rating</label>
-                        <div class="rating-input">
-                            <i class="far fa-star" data-value="1"></i>
-                            <i class="far fa-star" data-value="2"></i>
-                            <i class="far fa-star" data-value="3"></i>
-                            <i class="far fa-star" data-value="4"></i>
-                            <i class="far fa-star" data-value="5"></i>
-                            <input type="hidden" name="rating" id="ratingValue" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Review</label>
-                        <textarea class="form-control" name="review" rows="3" placeholder="Share your experience..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill">
-                        Submit Review
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %}
-
-<style>
-    /* Card Hover Effect */
-    .card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1) !important;
-    }
-    
-    /* Status Badges */
-    .badge {
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-    
-    /* Table Styles */
-    .table th {
-        font-weight: 600;
-        border-top: none;
-    }
-    
-    /* Rating Stars */
-    .rating-input i {
-        font-size: 1.5rem;
-        cursor: pointer;
-        margin-right: 5px;
-        transition: color 0.2s;
-    }
-    
-    .rating-input i:hover,
-    .rating-input i.active {
-        color: #ffc107;
-    }
-    
-    /* Pagination */
-    .page-link {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        background: #f8f9fa;
-        color: #198754;
-    }
-    
-    .page-link:hover {
-        background: #198754;
-        color: white;
-    }
-    
-    .page-item.active .page-link {
-        background: #198754;
-        color: white;
-    }
-    
-    /* Animation */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .card {
-        animation: fadeIn 0.5s ease-out;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .display-5 {
-            font-size: 1.8rem;
-        }
-        
-        .table {
-            font-size: 0.85rem;
-        }
-        
-        .badge {
-            font-size: 0.75rem;
-        }
-    }
-</style>
-
 <script>
-    // Rating stars functionality
-    document.querySelectorAll('.rating-input').forEach(container => {
-        const stars = container.querySelectorAll('i');
-        const ratingInput = container.querySelector('#ratingValue');
-        
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const value = this.dataset.value;
-                ratingInput.value = value;
-                
-                stars.forEach(s => {
-                    if (s.dataset.value <= value) {
-                        s.classList.remove('far');
-                        s.classList.add('fas', 'active');
-                    } else {
-                        s.classList.remove('fas', 'active');
-                        s.classList.add('far');
-                    }
-                });
-            });
+function cancelOrder(orderId) {
+    if (confirm('Are you sure you want to cancel this order?')) {
+        fetch(`/patient/cancel-order/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to cancel order');
+            }
+        })
+        .catch(error => {
+            alert('Error cancelling order');
         });
-    });
-    
-    // Order tracking simulation
-    function trackOrder(orderId) {
-        alert('Order tracking feature coming soon!');
     }
+}
 </script>
 {% endblock %}

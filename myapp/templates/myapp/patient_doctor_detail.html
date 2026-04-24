@@ -1,0 +1,75 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Dr. {{ doctor.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="avatar-circle bg-primary bg-opacity-10 mx-auto mb-3" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-md fa-4x text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</h4>
+                    <p class="text-muted">{{ doctor.get_specialization_display }}</p>
+                    <hr>
+                    <p><i class="fas fa-graduation-cap me-2"></i> {{ doctor.qualification|default:"MBBS" }}</p>
+                    <p><i class="fas fa-briefcase me-2"></i> {{ doctor.experience_years }} years experience</p>
+                    <p><i class="fas fa-money-bill-wave me-2"></i> Consultation Fee: ৳{{ doctor.consultation_fee }}</p>
+                    <p><i class="fas fa-star text-warning me-2"></i> Rating: {{ doctor.rating }}/5.0</p>
+                    <a href="{% url 'patient_book_appointment' %}?doctor={{ doctor.id }}" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">About Dr. {{ doctor.user.first_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ doctor.bio|default:"No bio available." }}</p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Available Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Available Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for schedule in schedules %}
+                                <tr>
+                                    <td>{{ schedule.get_day_display }}</td>
+                                    <td>{{ schedule.start_time|time:"g:i A" }} - {{ schedule.end_time|time:"g:i A" }}</td>
+                                    <td>
+                                        {% if schedule.is_available %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Unavailable</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

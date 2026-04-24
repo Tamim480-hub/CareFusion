@@ -21,8 +21,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Django বিল্ট-ইন অ্যাডমিন
-    path('', include('myapp.urls')),  # ← এই লাইনটি যোগ করুন (গুরুত্বপূর্ণ)
+    # Django বিল্ট-ইন অ্যাডমিন - আলাদা URL দিন যাতে কনফ্লিক্ট না হয়
+    path('django-admin/', admin.site.urls),  # ← নাম পরিবর্তন করে দিন
+
+    # আপনার কাস্টম অ্যাপের URLs
+    path('', include('myapp.urls')),  # ← আপনার কাস্টম অ্যাডমিন এখানে থাকবে
 ]
 
 if settings.DEBUG:

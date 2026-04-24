@@ -1,13 +1,26 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareFusion - Hospital Admin Dashboard</title>
+    <title>CareFusion - {{ hospital.name }} Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +29,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
         }
 
         /* Sidebar Styles */
@@ -24,14 +37,28 @@
             background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             transition: all 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
         }
 
         .nav-link {
             border-radius: 12px;
-            padding: 12px 15px;
+            padding: 12px 18px;
             transition: all 0.3s ease;
             margin-bottom: 8px;
             color: rgba(255,255,255,0.8) !important;
+            text-decoration: none;
+            display: block;
         }
 
         .nav-link:hover {
@@ -41,11 +68,11 @@
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, #4a90e2, #357abd);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white !important;
+            box-shadow: 0 4px 15px rgba(74,144,226,0.3);
         }
 
-        /* Avatar Circle */
         .avatar-circle {
             width: 45px;
             height: 45px;
@@ -59,14 +86,32 @@
         .stat-card {
             background: white;
             border-radius: 20px;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::after {
+            transform: scaleX(1);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
         .welcome-banner {
@@ -92,27 +137,36 @@
             50% { transform: scale(1.1); opacity: 0.8; }
         }
 
-        /* Quick Action Buttons */
         .btn-quick {
             border-radius: 12px;
             padding: 12px;
             transition: all 0.3s ease;
             font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-quick::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-quick:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-quick:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-
-        /* Table Styles */
-        .table tbody tr {
-            transition: all 0.3s;
-        }
-
-        .table tbody tr:hover {
-            background: #f8f9fa;
-            transform: scale(1.01);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
         .badge-status {
@@ -120,51 +174,72 @@
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .badge-confirmed { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
-        .badge-pending { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
-        .badge-completed { background: #d1ecf1; color: #0c5460; border-left: 3px solid #17a2b8; }
-        .badge-cancelled { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
+        .badge-confirmed { background: #d4edda; color: #155724; border-left: 3px solid var(--success); }
+        .badge-pending { background: #fff3cd; color: #856404; border-left: 3px solid var(--warning); }
+        .badge-completed { background: #d1ecf1; color: #0c5460; border-left: 3px solid var(--info); }
+        .badge-cancelled { background: #f8d7da; color: #721c24; border-left: 3px solid var(--danger); }
+
+        /* Emergency Card */
+        .emergency-card {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .emergency-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .emergency-stats {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        .emergency-stats:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .stat-card, .welcome-banner {
+        .stat-card, .welcome-banner, .emergency-card {
             animation: fadeInUp 0.6s ease-out;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
-
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-
         ::-webkit-scrollbar-thumb {
-            background: #4a90e2;
+            background: var(--primary);
             border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #357abd;
         }
 
         @media (max-width: 768px) {
             .sidebar {
+                position: relative;
+                width: 100%;
                 min-height: auto;
+            }
+            .main-content {
+                margin-left: 0;
             }
         }
     </style>
@@ -177,7 +252,7 @@
         <div class="col-md-3 col-lg-2 sidebar">
             <div class="p-3">
                 <div class="text-center mb-4">
-                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
                     <h5 class="text-white mt-2 mb-1">CareFusion</h5>
                     <small class="text-white-50">Hospital Admin Portal</small>
                 </div>
@@ -208,6 +283,21 @@
                             <i class="fas fa-bed me-3"></i> ICU Beds
                         </a>
                     </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_products' %}">
+                            <i class="fas fa-capsules me-3"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_orders' %}">
+                            <i class="fas fa-shopping-cart me-3"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'hospital_emergencies' %}">
+                            <i class="fas fa-ambulance me-3"></i> Emergency
+                        </a>
+                    </li>
                     <li class="nav-item mt-4 pt-3 border-top border-secondary">
                         <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
                             <i class="fas fa-sign-out-alt me-3"></i> Logout
@@ -218,28 +308,26 @@
         </div>
 
         <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4" style="background: #f0f2f5;">
+        <div class="main-content">
             <!-- Top Bar -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <div>
-                    <h2 class="mb-1 fw-bold">
+                    <h2 class="fw-bold text-dark mb-1">
                         <i class="fas fa-building text-primary me-2"></i>
                         {{ hospital.name }}
                     </h2>
-                    <p class="text-muted mb-0">Hospital Admin Dashboard</p>
+                    <p class="text-muted">Hospital Admin Dashboard • {{ hospital.code }}</p>
                 </div>
-                <div class="dropdown">
-                    <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
-                        <div class="avatar-circle bg-primary text-white me-2">
+                <div class="dropdown mt-2 mt-md-0">
+                    <button class="btn btn-light rounded-pill px-3 py-2 d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="dropdown">
+                        <div class="avatar-circle bg-primary text-white">
                             <i class="fas fa-user"></i>
                         </div>
                         <span class="fw-semibold">{{ user.username }}</span>
-                        <i class="fas fa-chevron-down ms-2 text-muted"></i>
+                        <i class="fas fa-chevron-down text-muted"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2">
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2 text-danger"></i> Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -249,7 +337,7 @@
                 <div class="p-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap">
                         <div class="d-flex align-items-center">
-                            <div class="avatar-circle bg-white shadow-sm me-3">
+                            <div class="avatar-circle bg-white shadow-sm me-3" style="width: 55px; height: 55px;">
                                 <i class="fas fa-chart-line text-primary" style="font-size: 28px;"></i>
                             </div>
                             <div>
@@ -266,6 +354,10 @@
                                 <small class="text-white-50">Phone</small>
                                 <p class="text-white fw-bold mb-0">{{ hospital.phone }}</p>
                             </div>
+                            <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2 text-center">
+                                <small class="text-white-50">Since</small>
+                                <p class="text-white fw-bold mb-0">{{ hospital.created_at|date:"Y" }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -277,10 +369,10 @@
                     <div class="stat-card p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">Total Doctors</small>
-                                <h2 class="fw-bold text-primary mb-0">{{ doctors_count|default:"0" }}</h2>
+                                <small class="text-muted text-uppercase">Total Doctors</small>
+                                <h2 class="fw-bold text-primary mb-0 mt-1">{{ doctors_count|default:"0" }}</h2>
                                 <small class="text-success">
-                                    <i class="fas fa-user-md me-1"></i> Active
+                                    <i class="fas fa-user-md me-1"></i> Active Staff
                                 </small>
                             </div>
                             <div class="bg-primary bg-opacity-10 rounded-3 p-3">
@@ -293,8 +385,8 @@
                     <div class="stat-card p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">Total Patients</small>
-                                <h2 class="fw-bold text-success mb-0">{{ patients_count|default:"0" }}</h2>
+                                <small class="text-muted text-uppercase">Total Patients</small>
+                                <h2 class="fw-bold text-success mb-0 mt-1">{{ patients_count|default:"0" }}</h2>
                                 <small class="text-success">
                                     <i class="fas fa-users me-1"></i> Registered
                                 </small>
@@ -309,10 +401,10 @@
                     <div class="stat-card p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">Appointments</small>
-                                <h2 class="fw-bold text-info mb-0">{{ appointments_count|default:"0" }}</h2>
+                                <small class="text-muted text-uppercase">Appointments</small>
+                                <h2 class="fw-bold text-info mb-0 mt-1">{{ appointments_count|default:"0" }}</h2>
                                 <small class="text-info">
-                                    <i class="fas fa-calendar me-1"></i> Total
+                                    <i class="fas fa-calendar me-1"></i> Total Bookings
                                 </small>
                             </div>
                             <div class="bg-info bg-opacity-10 rounded-3 p-3">
@@ -325,8 +417,8 @@
                     <div class="stat-card p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">ICU Beds</small>
-                                <h2 class="fw-bold text-warning mb-0">{{ available_beds|default:"0" }}/{{ beds_count|default:"0" }}</h2>
+                                <small class="text-muted text-uppercase">ICU Beds</small>
+                                <h2 class="fw-bold text-warning mb-0 mt-1">{{ available_beds|default:"0" }}/{{ beds_count|default:"0" }}</h2>
                                 <small class="text-success">
                                     <i class="fas fa-bed me-1"></i> Available
                                 </small>
@@ -339,42 +431,101 @@
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-12">
-                    <div class="stat-card p-3">
-                        <h5 class="mb-3 fw-bold">
-                            <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
-                        </h5>
-                        <div class="row g-2">
-                            <div class="col-md-3 col-sm-6">
-                                <a href="{% url 'hospital_doctors' %}" class="btn btn-outline-primary w-100 btn-quick">
-                                    <i class="fas fa-user-md me-2"></i>Manage Doctors
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <a href="{% url 'hospital_patients' %}" class="btn btn-outline-success w-100 btn-quick">
-                                    <i class="fas fa-users me-2"></i>Manage Patients
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <a href="{% url 'hospital_appointments' %}" class="btn btn-outline-info w-100 btn-quick">
-                                    <i class="fas fa-calendar me-2"></i>Manage Appointments
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <a href="{% url 'hospital_beds' %}" class="btn btn-outline-warning w-100 btn-quick">
-                                    <i class="fas fa-bed me-2"></i>Manage ICU Beds
-                                </a>
+            <!-- Emergency Section -->
+            <div class="emergency-card mb-4">
+                <div class="p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-white rounded-circle p-3 me-3">
+                                    <i class="fas fa-ambulance fa-3x text-danger"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white fw-bold mb-0">Emergency Management</h3>
+                                    <p class="text-white-50 mb-0">24/7 Emergency Response System</p>
+                                </div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <div class="emergency-stats p-2 text-center">
+                                        <i class="fas fa-clock fa-2x text-danger"></i>
+                                        <h4 class="fw-bold mb-0 text-dark">{{ pending_emergencies|default:"0" }}</h4>
+                                        <small class="text-muted">Pending</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="emergency-stats p-2 text-center">
+                                        <i class="fas fa-truck-medical fa-2x text-warning"></i>
+                                        <h4 class="fw-bold mb-0 text-dark">{{ in_transit_emergencies|default:"0" }}</h4>
+                                        <small class="text-muted">In Transit</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="emergency-stats p-2 text-center">
+                                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                                        <h4 class="fw-bold mb-0 text-dark">{{ completed_emergencies|default:"0" }}</h4>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'hospital_emergencies' %}" class="btn btn-light rounded-pill">
+                            <i class="fas fa-arrow-right me-2"></i>Manage Emergencies
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="stat-card p-3 mb-4">
+                <h5 class="mb-3 fw-bold">
+                    <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
+                </h5>
+                <div class="row g-2">
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_doctors' %}" class="btn btn-outline-primary w-100 btn-quick">
+                            <i class="fas fa-user-md me-2"></i>Doctors
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_patients' %}" class="btn btn-outline-success w-100 btn-quick">
+                            <i class="fas fa-users me-2"></i>Patients
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_appointments' %}" class="btn btn-outline-info w-100 btn-quick">
+                            <i class="fas fa-calendar me-2"></i>Appointments
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_beds' %}" class="btn btn-outline-warning w-100 btn-quick">
+                            <i class="fas fa-bed me-2"></i>ICU Beds
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_products' %}" class="btn btn-outline-secondary w-100 btn-quick">
+                            <i class="fas fa-capsules me-2"></i>Products
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_orders' %}" class="btn btn-outline-dark w-100 btn-quick">
+                            <i class="fas fa-shopping-cart me-2"></i>Orders
+                        </a>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <a href="{% url 'hospital_emergencies' %}" class="btn btn-outline-danger w-100 btn-quick">
+                            <i class="fas fa-ambulance me-2"></i>Emergency
+                        </a>
                     </div>
                 </div>
             </div>
 
             <!-- Recent Data Tables -->
             <div class="row g-4">
-                <!-- Recent Patients -->
                 <div class="col-md-6">
                     <div class="stat-card">
                         <div class="card-header bg-white border-0 pt-4 pb-0">
@@ -398,8 +549,8 @@
                                         <tr>
                                             <td class="align-middle">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 35px; height: 35px;">
-                                                        <i class="fas fa-user"></i>
+                                                    <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 32px; height: 32px;">
+                                                        <i class="fas fa-user fa-sm"></i>
                                                     </div>
                                                     <strong>{{ patient.full_name }}</strong>
                                                 </div>
@@ -409,10 +560,7 @@
                                         </tr>
                                         {% empty %}
                                         <tr>
-                                            <td colspan="3" class="text-center py-4">
-                                                <i class="fas fa-users fa-3x text-muted mb-2"></i>
-                                                <p class="mb-0">No patients found</p>
-                                            </td>
+                                            <td colspan="3" class="text-center py-4 text-muted">No patients found</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -422,7 +570,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Appointments -->
                 <div class="col-md-6">
                     <div class="stat-card">
                         <div class="card-header bg-white border-0 pt-4 pb-0">
@@ -438,7 +585,7 @@
                                         <tr>
                                             <th>Patient</th>
                                             <th>Doctor</th>
-                                            <th>Date & Time</th>
+                                            <th>Date</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
@@ -447,35 +594,29 @@
                                         <tr>
                                             <td class="align-middle">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="avatar-circle bg-info bg-opacity-10 text-info me-2" style="width: 35px; height: 35px;">
-                                                        <i class="fas fa-user"></i>
+                                                    <div class="avatar-circle bg-info bg-opacity-10 text-info me-2" style="width: 32px; height: 32px;">
+                                                        <i class="fas fa-user fa-sm"></i>
                                                     </div>
                                                     <strong>{{ apt.patient.full_name }}</strong>
                                                 </div>
                                             </td>
                                             <td class="align-middle">Dr. {{ apt.doctor.full_name }}</td>
-                                            <td class="align-middle">
-                                                {{ apt.appointment_date|date:"M d, Y" }}<br>
-                                                <small class="text-muted">{{ apt.appointment_date|date:"g:i A" }}</small>
-                                            </td>
+                                            <td class="align-middle">{{ apt.appointment_date|date:"M d, Y" }}</td>
                                             <td class="align-middle">
                                                 {% if apt.status == 'confirmed' %}
-                                                    <span class="badge-status badge-confirmed">Confirmed</span>
+                                                    <span class="badge-status badge-confirmed"><i class="fas fa-check-circle"></i> Confirmed</span>
                                                 {% elif apt.status == 'pending' %}
-                                                    <span class="badge-status badge-pending">Pending</span>
+                                                    <span class="badge-status badge-pending"><i class="fas fa-clock"></i> Pending</span>
                                                 {% elif apt.status == 'completed' %}
-                                                    <span class="badge-status badge-completed">Completed</span>
+                                                    <span class="badge-status badge-completed"><i class="fas fa-check-double"></i> Completed</span>
                                                 {% else %}
-                                                    <span class="badge-status badge-cancelled">Cancelled</span>
+                                                    <span class="badge-status badge-cancelled"><i class="fas fa-times-circle"></i> Cancelled</span>
                                                 {% endif %}
                                             </td>
                                         </tr>
                                         {% empty %}
                                         <tr>
-                                            <td colspan="4" class="text-center py-4">
-                                                <i class="fas fa-calendar-times fa-3x text-muted mb-2"></i>
-                                                <p class="mb-0">No appointments found</p>
-                                            </td>
+                                            <td colspan="4" class="text-center py-4 text-muted">No appointments found</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -486,34 +627,100 @@
                 </div>
             </div>
 
+            <!-- Recent Emergency Requests -->
+            <div class="stat-card mt-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold"><i class="fas fa-ambulance text-danger me-2"></i>Recent Emergency Requests</h5>
+                        <a href="{% url 'hospital_emergencies' %}" class="btn btn-sm btn-link text-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_emergencies %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Emergency Type</th>
+                                    <th>Location</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Request Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emergency in recent_emergencies %}
+                                <tr>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-danger bg-opacity-10 text-danger me-2" style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user fa-sm"></i>
+                                            </div>
+                                            <strong>{{ emergency.patient_name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">{{ emergency.emergency_type }}</td>
+                                    <td class="align-middle">{{ emergency.location|truncatechars:30 }}</td>
+                                    <td class="align-middle">
+                                        {% if emergency.priority == 'critical' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% elif emergency.priority == 'high' %}
+                                            <span class="badge bg-warning">High</span>
+                                        {% elif emergency.priority == 'medium' %}
+                                            <span class="badge bg-info">Medium</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if emergency.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif emergency.status == 'in_transit' %}
+                                            <span class="badge bg-info">In Transit</span>
+                                        {% elif emergency.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">{{ emergency.request_time|date:"M d, H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-ambulance fa-3x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No emergency requests found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Hospital Info Footer -->
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="stat-card p-4">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h5 class="fw-bold mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Hospital Information</h5>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Address</small>
-                                        <p class="mb-0">{{ hospital.address }}</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <small class="text-muted"><i class="fas fa-phone me-1"></i> Phone</small>
-                                        <p class="mb-0">{{ hospital.phone }}</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <small class="text-muted"><i class="fas fa-envelope me-1"></i> Email</small>
-                                        <p class="mb-0">{{ hospital.email }}</p>
-                                    </div>
-                                </div>
+            <div class="stat-card p-4 mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="fw-bold mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Hospital Information</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <small class="text-muted d-block"><i class="fas fa-map-marker-alt me-1"></i> Address</small>
+                                <p class="mb-0">{{ hospital.address|default:"Not provided" }}</p>
                             </div>
-                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                <div class="bg-primary bg-opacity-10 rounded-3 p-3 d-inline-block">
-                                    <i class="fas fa-chart-line text-primary me-2"></i>
-                                    <span class="fw-bold">Active Since: {{ hospital.created_at|date:"F Y" }}</span>
-                                </div>
+                            <div class="col-md-4 mb-2">
+                                <small class="text-muted d-block"><i class="fas fa-phone me-1"></i> Phone</small>
+                                <p class="mb-0">{{ hospital.phone|default:"Not provided" }}</p>
                             </div>
+                            <div class="col-md-4 mb-2">
+                                <small class="text-muted d-block"><i class="fas fa-envelope me-1"></i> Email</small>
+                                <p class="mb-0">{{ hospital.email|default:"Not provided" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 d-inline-block">
+                            <i class="fas fa-chart-line text-primary me-2"></i>
+                            <span class="fw-semibold">Active Since: {{ hospital.created_at|date:"F Y" }}</span>
                         </div>
                     </div>
                 </div>

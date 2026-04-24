@@ -1,0 +1,379 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}My Profile - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .profile-header {
+        background: var(--primary-gradient);
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 80%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        transform: rotate(25deg);
+        pointer-events: none;
+    }
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+    .info-card {
+        background: white;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 12px 16px;
+        transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+    }
+    .edit-btn {
+        transition: all 0.3s ease;
+    }
+    .edit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2 position-relative">
+                <a class="nav-link" href="{% url 'pharmacy_cart' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Cart
+                    {% if cart_items_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
+                        {{ cart_items_count }}
+                    </span>
+                    {% endif %}
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-user-circle text-primary me-2"></i>My Profile
+            </h2>
+            <p class="text-muted">View and manage your personal information</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <button type="button" class="btn btn-primary rounded-pill px-4 edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="fas fa-edit me-2"></i>Edit Profile
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="profile-header p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center text-md-start">
+                <div class="profile-avatar mx-auto mx-md-0">
+                    <i class="fas fa-user-md" style="font-size: 60px; color: #667eea;"></i>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <h2 class="text-white fw-bold mb-2">{{ patient.full_name }}</h2>
+                <p class="text-white-50 mb-3">
+                    <i class="fas fa-envelope me-2"></i>{{ patient.user.email }}
+                    {% if patient.phone %}
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-phone me-2"></i>{{ patient.phone }}
+                    {% endif %}
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2">
+                        <small class="text-white-50">Patient ID</small>
+                        <p class="text-white fw-bold mb-0">#{{ patient.id }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2">
+                        <small class="text-white-50">Blood Group</small>
+                        <p class="text-white fw-bold mb-0">{{ patient.blood_group|default:"Not Set" }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2">
+                        <small class="text-white-50">Age</small>
+                        <p class="text-white fw-bold mb-0">{{ patient.age|default:"N/A" }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-2">
+                        <small class="text-white-50">Gender</small>
+                        <p class="text-white fw-bold mb-0">{{ patient.get_gender_display|default:"Not Set" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Personal Information Card -->
+        <div class="col-md-6">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-user text-primary me-2"></i>Personal Information
+                </h5>
+                <div class="mb-3">
+                    <label class="text-muted small">Full Name</label>
+                    <p class="fw-semibold mb-0">{{ patient.full_name }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Email Address</label>
+                    <p class="fw-semibold mb-0">{{ patient.user.email }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Phone Number</label>
+                    <p class="fw-semibold mb-0">{{ patient.phone|default:"Not provided" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Emergency Contact</label>
+                    <p class="fw-semibold mb-0">{{ patient.emergency_contact|default:"Not provided" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Date of Birth</label>
+                    <p class="fw-semibold mb-0">{{ patient.date_of_birth|date:"F d, Y"|default:"Not provided" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Gender</label>
+                    <p class="fw-semibold mb-0">{{ patient.get_gender_display|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Information Card -->
+        <div class="col-md-6">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-notes-medical text-primary me-2"></i>Medical Information
+                </h5>
+                <div class="mb-3">
+                    <label class="text-muted small">Blood Group</label>
+                    <p class="fw-semibold mb-0">
+                        {% if patient.blood_group %}
+                        <span class="badge bg-danger">{{ patient.blood_group }}</span>
+                        {% else %}
+                        <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Address</label>
+                    <p class="fw-semibold mb-0">{{ patient.address|default:"Not provided" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Assigned Hospital</label>
+                    <p class="fw-semibold mb-0">{{ patient.hospital.name|default:"Not assigned" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Assigned Doctor</label>
+                    <p class="fw-semibold mb-0">
+                        {% if patient.assigned_doctor %}
+                        Dr. {{ patient.assigned_doctor.full_name }}
+                        {% else %}
+                        Not assigned
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Member Since</label>
+                    <p class="fw-semibold mb-0">{{ patient.created_at|date:"F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="col-md-12">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-chart-line text-primary me-2"></i>Health Statistics
+                </h5>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="bg-light rounded-3 p-3">
+                            <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                            <h3 class="stat-value mb-0">{{ total_appointments|default:"0" }}</h3>
+                            <small class="text-muted">Total Appointments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="bg-light rounded-3 p-3">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h3 class="stat-value mb-0">{{ completed_appointments|default:"0" }}</h3>
+                            <small class="text-muted">Completed Visits</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="bg-light rounded-3 p-3">
+                            <i class="fas fa-flask fa-2x text-info mb-2"></i>
+                            <h3 class="stat-value mb-0">{{ test_reports_count|default:"0" }}</h3>
+                            <small class="text-muted">Test Reports</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'patient_profile' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ patient.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ patient.last_name }}" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ patient.phone }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Emergency Contact</label>
+                        <input type="tel" name="emergency_contact" class="form-control" value="{{ patient.emergency_contact }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="form-control" value="{{ patient.date_of_birth|date:'Y-m-d' }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Gender</label>
+                            <select name="gender" class="form-select">
+                                <option value="male" {% if patient.gender == 'male' %}selected{% endif %}>Male</option>
+                                <option value="female" {% if patient.gender == 'female' %}selected{% endif %}>Female</option>
+                                <option value="other" {% if patient.gender == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Blood Group</label>
+                            <select name="blood_group" class="form-select">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+" {% if patient.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                                <option value="A-" {% if patient.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                                <option value="B+" {% if patient.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                                <option value="B-" {% if patient.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                                <option value="O+" {% if patient.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                                <option value="O-" {% if patient.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                                <option value="AB+" {% if patient.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                                <option value="AB-" {% if patient.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Address</label>
+                        <textarea name="address" class="form-control" rows="2">{{ patient.address }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

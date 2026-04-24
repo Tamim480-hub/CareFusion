@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareFusion - Book Appointment</title>
+    <title>CareFusion - Book Appointment | Patient Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,7 +17,6 @@
             --danger: #dc3545;
             --dark: #1a1a2e;
             --light: #f8f9fa;
-            --gray: #6c757d;
         }
 
         * {
@@ -44,6 +43,8 @@
             transition: all 0.3s ease;
             margin-bottom: 8px;
             color: rgba(255,255,255,0.8) !important;
+            text-decoration: none;
+            display: block;
         }
 
         .nav-link:hover {
@@ -160,9 +161,29 @@
                 width: 50px;
                 height: 50px;
             }
-            .icon-circle i {
-                font-size: 1.5rem;
-            }
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 280px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+        .success-toast {
+            border-left: 4px solid #28a745;
+        }
+        .error-toast {
+            border-left: 4px solid #dc3545;
         }
     </style>
 </head>
@@ -174,49 +195,55 @@
         <div class="col-md-3 col-lg-2 sidebar">
             <div class="p-3">
                 <div class="text-center mb-4">
-                    <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
                     <h5 class="text-white mt-2 mb-1">CareFusion</h5>
                     <small class="text-white-50">Patient Portal</small>
                 </div>
 
                 <ul class="nav nav-pills flex-column">
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                        <a class="nav-link" href="#" onclick="showDashboardMessage()">
                             <i class="fas fa-tachometer-alt me-3"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'my_appointments' %}">
+                        <a class="nav-link" href="#" onclick="showAppointmentsMessage()">
                             <i class="fas fa-calendar-check me-3"></i> Appointments
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'doctor_list' %}">
+                        <a class="nav-link" href="#" onclick="showDoctorsMessage()">
                             <i class="fas fa-user-md me-3"></i> Find Doctors
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link active" href="{% url 'book_appointment' %}">
+                        <a class="nav-link active" href="#">
                             <i class="fas fa-calendar-plus me-3"></i> Book Appointment
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'patient_products' %}">
+                        <a class="nav-link" href="#" onclick="showProductsMessage()">
                             <i class="fas fa-capsules me-3"></i> Products
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'patient_cart' %}">
+                        <a class="nav-link" href="#" onclick="showCartMessage()">
                             <i class="fas fa-shopping-cart me-3"></i> Cart
+                            <span class="badge bg-danger rounded-pill ms-2" style="font-size: 10px;">0</span>
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'profile' %}">
+                        <a class="nav-link" href="#" onclick="showICUMessage()">
+                            <i class="fas fa-bed me-3"></i> ICU Beds
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="#" onclick="showProfileMessage()">
                             <i class="fas fa-user-circle me-3"></i> Profile
                         </a>
                     </li>
                     <li class="nav-item mt-4 pt-3 border-top border-secondary">
-                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                        <a class="nav-link" href="#" onclick="showLogoutMessage()" style="background: rgba(220, 53, 69, 0.2);">
                             <i class="fas fa-sign-out-alt me-3"></i> Logout
                         </a>
                     </li>
@@ -240,31 +267,18 @@
                         <div class="avatar-circle bg-primary text-white me-2">
                             <i class="fas fa-user"></i>
                         </div>
-                        <span class="fw-semibold">{{ user.username }}</span>
+                        <span class="fw-semibold">John Doe</span>
                         <i class="fas fa-chevron-down ms-2 text-muted"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius: 15px;">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-                    </ul>
                 </div>
             </div>
 
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb" class="mb-4">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'patient_dashboard' %}" class="text-decoration-none">
-                            <i class="fas fa-home me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'my_appointments' %}" class="text-decoration-none">
-                            <i class="fas fa-calendar me-1"></i>My Appointments
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Book Appointment</li>
+                    <li class="breadcrumb-item"><a href="#" onclick="showDashboardMessage()">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="#" onclick="showAppointmentsMessage()">My Appointments</a></li>
+                    <li class="breadcrumb-item active">Book Appointment</li>
                 </ol>
             </nav>
 
@@ -283,9 +297,7 @@
                 </div>
 
                 <div class="card-body p-4">
-                    <form method="POST" id="appointmentForm">
-                        {% csrf_token %}
-
+                    <form id="appointmentForm">
                         <!-- Doctor Selection -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">
@@ -293,19 +305,13 @@
                             </label>
                             <select name="doctor_id" id="doctorSelect" class="form-select form-select-lg" required>
                                 <option value="">-- Choose a doctor --</option>
-                                {% for doctor in doctors %}
-                                <option value="{{ doctor.id }}" data-fee="{{ doctor.consultation_fee }}">
-                                    Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}
-                                    ({{ doctor.get_specialization_display }}) - ৳{{ doctor.consultation_fee }}
-                                </option>
-                                {% endfor %}
+                                <option value="1" data-fee="800" data-specialization="Cardiologist" data-rating="4.8">Dr. Sarah Rahman (Cardiologist) - ৳800</option>
+                                <option value="2" data-fee="1000" data-specialization="Neurologist" data-rating="4.9">Dr. Ahmed Khan (Neurologist) - ৳1000</option>
+                                <option value="3" data-fee="600" data-specialization="Dermatologist" data-rating="4.7">Dr. Fatima Begum (Dermatologist) - ৳600</option>
+                                <option value="4" data-fee="1200" data-specialization="Orthopedic" data-rating="4.9">Dr. Rahim Uddin (Orthopedic) - ৳1200</option>
+                                <option value="5" data-fee="700" data-specialization="Pediatrician" data-rating="4.8">Dr. Nusrat Jahan (Pediatrician) - ৳700</option>
+                                <option value="6" data-fee="900" data-specialization="Gynecologist" data-rating="4.9">Dr. Laila Hossain (Gynecologist) - ৳900</option>
                             </select>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Select from our available doctors
-                                </small>
-                            </div>
                         </div>
 
                         <!-- Doctor Details Card -->
@@ -335,12 +341,6 @@
                                     <i class="fas fa-calendar-day text-primary me-2"></i>Appointment Date
                                 </label>
                                 <input type="date" name="date" id="appointmentDate" class="form-control" required>
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar-week me-1"></i>
-                                        Select a preferred date (Monday - Saturday)
-                                    </small>
-                                </div>
                             </div>
 
                             <div class="col-md-6 mb-4">
@@ -358,12 +358,6 @@
                                     <option value="16:00">04:00 PM</option>
                                     <option value="17:00">05:00 PM</option>
                                 </select>
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-business-time me-1"></i>
-                                        Available time slots: 9:00 AM - 5:00 PM
-                                    </small>
-                                </div>
                             </div>
                         </div>
 
@@ -387,12 +381,6 @@
                             <textarea name="symptoms" id="symptoms" class="form-control" rows="4"
                                       placeholder="Describe your symptoms, medical history, or reason for visit..."
                                       required></textarea>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="fas fa-lightbulb me-1"></i>
-                                    Please provide detailed information for better consultation
-                                </small>
-                            </div>
                             <div class="mt-1">
                                 <small id="charCount" class="text-muted">0/500 characters</small>
                             </div>
@@ -400,10 +388,10 @@
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between gap-3 mt-4">
-                            <a href="{% url 'my_appointments' %}" class="btn btn-outline-secondary btn-lg px-4">
-                                <i class="fas fa-arrow-left me-2"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <button type="button" onclick="resetForm()" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                                <i class="fas fa-redo-alt me-2"></i>Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill">
                                 <i class="fas fa-check-circle me-2"></i>Confirm Booking
                             </button>
                         </div>
@@ -471,31 +459,53 @@
     </div>
 </div>
 
+<!-- Toast Notification -->
+<div id="toastNotification" class="toast-notification">
+    <div class="p-3">
+        <div class="d-flex align-items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-check-circle fa-2x text-success"></i>
+            </div>
+            <div class="flex-grow-1 ms-3">
+                <strong id="toastTitle">Success!</strong>
+                <p id="toastMessage" class="mb-0 small">Your appointment has been booked successfully.</p>
+            </div>
+            <button type="button" class="btn-close" onclick="hideToast()"></button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Set minimum date to today
+    // Set min date to today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('appointmentDate').setAttribute('min', today);
+
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+    document.getElementById('appointmentDate').setAttribute('max', maxDate.toISOString().split('T')[0]);
 
     // Doctor selection handler
     document.getElementById('doctorSelect').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const doctorFee = selectedOption.dataset.fee;
-        const doctorName = selectedOption.text.split('(')[0].trim();
-        const doctorSpecialization = selectedOption.text.match(/\((.*?)\)/)[1];
+        const doctorSpecialization = selectedOption.dataset.specialization;
+        const doctorRating = selectedOption.dataset.rating;
+        const doctorFullName = selectedOption.text.split('(')[0].trim();
 
         if (doctorFee) {
             document.getElementById('consultationFee').innerText = doctorFee;
             document.getElementById('doctorDetails').style.display = 'block';
-            document.getElementById('doctorName').innerText = doctorName;
-            document.getElementById('doctorSpecialization').innerText = doctorSpecialization;
+            document.getElementById('doctorName').innerText = doctorFullName;
+            document.getElementById('doctorSpecialization').innerHTML = `<i class="fas fa-stethoscope me-1"></i>${doctorSpecialization}`;
+            document.getElementById('doctorRating').innerText = doctorRating;
         } else {
             document.getElementById('consultationFee').innerText = '0';
             document.getElementById('doctorDetails').style.display = 'none';
         }
     });
 
-    // Character counter for symptoms
+    // Character counter
     const symptomsInput = document.getElementById('symptoms');
     const charCount = document.getElementById('charCount');
 
@@ -509,42 +519,128 @@
         }
     });
 
-    // Form validation before submit
+    // Toast functions
+    function showToast(title, message, isError = false) {
+        const toast = document.getElementById('toastNotification');
+        const icon = toast.querySelector('.flex-shrink-0 i');
+        const titleEl = document.getElementById('toastTitle');
+        const messageEl = document.getElementById('toastMessage');
+
+        if (isError) {
+            icon.className = 'fas fa-exclamation-circle fa-2x text-danger';
+            titleEl.innerText = title;
+            toast.classList.add('error-toast');
+            toast.classList.remove('success-toast');
+        } else {
+            icon.className = 'fas fa-check-circle fa-2x text-success';
+            titleEl.innerText = title;
+            toast.classList.add('success-toast');
+            toast.classList.remove('error-toast');
+        }
+        messageEl.innerText = message;
+        toast.classList.add('show');
+
+        setTimeout(() => {
+            hideToast();
+        }, 4000);
+    }
+
+    function hideToast() {
+        document.getElementById('toastNotification').classList.remove('show');
+    }
+
+    // Reset form
+    function resetForm() {
+        document.getElementById('appointmentForm').reset();
+        document.getElementById('consultationFee').innerText = '0';
+        document.getElementById('doctorDetails').style.display = 'none';
+        document.getElementById('charCount').innerText = '0/500 characters';
+        charCount.classList.remove('text-danger');
+        showToast('Reset', 'Form has been cleared', false);
+    }
+
+    // Form submission
     document.getElementById('appointmentForm').addEventListener('submit', function(e) {
-        const doctor = document.getElementById('doctorSelect').value;
+        e.preventDefault();
+
+        const doctorSelect = document.getElementById('doctorSelect');
+        const doctor = doctorSelect.value;
         const date = document.getElementById('appointmentDate').value;
         const time = document.getElementById('appointmentTime').value;
         const symptoms = document.getElementById('symptoms').value;
 
         if (!doctor) {
-            e.preventDefault();
-            alert('Please select a doctor');
-            return false;
+            showToast('Error', 'Please select a doctor', true);
+            return;
         }
 
         if (!date) {
-            e.preventDefault();
-            alert('Please select an appointment date');
-            return false;
+            showToast('Error', 'Please select an appointment date', true);
+            return;
         }
 
         if (!time) {
-            e.preventDefault();
-            alert('Please select an appointment time');
-            return false;
+            showToast('Error', 'Please select an appointment time', true);
+            return;
         }
 
         if (!symptoms || symptoms.length < 10) {
-            e.preventDefault();
-            alert('Please describe your symptoms (minimum 10 characters)');
-            return false;
+            showToast('Error', 'Please describe your symptoms (minimum 10 characters)', true);
+            return;
         }
 
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Booking...';
-        submitBtn.disabled = true;
+        if (symptoms.length > 500) {
+            showToast('Error', 'Symptoms description cannot exceed 500 characters', true);
+            return;
+        }
+
+        // Get selected doctor name
+        const doctorName = doctorSelect.options[doctorSelect.selectedIndex].text.split('(')[0].trim();
+        const fee = document.getElementById('consultationFee').innerText;
+
+        // Generate appointment ID
+        const appointmentId = 'APT' + Date.now().toString().slice(-8);
+
+        // Show success message
+        showToast('Appointment Booked!', `${appointmentId} - Dr. ${doctorName} on ${date} at ${time} | Fee: ৳${fee}`, false);
+
+        // Optionally reset form after successful booking
+        setTimeout(() => {
+            if(confirm('Appointment booked successfully! Would you like to book another appointment?')) {
+                resetForm();
+            }
+        }, 500);
     });
+
+    // Sidebar navigation messages
+    function showDashboardMessage() { showToast('Info', 'Dashboard - View your health summary', false); }
+    function showAppointmentsMessage() { showToast('Info', 'My Appointments - View your appointment history', false); }
+    function showDoctorsMessage() { showToast('Info', 'Find Doctors - Browse our medical experts', false); }
+    function showProductsMessage() { showToast('Info', 'Products - Shop medical essentials', false); }
+    function showCartMessage() { showToast('Info', 'Cart - Your shopping cart is empty', false); }
+    function showICUMessage() { showToast('Info', 'ICU Beds - Check bed availability', false); }
+    function showProfileMessage() { showToast('Info', 'Profile - Update your information', false); }
+    function showLogoutMessage() {
+        if(confirm('Are you sure you want to logout?')) {
+            showToast('Logged Out', 'You have been successfully logged out', false);
+            setTimeout(() => { resetForm(); }, 1000);
+        }
+    }
+
+    // Check URL parameters for pre-selected doctor
+    const urlParams = new URLSearchParams(window.location.search);
+    const doctorParam = urlParams.get('doctor');
+    if(doctorParam) {
+        const doctorSelect = document.getElementById('doctorSelect');
+        for(let i = 0; i < doctorSelect.options.length; i++) {
+            if(doctorSelect.options[i].value === doctorParam) {
+                doctorSelect.selectedIndex = i;
+                doctorSelect.dispatchEvent(new Event('change'));
+                showToast('Doctor Selected', 'Please complete your appointment details', false);
+                break;
+            }
+        }
+    }
 </script>
 </body>
 </html>

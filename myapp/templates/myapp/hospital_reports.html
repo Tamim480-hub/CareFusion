@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareFusion - Hospital Reports</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white !important;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white !important;
+        }
+
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-confirmed { background: #d4edda; color: #155724; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <div class="text-center mb-4">
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+                    <small class="text-white-50">Hospital Admin</small>
+                </div>
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_doctors' %}"><i class="fas fa-user-md me-3"></i> Doctors</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_patients' %}"><i class="fas fa-users me-3"></i> Patients</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_appointments' %}"><i class="fas fa-calendar-check me-3"></i> Appointments</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_beds' %}"><i class="fas fa-bed me-3"></i> ICU Beds</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link active" href="{% url 'hospital_reports' %}"><i class="fas fa-chart-line me-3"></i> Reports</a></li>
+                    <li class="nav-item mt-4 pt-3 border-top border-secondary"><a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220,53,69,0.2);"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold"><i class="fas fa-chart-line text-primary me-2"></i>Hospital Reports</h2>
+                    <p class="text-muted mb-0">{{ hospital.name }} - Analytics & Reports</p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark d-flex align-items-center" data-bs-toggle="dropdown">
+                        <div class="avatar-circle bg-primary text-white me-2"><i class="fas fa-user"></i></div>
+                        <span>{{ user.username }}</span>
+                        <i class="fas fa-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="{% url 'hospital_dashboard' %}" class="btn btn-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3"><div class="stat-card p-3 text-center"><h3 class="fw-bold text-primary mb-0">{{ total_patients|default:"0" }}</h3><small>Total Patients</small></div></div>
+                <div class="col-md-3"><div class="stat-card p-3 text-center"><h3 class="fw-bold text-success mb-0">{{ total_doctors|default:"0" }}</h3><small>Total Doctors</small></div></div>
+                <div class="col-md-3"><div class="stat-card p-3 text-center"><h3 class="fw-bold text-info mb-0">{{ total_appointments|default:"0" }}</h3><small>Total Appointments</small></div></div>
+                <div class="col-md-3"><div class="stat-card p-3 text-center"><h3 class="fw-bold text-warning mb-0">{{ available_beds|default:"0" }}/{{ total_beds|default:"0" }}</h3><small>Beds Available</small></div></div>
+            </div>
+
+            <!-- Second Row Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-4"><div class="info-card p-3 text-center"><h4 class="text-success mb-0">{{ completed_appointments|default:"0" }}</h4><small>Completed Appointments</small></div></div>
+                <div class="col-md-4"><div class="info-card p-3 text-center"><h4 class="text-warning mb-0">{{ pending_appointments|default:"0" }}</h4><small>Pending Appointments</small></div></div>
+                <div class="col-md-4"><div class="info-card p-3 text-center"><h4 class="text-danger mb-0">{{ cancelled_appointments|default:"0" }}</h4><small>Cancelled Appointments</small></div></div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="info-card p-3">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-line text-primary me-2"></i>Monthly Patients</h5>
+                        <canvas id="patientChart" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-card p-3">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Monthly Appointments</h5>
+                        <canvas id="appointmentChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Buttons -->
+            <div class="text-end">
+                <button class="btn btn-success rounded-pill px-4" onclick="alert('PDF export coming soon!')">
+                    <i class="fas fa-file-pdf me-2"></i> Export PDF
+                </button>
+                <button class="btn btn-info rounded-pill px-4 ms-2" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i> Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Patient Chart
+    const ctx1 = document.getElementById('patientChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'New Patients',
+                data: {{ monthly_patients|default:"[0,0,0,0,0,0,0,0,0,0,0,0]" }},
+                borderColor: '#4a90e2',
+                backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+
+    // Appointment Chart
+    const ctx2 = document.getElementById('appointmentChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Appointments',
+                data: {{ monthly_appointments|default:"[0,0,0,0,0,0,0,0,0,0,0,0]" }},
+                backgroundColor: '#4a90e2',
+                borderRadius: 10
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+</script>
+</body>
+</html>

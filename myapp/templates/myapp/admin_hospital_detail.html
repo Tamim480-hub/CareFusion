@@ -1,0 +1,145 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_manage_hospitals' %}">Hospitals</a></li>
+                    <li class="breadcrumb-item active">{{ hospital.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-lg border-0 rounded-4 mb-4">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-hospital me-2"></i>Hospital Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small">Hospital Name</label>
+                        <p class="fw-bold mb-0">{{ hospital.name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Hospital Code</label>
+                        <p class="fw-bold mb-0"><code>{{ hospital.code }}</code></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Address</label>
+                        <p class="mb-0">{{ hospital.address|default:"Not provided" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Phone</label>
+                        <p class="mb-0">{{ hospital.phone|default:"Not provided" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Email</label>
+                        <p class="mb-0">{{ hospital.email|default:"Not provided" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Status</label>
+                        <div>
+                            {% if hospital.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Created At</label>
+                        <p class="mb-0">{{ hospital.created_at|date:"F d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4 mb-4">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-chart-bar me-2"></i>Hospital Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 bg-light rounded-4">
+                                <i class="fas fa-user-md fa-2x text-primary mb-2"></i>
+                                <h3 class="mb-0">{{ doctors_count }}</h3>
+                                <small class="text-muted">Doctors</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 bg-light rounded-4">
+                                <i class="fas fa-users fa-2x text-success mb-2"></i>
+                                <h3 class="mb-0">{{ patients_count }}</h3>
+                                <small class="text-muted">Patients</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 bg-light rounded-4">
+                                <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+                                <h3 class="mb-0">{{ appointments_count }}</h3>
+                                <small class="text-muted">Appointments</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 bg-light rounded-4">
+                                <i class="fas fa-bed fa-2x text-warning mb-2"></i>
+                                <h3 class="mb-0">{{ beds_count }}</h3>
+                                <small class="text-muted">ICU Beds</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if hospital_admin %}
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-user-shield me-2"></i>Hospital Admin
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle bg-primary text-white me-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-user fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ hospital_admin.user.get_full_name|default:hospital_admin.user.username }}</h5>
+                            <p class="text-muted mb-1">{{ hospital_admin.designation|default:"Hospital Administrator" }}</p>
+                            <p class="mb-0">
+                                <i class="fas fa-envelope me-1"></i> {{ hospital_admin.user.email }}<br>
+                                <i class="fas fa-phone me-1"></i> {{ hospital_admin.phone|default:"N/A" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .avatar-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}

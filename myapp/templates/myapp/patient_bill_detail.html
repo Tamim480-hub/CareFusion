@@ -1,0 +1,153 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Bill Details - CareFusion{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-primary text-white py-3 rounded-top-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold">
+                            <i class="fas fa-receipt me-2"></i>Bill Details
+                        </h4>
+                        {% if bill.status == 'paid' %}
+                            <span class="badge bg-success fs-6">Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning fs-6">Pending</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Bill Header -->
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold">CareFusion Healthcare</h3>
+                        <p class="text-muted">{{ bill.doctor.hospital.name|default:"Central Hospital" }}</p>
+                        <hr>
+                        <h5 class="fw-bold">Bill #{{ bill.bill_number }}</h5>
+                        <p class="small text-muted">Date: {{ bill.created_at|date:"F d, Y h:i A" }}</p>
+                    </div>
+
+                    <!-- Patient & Doctor Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-user text-primary me-2"></i>Patient Information
+                                </h6>
+                                <p class="mb-1"><strong>Name:</strong> {{ bill.patient.full_name }}</p>
+                                <p class="mb-1"><strong>Phone:</strong> {{ bill.patient.phone|default:"N/A" }}</p>
+                                <p class="mb-0"><strong>Patient ID:</strong> #{{ bill.patient.id }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-user-md text-primary me-2"></i>Doctor Information
+                                </h6>
+                                <p class="mb-1"><strong>Name:</strong> Dr. {{ bill.doctor.full_name }}</p>
+                                <p class="mb-1"><strong>Specialization:</strong> {{ bill.doctor.get_specialization_display }}</p>
+                                <p class="mb-0"><strong>Doctor ID:</strong> #{{ bill.doctor.id }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bill Items -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-list-ul text-primary me-2"></i>Bill Items
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Description</th>
+                                        <th class="text-end">Amount (৳)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ bill.description|default:"Consultation Fee" }}</td>
+                                        <td class="text-end">{{ bill.amount }}</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th class="text-end">Subtotal:</th>
+                                        <td class="text-end">৳{{ bill.amount }}</td>
+                                    </tr>
+                                    {% if bill.discount > 0 %}
+                                    <tr>
+                                        <th class="text-end">Discount:</th>
+                                        <td class="text-end text-success">- ৳{{ bill.discount }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if bill.tax > 0 %}
+                                    <tr>
+                                        <th class="text-end">Tax:</th>
+                                        <td class="text-end">+ ৳{{ bill.tax }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr class="table-primary">
+                                        <th class="text-end fw-bold">Total Amount:</th>
+                                        <td class="text-end fw-bold fs-5">৳{{ bill.total_amount }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment Info -->
+                    {% if bill.status == 'paid' %}
+                    <div class="bg-success bg-opacity-10 rounded-3 p-3 mb-4">
+                        <h6 class="fw-bold text-success mb-2">
+                            <i class="fas fa-check-circle me-2"></i>Payment Information
+                        </h6>
+                        <p class="mb-1"><strong>Transaction ID:</strong> {{ bill.transaction_id }}</p>
+                        <p class="mb-1"><strong>Payment Method:</strong> {{ bill.get_payment_method_display }}</p>
+                        <p class="mb-0"><strong>Payment Date:</strong> {{ bill.payment_date|date:"F d, Y h:i A" }}</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        This bill is pending payment. Please complete the payment to confirm your appointment.
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="{% url 'patient_bills' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Bills
+                        </a>
+                        {% if bill.status == 'pending' %}
+                        <a href="{% url 'patient_pay_bill' bill.id %}" class="btn btn-success rounded-pill px-4">
+                            <i class="fas fa-credit-card me-2"></i>Pay Now
+                        </a>
+                        {% endif %}
+                        <button onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4">
+                            <i class="fas fa-print me-2"></i>Print Bill
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .sidebar, .btn, .dropdown, .action-buttons {
+            display: none !important;
+        }
+        .main-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .card {
+            box-shadow: none !important;
+        }
+    }
+</style>
+{% endblock %}

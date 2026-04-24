@@ -1,0 +1,224 @@
+<!-- templates/myapp/patient_order_detail.html -->
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Order Details - {{ order.order_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        background: var(--navy-light);
+        border-radius: 20px;
+        border: 1px solid rgba(100, 255, 218, 0.1);
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    .tracking-steps {
+        display: flex;
+        justify-content: space-between;
+        margin: 30px 0;
+        position: relative;
+    }
+    .tracking-step {
+        text-align: center;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        background: var(--navy-dark);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        color: var(--text-light);
+    }
+    .tracking-step.active .step-circle {
+        background: var(--primary);
+        color: var(--navy-dark);
+    }
+    .tracking-step.completed .step-circle {
+        background: #0d3b2e;
+        color: var(--primary);
+    }
+    .tracking-line {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(100, 255, 218, 0.2);
+        z-index: 0;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+    }
+    .info-label {
+        color: var(--text-light);
+        font-weight: 500;
+    }
+    .info-value {
+        color: var(--text-white);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back Button -->
+    <a href="{% url 'patient_orders' %}" class="btn btn-outline-primary rounded-pill mb-4">
+        <i class="fas fa-arrow-left me-2"></i>Back to Orders
+    </a>
+
+    <!-- Order Status Tracking -->
+    <div class="detail-card">
+        <div class="tracking-steps">
+            <div class="tracking-line"></div>
+            <div class="tracking-step {% if order.status in 'pending,confirmed,processing,ready,shipped,delivered' %}completed{% endif %}">
+                <div class="step-circle"><i class="fas fa-shopping-cart"></i></div>
+                <small>Order Placed</small>
+            </div>
+            <div class="tracking-step {% if order.status in 'confirmed,processing,ready,shipped,delivered' %}completed{% endif %}">
+                <div class="step-circle"><i class="fas fa-check-circle"></i></div>
+                <small>Confirmed</small>
+            </div>
+            <div class="tracking-step {% if order.status in 'processing,ready,shipped,delivered' %}active{% elif order.status in 'processing,ready,shipped,delivered' %}completed{% endif %}">
+                <div class="step-circle"><i class="fas fa-spinner"></i></div>
+                <small>Processing</small>
+            </div>
+            <div class="tracking-step {% if order.status in 'shipped,delivered' %}completed{% endif %}">
+                <div class="step-circle"><i class="fas fa-truck"></i></div>
+                <small>Shipped</small>
+            </div>
+            <div class="tracking-step {% if order.status == 'delivered' %}completed{% endif %}">
+                <div class="step-circle"><i class="fas fa-check-double"></i></div>
+                <small>Delivered</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Info -->
+        <div class="col-md-6">
+            <div class="detail-card">
+                <h5 class="mb-3" style="color: var(--primary);">
+                    <i class="fas fa-info-circle me-2"></i>Order Information
+                </h5>
+                <div class="info-row">
+                    <span class="info-label">Order Number:</span>
+                    <span class="info-value">{{ order.order_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Order Date:</span>
+                    <span class="info-value">{{ order.created_at|date:"d M Y, h:i A" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Payment Method:</span>
+                    <span class="info-value">{{ order.get_payment_method_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Payment Status:</span>
+                    <span class="info-value">{{ order.get_payment_status_display }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Info -->
+        <div class="col-md-6">
+            <div class="detail-card">
+                <h5 class="mb-3" style="color: var(--primary);">
+                    <i class="fas fa-truck me-2"></i>Delivery Information
+                </h5>
+                <div class="info-row">
+                    <span class="info-label">Shipping Address:</span>
+                    <span class="info-value">{{ order.shipping_address }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone Number:</span>
+                    <span class="info-value">{{ order.phone }}</span>
+                </div>
+                {% if order.notes %}
+                <div class="info-row">
+                    <span class="info-label">Notes:</span>
+                    <span class="info-value">{{ order.notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="detail-card">
+        <h5 class="mb-3" style="color: var(--primary);">
+            <i class="fas fa-boxes me-2"></i>Order Items
+        </h5>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.2);">
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.1);">
+                        <td>
+                            <div>
+                                <strong>{{ item.product.name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ item.product.get_category_display }}</small>
+                            </div>
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td>৳{{ item.price|floatformat:2 }}</td>
+                        <td><strong>৳{{ item.subtotal|floatformat:2 }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                        <td>৳{{ order.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Delivery Charge:</strong></td>
+                        <td>৳{{ order.delivery_charge|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong class="fs-5">Total:</strong></td>
+                        <td><strong class="fs-5" style="color: var(--primary);">৳{{ order.total_amount|floatformat:2 }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    {% if order.status == 'delivered' %}
+    <div class="text-center">
+        <a href="#" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-star me-2"></i>Rate Your Order
+        </a>
+        <a href="#" class="btn btn-outline-primary rounded-pill px-4 ms-2">
+            <i class="fas fa-shopping-cart me-2"></i>Reorder
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

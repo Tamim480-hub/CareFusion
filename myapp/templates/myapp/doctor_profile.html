@@ -1,0 +1,328 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Doctor Profile - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 12px 16px;
+        transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Doctor Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_patients' %}">
+                    <i class="fas fa-users me-3"></i> My Patients
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'doctor_profile' %}">
+                    <i class="fas fa-user-md me-3"></i> My Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">My Profile</h2>
+            <p class="text-muted">View and update your professional information</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <span class="badge bg-success p-2">
+                <i class="fas fa-check-circle me-1"></i> Active Doctor
+            </span>
+        </div>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="profile-header p-4 mb-4">
+        <div class="d-flex align-items-center flex-wrap">
+            <div class="profile-avatar me-4 mb-3 mb-md-0">
+                <i class="fas fa-user-md" style="font-size: 60px; color: #667eea;"></i>
+            </div>
+            <div>
+                <h2 class="text-white mb-1">{{ doctor.full_name }}</h2>
+                <p class="text-white-50 mb-2">
+                    <i class="fas fa-stethoscope me-1"></i> {{ doctor.get_specialization_display }}
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-1">
+                        <small class="text-white-50">Experience</small>
+                        <p class="text-white mb-0">{{ doctor.experience_years }} years</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-1">
+                        <small class="text-white-50">Consultation Fee</small>
+                        <p class="text-white mb-0">৳{{ doctor.consultation_fee }}</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-3 px-3 py-1">
+                        <small class="text-white-50">Rating</small>
+                        <p class="text-white mb-0">
+                            <i class="fas fa-star text-warning"></i> {{ doctor.rating }}/5.0
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Personal Information Card -->
+        <div class="col-md-6">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-user-circle text-primary me-2"></i>Personal Information
+                </h5>
+                
+                <div class="mb-3">
+                    <label class="text-muted small">Full Name</label>
+                    <p class="fw-semibold mb-0">{{ doctor.user.get_full_name }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Username</label>
+                    <p class="fw-semibold mb-0">{{ doctor.user.username }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Email Address</label>
+                    <p class="fw-semibold mb-0">{{ doctor.user.email }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Phone Number</label>
+                    <p class="fw-semibold mb-0">{{ doctor.user.phone|default:"Not provided" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Address</label>
+                    <p class="fw-semibold mb-0">{{ doctor.user.address|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Information Card -->
+        <div class="col-md-6">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-briefcase text-primary me-2"></i>Professional Information
+                </h5>
+                
+                <div class="mb-3">
+                    <label class="text-muted small">Specialization</label>
+                    <p class="fw-semibold mb-0">{{ doctor.get_specialization_display }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Qualification</label>
+                    <p class="fw-semibold mb-0">{{ doctor.qualification|default:"Not provided" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Experience</label>
+                    <p class="fw-semibold mb-0">{{ doctor.experience_years }} years</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Consultation Fee</label>
+                    <p class="fw-semibold mb-0">৳{{ doctor.consultation_fee }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Hospital</label>
+                    <p class="fw-semibold mb-0">{{ doctor.hospital.name|default:"Not assigned" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Bio</label>
+                    <p class="fw-semibold mb-0">{{ doctor.bio|default:"No bio provided" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Information Card -->
+        <div class="col-md-6">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-clock text-primary me-2"></i>Schedule Information
+                </h5>
+                
+                <div class="mb-3">
+                    <label class="text-muted small">Available From</label>
+                    <p class="fw-semibold mb-0">{{ doctor.available_from|time:"h:i A" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Available To</label>
+                    <p class="fw-semibold mb-0">{{ doctor.available_to|time:"h:i A" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Status</label>
+                    <p class="mb-0">
+                        {% if doctor.is_available %}
+                            <span class="badge bg-success">Available for Consultation</span>
+                        {% else %}
+                            <span class="badge bg-danger">Currently Unavailable</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="col-md-6">
+            <div class="info-card p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-chart-line text-primary me-2"></i>Statistics
+                </h5>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                            <h4 class="fw-bold text-primary mb-0">{{ total_appointments|default:"0" }}</h4>
+                            <small class="text-muted">Total Appointments</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                            <h4 class="fw-bold text-success mb-0">{{ total_patients|default:"0" }}</h4>
+                            <small class="text-muted">Total Patients</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Button -->
+        <div class="col-12">
+            <div class="info-card p-4 text-center">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-edit text-primary me-2"></i>Need to Update Information?
+                </h5>
+                <p class="text-muted mb-3">Contact your hospital administrator to update your professional information.</p>
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="fas fa-user-edit me-2"></i>Request Profile Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Request Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-edit me-2"></i>Request Profile Update
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-envelope fa-3x text-primary mb-2"></i>
+                    <p class="mb-0">To update your profile information, please contact your hospital administrator:</p>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Hospital Admin Contact:</strong><br>
+                    {{ doctor.hospital.email|default:"admin@hospital.com" }}
+                </div>
+                <hr>
+                <div class="small text-muted">
+                    <p class="mb-1">You can request updates for:</p>
+                    <ul class="mb-0">
+                        <li>Qualification & Experience</li>
+                        <li>Consultation Fee</li>
+                        <li>Schedule (Available From/To)</li>
+                        <li>Bio / Description</li>
+                        <li>Profile Picture</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                <a href="mailto:{{ doctor.hospital.email|default:'admin@hospital.com' }}" class="btn btn-primary rounded-pill">
+                    <i class="fas fa-envelope me-2"></i>Email Admin
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Animate stats on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const stats = document.querySelectorAll('.stat-number');
+        stats.forEach(stat => {
+            const finalValue = parseInt(stat.innerText);
+            if (finalValue > 0) {
+                let current = 0;
+                const increment = Math.ceil(finalValue / 50);
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= finalValue) {
+                        stat.innerText = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        stat.innerText = current;
+                    }
+                }, 20);
+            }
+        });
+    });
+</script>
+{% endblock %}

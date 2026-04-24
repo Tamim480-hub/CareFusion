@@ -1,0 +1,318 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Orders - Pharmacy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Sidebar Styles */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 1000;
+        transition: all 0.3s;
+    }
+
+    /* Main Content Margin */
+    .main-content {
+        margin-left: 260px;
+        padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 70px;
+        }
+        .main-content {
+            margin-left: 70px;
+        }
+        .sidebar .nav-link span {
+            display: none;
+        }
+        .sidebar .nav-link i {
+            margin-right: 0 !important;
+        }
+    }
+
+    /* Order Card Styles */
+    .order-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-processing { background: #d1ecf1; color: #0c5460; }
+    .status-ready { background: #cce5ff; color: #004085; }
+    .status-shipped { background: #d4edda; color: #155724; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+
+    .filter-btn {
+        transition: all 0.3s ease;
+        border-radius: 30px;
+        padding: 8px 20px;
+        border: 1px solid #dee2e6;
+        background: white;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    .filter-btn:hover, .filter-btn.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+    }
+    .order-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 15px 20px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="fas fa-shopping-cart text-primary me-2"></i>Orders
+                </h2>
+                <p class="text-muted">Manage and process customer orders</p>
+            </div>
+            <div class="mt-2 mt-md-0">
+                <div class="bg-light rounded-3 p-2 px-3">
+                    <i class="fas fa-chart-line text-primary me-1"></i>
+                    <span class="fw-semibold">Total Orders: {{ total_orders|default:0 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 text-center">
+                    <h3 class="fw-bold text-primary mb-0">{{ total_orders|default:0 }}</h3>
+                    <small class="text-muted">Total Orders</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 text-center">
+                    <h3 class="fw-bold text-warning mb-0">{{ pending_orders|default:0 }}</h3>
+                    <small class="text-muted">Pending</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 text-center">
+                    <h3 class="fw-bold text-info mb-0">{{ processing_orders|default:0 }}</h3>
+                    <small class="text-muted">Processing</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 text-center">
+                    <h3 class="fw-bold text-success mb-0">{{ delivered_orders|default:0 }}</h3>
+                    <small class="text-muted">Delivered</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="bg-white rounded-4 shadow-sm p-3 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="?status=" class="filter-btn {% if not current_status %}active{% endif %}">
+                            All Orders
+                        </a>
+                        <a href="?status=pending" class="filter-btn {% if current_status == 'pending' %}active{% endif %}">
+                            <i class="fas fa-clock me-1"></i>Pending
+                        </a>
+                        <a href="?status=confirmed" class="filter-btn {% if current_status == 'confirmed' %}active{% endif %}">
+                            <i class="fas fa-check-circle me-1"></i>Confirmed
+                        </a>
+                        <a href="?status=processing" class="filter-btn {% if current_status == 'processing' %}active{% endif %}">
+                            <i class="fas fa-spinner me-1"></i>Processing
+                        </a>
+                        <a href="?status=ready" class="filter-btn {% if current_status == 'ready' %}active{% endif %}">
+                            <i class="fas fa-box me-1"></i>Ready
+                        </a>
+                        <a href="?status=shipped" class="filter-btn {% if current_status == 'shipped' %}active{% endif %}">
+                            <i class="fas fa-truck me-1"></i>Shipped
+                        </a>
+                        <a href="?status=delivered" class="filter-btn {% if current_status == 'delivered' %}active{% endif %}">
+                            <i class="fas fa-check-double me-1"></i>Delivered
+                        </a>
+                        <a href="?status=cancelled" class="filter-btn {% if current_status == 'cancelled' %}active{% endif %}">
+                            <i class="fas fa-times-circle me-1"></i>Cancelled
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-3 mt-md-0">
+                    <form method="GET" class="d-flex gap-2">
+                        <input type="text" name="search" class="form-control form-control-sm rounded-pill"
+                               placeholder="Search by order number..." value="{{ search|default:'' }}">
+                        <button type="submit" class="btn btn-sm btn-primary rounded-pill">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        {% if orders %}
+        <div class="row g-4">
+            {% for order in orders %}
+            <div class="col-md-6 col-lg-4">
+                <div class="order-card shadow-sm">
+                    <div class="order-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-receipt fa-2x text-primary"></i>
+                                <h6 class="fw-bold mt-2 mb-0">{{ order.order_number }}</h6>
+                            </div>
+                            <div>
+                                {% if order.status == 'pending' %}
+                                    <span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>
+                                {% elif order.status == 'confirmed' %}
+                                    <span class="status-badge status-confirmed"><i class="fas fa-check-circle"></i> Confirmed</span>
+                                {% elif order.status == 'processing' %}
+                                    <span class="status-badge status-processing"><i class="fas fa-spinner"></i> Processing</span>
+                                {% elif order.status == 'ready' %}
+                                    <span class="status-badge status-ready"><i class="fas fa-box"></i> Ready</span>
+                                {% elif order.status == 'shipped' %}
+                                    <span class="status-badge status-shipped"><i class="fas fa-truck"></i> Shipped</span>
+                                {% elif order.status == 'delivered' %}
+                                    <span class="status-badge status-delivered"><i class="fas fa-check-double"></i> Delivered</span>
+                                {% else %}
+                                    <span class="status-badge status-cancelled"><i class="fas fa-times-circle"></i> Cancelled</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Customer:</small>
+                                <strong>{{ order.customer.user.get_full_name|default:order.customer.user.username }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Phone:</small>
+                                <span>{{ order.phone|default:"N/A" }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Amount:</small>
+                                <span class="fw-bold text-primary">৳{{ order.total_amount|floatformat:2 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Date:</small>
+                                <span>{{ order.created_at|date:"M d, Y h:i A" }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="{% url 'pharmacy_order_detail' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1">
+                                <i class="fas fa-eye me-1"></i> View Details
+                            </a>
+                            <form method="POST" action="{% url 'pharmacy_update_order_status' order.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <select name="status" class="form-select form-select-sm rounded-pill" style="width: auto;" onchange="this.form.submit()">
+                                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirm</option>
+                                    <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Process</option>
+                                    <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Ready</option>
+                                    <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Ship</option>
+                                    <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Deliver</option>
+                                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancel</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ orders.previous_page_number }}&status={{ current_status|default:'' }}&search={{ search|default:'' }}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for i in orders.paginator.page_range %}
+                <li class="page-item {% if orders.number == i %}active{% endif %}">
+                    <a class="page-link" href="?page={{ i }}&status={{ current_status|default:'' }}&search={{ search|default:'' }}">{{ i }}</a>
+                </li>
+                {% endfor %}
+
+                {% if orders.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ orders.next_page_number }}&status={{ current_status|default:'' }}&search={{ search|default:'' }}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="bg-white rounded-4 shadow-sm p-5 text-center">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-3 opacity-25"></i>
+            <h4 class="text-muted">No Orders Found</h4>
+            <p class="text-muted">No orders have been placed yet.</p>
+            <a href="{% url 'pharmacy_dashboard' %}" class="btn btn-primary rounded-pill mt-3">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto hide alerts after 3 seconds
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.display = 'none';
+        });
+    }, 3000);
+</script>
+{% endblock %}

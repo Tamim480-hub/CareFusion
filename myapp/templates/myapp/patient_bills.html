@@ -1,0 +1,208 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}My Bills - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bill-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    .bill-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .status-paid {
+        background: #d4edda;
+        color: #155724;
+        border-left: 3px solid #28a745;
+    }
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 3px solid #ffc107;
+    }
+    .amount {
+        font-size: 24px;
+        font-weight: 800;
+        color: #667eea;
+    }
+    .payment-btn {
+        transition: all 0.3s ease;
+    }
+    .payment-btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2 position-relative">
+                <a class="nav-link" href="{% url 'patient_cart' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Cart
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_bills' %}">
+                    <i class="fas fa-receipt me-3"></i> Bills
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-receipt text-primary me-2"></i>My Bills
+            </h2>
+            <p class="text-muted">View and pay your consultation bills</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <div class="bg-light rounded-3 p-2 px-3">
+                <i class="fas fa-money-bill-wave text-success me-1"></i>
+                <span class="fw-semibold">Total Paid: ৳{{ paid_amount }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card p-3 text-center">
+                <h3 class="fw-bold text-primary mb-0">{{ total_bills }}</h3>
+                <small class="text-muted">Total Bills</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card p-3 text-center">
+                <h3 class="fw-bold text-warning mb-0">{{ pending_count }}</h3>
+                <small class="text-muted">Pending Payment</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card p-3 text-center">
+                <h3 class="fw-bold text-success mb-0">{{ paid_count }}</h3>
+                <small class="text-muted">Paid Bills</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bills List -->
+    {% if bills %}
+    <div class="row g-4">
+        {% for bill in bills %}
+        <div class="col-md-6 col-lg-4">
+            <div class="bill-card bg-white shadow-sm">
+                <div class="p-3" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-white">
+                            <i class="fas fa-receipt fa-2x"></i>
+                        </div>
+                        <div>
+                            {% if bill.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <h6 class="fw-bold mb-1">Bill #{{ bill.bill_number }}</h6>
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-user-md me-1"></i> Dr. {{ bill.doctor.full_name }}<br>
+                        <i class="fas fa-calendar me-1"></i> {{ bill.created_at|date:"M d, Y" }}
+                    </p>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Total Amount:</small>
+                            <span class="amount">৳{{ bill.total_amount }}</span>
+                        </div>
+                        {% if bill.discount > 0 %}
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">Discount:</small>
+                            <span class="text-success">- ৳{{ bill.discount }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{% url 'patient_bill_detail' bill.id %}" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1">
+                            <i class="fas fa-eye me-1"></i> View Details
+                        </a>
+                        {% if bill.status == 'pending' %}
+                        <a href="{% url 'patient_pay_bill' bill.id %}" class="btn btn-sm btn-success rounded-pill payment-btn">
+                            <i class="fas fa-credit-card me-1"></i> Pay Now
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-4 shadow-sm p-5 text-center">
+        <i class="fas fa-receipt fa-5x text-muted mb-3 opacity-25"></i>
+        <h4 class="text-muted">No Bills Found</h4>
+        <p class="text-muted">You don't have any bills yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

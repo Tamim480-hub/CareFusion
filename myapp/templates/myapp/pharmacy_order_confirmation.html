@@ -1,0 +1,95 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmation{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success text-white text-center rounded-top-4">
+                    <i class="fas fa-check-circle fa-4x mb-2"></i>
+                    <h3 class="mb-0">Order Confirmed!</h3>
+                    <p class="mb-0">Thank you for your purchase</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h5>Order Number</h5>
+                        <h4 class="text-primary fw-bold">{{ order.order_number }}</h4>
+                        <p class="text-muted">Placed on {{ order.created_at|date:"F d, Y h:i A" }}</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded-3">
+                                <h6 class="fw-bold mb-2">Delivery Information</h6>
+                                <p class="mb-1 small">{{ order.shipping_address }}</p>
+                                <p class="mb-0 small">Phone: {{ order.phone }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded-3">
+                                <h6 class="fw-bold mb-2">Payment Method</h6>
+                                <p class="mb-0 small">{{ order.get_payment_method_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Order Items</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>৳{{ item.price|floatformat:2 }}</td>
+                                    <td>৳{{ item.subtotal|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                    <td>৳{{ order.subtotal|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Delivery Charge:</td>
+                                    <td>৳{{ order.delivery_charge|floatformat:2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Total:</td>
+                                    <td class="text-primary fw-bold">৳{{ order.total_amount|floatformat:2 }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-truck me-2"></i>
+                        Your order will be delivered within 2-3 business days. You will receive updates via SMS.
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'pharmacy_products_list' %}" class="btn btn-primary rounded-pill px-4">
+                            <i class="fas fa-store me-2"></i>Continue Shopping
+                        </a>
+                        <a href="{% url 'patient_orders' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="fas fa-list me-2"></i>View My Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

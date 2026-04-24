@@ -1,13 +1,13 @@
-
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account - CareFusion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,87 +15,109 @@
             box-sizing: border-box;
         }
 
-.logo-image {
-    text-align: center;
-    margin-bottom: 15px;
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-.logo-image img {
-    width: 140px;
-    height: auto;
-}
-      body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f5f5;   /* off white color */
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+            pointer-events: none;
+        }
 
         .logo-container {
             text-align: center;
             margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
         }
 
         .logo-icon {
-            width: 80px;
-            height: 80px;
-            background: #1e88e5;
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
         .logo-icon i {
-            font-size: 40px;
-            color: white;
+            font-size: 45px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .brand-name {
-            font-size: 32px;
-            font-weight: 700;
-            color: #2c3e50;
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
             margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
         .tagline {
-            color: #7f8c8d;
+            color: rgba(255,255,255,0.8);
             font-size: 15px;
+            letter-spacing: 1px;
         }
 
         .signup-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            padding: 45px;
             width: 100%;
-            max-width: 650px;
+            max-width: 850px;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .signup-card:hover {
+            transform: translateY(-5px);
         }
 
         .form-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: 600;
-            color: #2c3e50;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             margin-bottom: 8px;
         }
 
-        .form-title i {
-            color: #1e88e5;
-        }
-
         .form-subtitle {
-            color: #7f8c8d;
+            color: #6c757d;
             font-size: 14px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
         .form-label {
@@ -112,32 +134,43 @@
 
         .input-group {
             margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            transform: scale(1.02);
         }
 
         .input-group-text {
-            background: #f5f7fa;
-            border: 2px solid #e8ecf1;
-            border-right: none;
-            border-radius: 10px 0 0 10px;
-            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 16px 0 0 16px;
+            padding: 12px 18px;
         }
 
         .input-group-text i {
-            color: #7f8c8d;
+            font-size: 18px;
+            color: #667eea;
         }
 
         .form-control, .form-select {
-            border: 2px solid #e8ecf1;
-            border-left: none;
-            border-radius: 0 10px 10px 0;
-            padding: 12px 15px;
-            font-size: 14px;
-            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            padding: 12px 18px 12px 0;
+            font-size: 15px;
+            border-radius: 0 16px 16px 0;
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: #1e88e5;
             box-shadow: none;
+            background: transparent;
+        }
+
+        .form-select {
+            cursor: pointer;
         }
 
         .row {
@@ -149,33 +182,39 @@
         }
 
         .form-check {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-check-input {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             margin-right: 8px;
             cursor: pointer;
+            border: 2px solid #dee2e6;
+        }
+
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
         }
 
         .form-check-label {
-            color: #7f8c8d;
+            color: #6c757d;
             font-size: 14px;
             cursor: pointer;
         }
 
         .form-check-label a {
-            color: #1e88e5;
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }
 
         .btn-signup {
-            background: #1e88e5;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 16px;
             padding: 14px;
             font-size: 16px;
             font-weight: 600;
@@ -186,163 +225,303 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-signup::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-signup:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-signup:hover {
-            background: #1565c0;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
         }
 
         .login-link {
             text-align: center;
-            margin-top: 20px;
-            color: #7f8c8d;
+            margin-top: 25px;
+            color: #6c757d;
             font-size: 14px;
         }
 
         .login-link a {
-            color: #1e88e5;
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }
 
-        .login-link a:hover {
-            text-decoration: underline;
+        .alert {
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: none;
+            padding: 12px 20px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+        }
+
+        .password-strength {
+            height: 4px;
+            margin-top: 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .weak { background: #dc3545; width: 33%; }
+        .medium { background: #ffc107; width: 66%; }
+        .strong { background: #28a745; width: 100%; }
+
+        .features-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        .feature-item {
+            text-align: center;
+            padding: 10px;
+        }
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(102,126,234,0.1);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        .feature-icon i {
+            font-size: 20px;
+            color: #667eea;
+        }
+        .feature-item h6 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .feature-item p {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 0;
         }
 
         @media (max-width: 768px) {
             .signup-card {
-                padding: 30px 20px;
+                padding: 30px 25px;
             }
+            .brand-name {
+                font-size: 28px;
+            }
+            .form-title {
+                font-size: 24px;
+            }
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #adb5bd;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .password-toggle:hover {
+            color: #667eea;
+        }
+        .input-group {
+            position: relative;
         }
     </style>
 </head>
 <body>
     <div class="logo-container">
-      <div class="logo-image">
-        <img src="{% static 'images/carefusion.png' %}" alt="CareFusion Logo">
-      </div>
+        <div class="logo-icon">
+            <i class="fas fa-hospital-user"></i>
+        </div>
         <h1 class="brand-name">CareFusion</h1>
-        <p class="tagline">Management System - Create your account to get started</p>
+        <p class="tagline">Complete Healthcare Management System</p>
     </div>
 
     <div class="signup-card">
-        <h2 class="form-title">
-            <i class="fas fa-user-plus"></i>
-            Create Account
-        </h2>
-        <p class="form-subtitle">Fill in your information to register</p>
+        <div class="text-center">
+            <h2 class="form-title">
+                <i class="fas fa-user-plus me-2"></i>Create Account
+            </h2>
+            <p class="form-subtitle">Join CareFusion for better healthcare experience</p>
+        </div>
 
-        <form method="POST">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'signup' %}">
             {% csrf_token %}
 
-            <div class="mb-4">
-    <label for="role" class="form-label">
-        I am a <span class="required">*</span>
-    </label>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">First Name <span class="required">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="first_name" class="form-control" placeholder="Enter your first name" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="last_name" class="form-control" placeholder="Enter your last name">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="input-group">
-        <span class="input-group-text">
-            <i class="fas fa-user-tag"></i>
-        </span>
-
-        <select id="role" name="role" class="form-select" required>
-            <option value="" selected disabled>Select your role</option>
-            <option value="patient">Patient</option>
-            <option value="doctor">Doctor</option>
-            <option value="pharmacist">Pharmacist</option>
-            <option value="admin">Administrator</option>
-        </select>
-    </div>
-</div>
-            <div class="mb-4">
-                <label class="form-label">Full Name <span class="required">*</span></label>
+            <div class="mb-3">
+                <label class="form-label">Email Address <span class="required">*</span></label>
                 <div class="input-group">
                     <span class="input-group-text">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-envelope"></i>
                     </span>
-                    <input type="text" name="full_name" class="form-control" placeholder="Enter your full name" required>
+                    <input type="email" name="email" class="form-control" placeholder="your.email@example.com" required>
                 </div>
+                <small class="text-muted">We'll never share your email with anyone else.</small>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 col">
-                    <div class="mb-4">
-                        <label class="form-label">Email <span class="required">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-envelope"></i>
-                            </span>
-                            <input type="email" name="email" class="form-control" placeholder="your.email@example.com" required>
-                        </div>
-                    </div>
+            <div class="mb-3">
+                <label class="form-label">Phone Number <span class="required">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-phone"></i>
+                    </span>
+                    <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" required>
                 </div>
-                <div class="col-md-6 col">
-                    <div class="mb-4">
-                        <label class="form-label">Phone <span class="required">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-phone"></i>
-                            </span>
-                            <input type="tel" name="phone" class="form-control" placeholder="+1 (555) 000-0000" required>
-                        </div>
-                    </div>
-                </div>
+                <small class="text-muted">For emergency contact and appointment reminders</small>
             </div>
 
+            <!-- Age, Gender, Blood Group Fields -->
             <div class="row">
-                <div class="col-md-6 col">
-                    <div class="mb-4">
-                        <label class="form-label">Date of Birth <span class="required">*</span></label>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Age <span class="required">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text">
-                                <i class="fas fa-calendar"></i>
+                                <i class="fas fa-calendar-alt"></i>
                             </span>
-                            <input type="date" name="date_of_birth" class="form-control" required>
+                            <input type="number" name="age" id="age" class="form-control" placeholder="Enter your age" min="1" max="120" required>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col">
-                    <div class="mb-4">
+                <div class="col-md-4">
+                    <div class="mb-3">
                         <label class="form-label">Gender <span class="required">*</span></label>
-                        <select name="gender" class="form-select" required>
-                            <option value="">Select gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-venus-mars"></i>
+                            </span>
+                            <select name="gender" class="form-select" required>
+                                <option value="" disabled selected>Select gender</option>
+                                <option value="male">👨 Male</option>
+                                <option value="female">👩 Female</option>
+                                <option value="other">🌈 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Blood Group <span class="required">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-tint"></i>
+                            </span>
+                            <select name="blood_group" class="form-select" required>
+                                <option value="" disabled selected>Select blood group</option>
+                                <option value="A+">🩸 A+</option>
+                                <option value="A-">🩸 A-</option>
+                                <option value="B+">🩸 B+</option>
+                                <option value="B-">🩸 B-</option>
+                                <option value="O+">🩸 O+</option>
+                                <option value="O-">🩸 O-</option>
+                                <option value="AB+">🩸 AB+</option>
+                                <option value="AB-">🩸 AB-</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-md-6 col">
-                    <div class="mb-4">
+                <div class="col-md-6">
+                    <div class="mb-3 position-relative">
                         <label class="form-label">Password <span class="required">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="fas fa-lock"></i>
                             </span>
-                            <input type="password" name="password" class="form-control" placeholder="Create password" required>
+                            <input type="password" name="password" id="password" class="form-control" placeholder="Create a strong password" required>
                         </div>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye" id="passwordIcon"></i>
+                        </button>
+                        <div id="passwordStrength" class="password-strength"></div>
+                        <small class="text-muted">Minimum 6 characters with letters & numbers</small>
                     </div>
                 </div>
-                <div class="col-md-6 col">
-                    <div class="mb-4">
+                <div class="col-md-6">
+                    <div class="mb-3 position-relative">
                         <label class="form-label">Confirm Password <span class="required">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="fas fa-lock"></i>
                             </span>
-                            <input type="password" name="confirm_password" class="form-control" placeholder="Confirm password" required>
+                            <input type="password" name="confirm_password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
                         </div>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                        </button>
+                        <div id="passwordMatch" class="small mt-1"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="terms" required>
+            <div class="form-check mb-4">
+                <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
                 <label class="form-check-label" for="terms">
                     I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
                 </label>
@@ -350,15 +529,140 @@
 
             <button type="submit" class="btn-signup">
                 <i class="fas fa-user-plus"></i>
-                Create Account
+                Create Free Account
             </button>
 
             <div class="login-link">
                 Already have an account? <a href="{% url 'login' %}">Sign in here</a>
             </div>
         </form>
+
+        <!-- Features Section -->
+        <div class="features-section">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h6>Secure & Private</h6>
+                        <p>Your data is encrypted</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h6>24/7 Access</h6>
+                        <p>Access anytime</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h6>24/7 Support</h6>
+                        <p>Get help anytime</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-medical"></i>
+                        </div>
+                        <h6>Health Records</h6>
+                        <p>Track your health</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Password toggle function
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + 'Icon');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Password strength checker
+        const passwordInput = document.getElementById('password');
+        const strengthDiv = document.getElementById('passwordStrength');
+
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+
+            if (password.length >= 6) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[^a-zA-Z\d]/)) strength++;
+
+            strengthDiv.className = 'password-strength';
+            if (password.length === 0) {
+                strengthDiv.style.width = '0';
+            } else if (strength <= 1) {
+                strengthDiv.classList.add('weak');
+            } else if (strength === 2) {
+                strengthDiv.classList.add('medium');
+            } else {
+                strengthDiv.classList.add('strong');
+            }
+        });
+
+        // Password match checker
+        const confirmInput = document.getElementById('confirmPassword');
+        const matchDiv = document.getElementById('passwordMatch');
+
+        function checkPasswordMatch() {
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+
+            if (confirm.length === 0) {
+                matchDiv.innerHTML = '';
+            } else if (password === confirm) {
+                matchDiv.innerHTML = '<i class="fas fa-check-circle text-success"></i> Passwords match';
+                matchDiv.className = 'small mt-1 text-success';
+            } else {
+                matchDiv.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i> Passwords do not match';
+                matchDiv.className = 'small mt-1 text-danger';
+            }
+        }
+
+        passwordInput.addEventListener('input', checkPasswordMatch);
+        confirmInput.addEventListener('input', checkPasswordMatch);
+
+        // Age validation
+        const ageInput = document.getElementById('age');
+        ageInput.addEventListener('input', function() {
+            const age = parseInt(this.value);
+            if (age < 1 || age > 120) {
+                this.setCustomValidity('Please enter a valid age between 1 and 120');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
 </body>
 </html>

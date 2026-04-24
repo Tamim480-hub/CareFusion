@@ -133,6 +133,13 @@ class ProductAdmin(admin.ModelAdmin):
         return total
     total_sold.short_description = 'Total Sold'
 
+from .models import Pharmacy, PharmacyAdmin, PharmacyProduct, PharmacyOrder, PharmacyOrderItem
+
+admin.site.register(Pharmacy)
+admin.site.register(PharmacyAdmin)
+admin.site.register(PharmacyProduct)
+admin.site.register(PharmacyOrder)
+admin.site.register(PharmacyOrderItem)
 
 # ==================== Cart Admin ====================
 @admin.register(Cart)

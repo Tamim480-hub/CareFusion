@@ -1,39 +1,532 @@
 {% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}ICU Beds - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Hospital Card Styles */
+    .hospital-card {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        background: white;
+        overflow: hidden;
+        position: relative;
+        height: 100%;
+    }
+    .hospital-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    .hospital-card:hover::before {
+        transform: scaleX(1);
+    }
+    .hospital-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+    .hospital-card.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9ff, #ffffff);
+        box-shadow: 0 10px 25px rgba(102,126,234,0.2);
+    }
+    .hospital-stats {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 8px;
+        text-align: center;
+    }
+
+    /* Bed Card Styles */
+    .bed-card {
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        background: white;
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+    }
+    .bed-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border-color: #28a745;
+    }
+    .bed-available {
+        border-left: 4px solid #28a745;
+    }
+    .bed-occupied {
+        border-left: 4px solid #dc3545;
+    }
+    .bed-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 12px;
+    }
+    .bed-price {
+        font-size: 24px;
+        font-weight: 800;
+        color: #667eea;
+    }
+    .availability-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-available {
+        background: #d4edda;
+        color: #155724;
+    }
+    .badge-occupied {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Step Indicator */
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .step-circle.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+    }
+    .step-circle.completed {
+        background: #28a745;
+        color: white;
+    }
+    .step-label {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid #e9ecef;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Equipment Tags */
+    .equipment-tag {
+        background: rgba(102,126,234,0.1);
+        padding: 3px 8px;
+        border-radius: 15px;
+        font-size: 10px;
+        font-weight: 500;
+        color: #667eea;
+        display: inline-block;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2 position-relative">
+             <a class="nav-link" href="{% url 'pharmacy_cart' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Cart
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <h2 class="mb-4">ICU Beds at {{ hospital.name }}</h2>
-    
-    <div class="row">
-        <div class="col-md-12 mb-3">
-            <div class="alert alert-info">
-                <strong>Summary:</strong> {{ available_beds }} / {{ total_beds }} beds available
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-bed text-primary me-2"></i>ICU Beds
+            </h2>
+            <p class="text-muted">Select a hospital to see available ICU beds</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <div class="bg-light rounded-3 p-2 px-3">
+                <i class="fas fa-building me-1"></i>
+                <span class="fw-semibold">{{ hospitals|length }} Hospitals Available</span>
             </div>
         </div>
-        
-        {% for bed in beds %}
-        <div class="col-md-4 mb-3">
-            <div class="card {% if bed.is_available %}border-success{% else %}border-secondary{% endif %}">
-                <div class="card-body">
-                    <h5 class="card-title">Bed #{{ bed.bed_number }}</h5>
-                    <p class="card-text">
-                        <strong>Type:</strong> {{ bed.get_bed_type_display }}<br>
-                        <strong>Daily Charge:</strong> ৳{{ bed.daily_charge }}<br>
-                        <strong>Equipment:</strong> {{ bed.equipment|default:"Standard" }}
-                    </p>
-                    {% if bed.is_available %}
-                        <a href="{% url 'patient_book_icu_bed' bed.id %}" class="btn btn-success">Book Now</a>
-                    {% else %}
-                        <button class="btn btn-secondary" disabled>Not Available</button>
-                    {% endif %}
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="bg-white rounded-4 shadow-sm p-3 mb-4">
+        <div class="row text-center">
+            <div class="col-md-6">
+                <div class="step-indicator" id="step1Indicator">
+                    <div class="step-circle active">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <span class="step-label ms-2">Select Hospital</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="step-indicator" id="step2Indicator">
+                    <div class="step-circle">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <span class="step-label ms-2">Select ICU Bed</span>
                 </div>
             </div>
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">No ICU beds found.</div>
+    </div>
+
+    <!-- Step 1: Hospital Selection -->
+    <div id="hospitalSelectionView">
+        <div class="row g-4">
+            {% for hospital in hospitals %}
+            <div class="col-md-6 col-lg-4">
+                <div class="hospital-card p-3" data-hospital-id="{{ hospital.id }}" data-hospital-name="{{ hospital.name }}">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="fas fa-building fa-2x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold mb-1">{{ hospital.name }}</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i> {{ hospital.address|truncatechars:50|default:"Address not available" }}
+                            </p>
+                            <div class="d-flex gap-2 mb-2">
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-code me-1"></i> {{ hospital.code }}
+                                </span>
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-phone me-1"></i> {{ hospital.phone|default:"N/A" }}
+                                </span>
+                            </div>
+                            <div class="hospital-stats mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">ICU Beds</small>
+                                        <p class="fw-bold mb-0" id="bed-count-{{ hospital.id }}">-</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Available</small>
+                                        <p class="fw-bold mb-0 text-success" id="available-count-{{ hospital.id }}">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-hospital fa-5x text-muted mb-3 opacity-25"></i>
+                    <h4 class="text-muted">No Hospitals Found</h4>
+                    <p class="text-muted">Please contact administrator to add hospitals.</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+    </div>
+
+    <!-- Step 2: Bed Selection (Hidden initially) -->
+    <div id="bedSelectionView" style="display: none;">
+        <!-- Selected Hospital Info -->
+        <div class="alert alert-info mb-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <i class="fas fa-hospital me-2"></i>
+                    <strong id="selectedHospitalNameDisplay"></strong>
+                    <span id="hospitalStatsDisplay" class="ms-2"></span>
+                </div>
+                <button id="backToHospitalsBtn" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Hospitals
+                </button>
+            </div>
+        </div>
+
+        <!-- Beds List -->
+        <div id="bedsListContainer">
+            <div class="text-center py-5">
+                <div class="loading-spinner"></div>
+                <p class="mt-3 text-muted">Loading ICU beds...</p>
+            </div>
+        </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let selectedHospitalId = null;
+
+    // Function to load bed counts for each hospital
+    function loadBedCounts() {
+        $('.hospital-card').each(function() {
+            const hospitalId = $(this).data('hospital-id');
+            $.ajax({
+                url: "/get-beds-by-hospital/",
+                type: "GET",
+                data: { hospital_id: hospitalId },
+                success: function(data) {
+                    if (data.success && data.beds) {
+                        const totalBeds = data.beds.length;
+                        const availableBeds = data.beds.filter(bed => bed.is_available).length;
+                        $(`#bed-count-${hospitalId}`).text(totalBeds);
+                        $(`#available-count-${hospitalId}`).text(availableBeds);
+                    } else {
+                        $(`#bed-count-${hospitalId}`).text('0');
+                        $(`#available-count-${hospitalId}`).text('0');
+                    }
+                },
+                error: function() {
+                    $(`#bed-count-${hospitalId}`).text('0');
+                    $(`#available-count-${hospitalId}`).text('0');
+                }
+            });
+        });
+    }
+
+    // Load bed counts on page load
+    $(document).ready(function() {
+        loadBedCounts();
+    });
+
+    // Hospital selection click
+    $('.hospital-card').click(function() {
+        selectedHospitalId = $(this).data('hospital-id');
+        const hospitalName = $(this).data('hospital-name');
+
+        // Update UI
+        $('.hospital-card').removeClass('selected');
+        $(this).addClass('selected');
+
+        // Update step indicator
+        $('#step1Indicator .step-circle').removeClass('active').addClass('completed');
+        $('#step2Indicator .step-circle').addClass('active');
+
+        // Update selected hospital name
+        $('#selectedHospitalNameDisplay').text(hospitalName);
+
+        // Get bed counts for display
+        const totalBeds = $(`#bed-count-${selectedHospitalId}`).text();
+        const availableBeds = $(`#available-count-${selectedHospitalId}`).text();
+        $('#hospitalStatsDisplay').html(`<span class="badge bg-primary ms-2">Total: ${totalBeds} Beds</span> <span class="badge bg-success">Available: ${availableBeds}</span>`);
+
+        // Switch views
+        $('#hospitalSelectionView').slideUp(300, function() {
+            $('#bedSelectionView').slideDown(300);
+            loadBeds();
+        });
+    });
+
+    // Back to hospitals button
+    $('#backToHospitalsBtn').click(function() {
+        $('#bedSelectionView').slideUp(300, function() {
+            $('#hospitalSelectionView').slideDown(300);
+            $('#step1Indicator .step-circle').removeClass('completed').addClass('active');
+            $('#step2Indicator .step-circle').removeClass('active');
+        });
+    });
+
+    // Load beds function
+    function loadBeds() {
+        $('#bedsListContainer').html('<div class="text-center py-5"><div class="loading-spinner"></div><p class="mt-3 text-muted">Loading ICU beds...</p></div>');
+
+        $.ajax({
+            url: "/get-beds-by-hospital/",
+            type: "GET",
+            data: { hospital_id: selectedHospitalId },
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(data) {
+                if (data.success && data.beds) {
+                    displayBeds(data.beds);
+                } else {
+                    $('#bedsListContainer').html('<div class="text-center py-5"><i class="fas fa-bed fa-4x text-muted mb-3 opacity-25"></i><h4 class="text-muted">No ICU Beds Available</h4><p class="text-muted">No ICU beds are currently available at this hospital.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+                }
+            },
+            error: function() {
+                $('#bedsListContainer').html('<div class="text-center py-5"><i class="fas fa-exclamation-triangle fa-4x text-danger mb-3 opacity-50"></i><h4 class="text-muted">Error Loading Beds</h4><p class="text-muted">Please try again later.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function displayBeds(beds) {
+        if (beds.length === 0) {
+            $('#bedsListContainer').html('<div class="text-center py-5"><i class="fas fa-bed fa-4x text-muted mb-3 opacity-25"></i><h4 class="text-muted">No ICU Beds Available</h4><p class="text-muted">No ICU beds are currently available at this hospital.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+            return;
+        }
+
+        let html = '<div class="row g-4">';
+        beds.forEach(function(bed) {
+            const bedTypeDisplay = getBedTypeDisplay(bed.bed_type);
+
+            html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="bed-card ${bed.is_available ? 'bed-available' : 'bed-occupied'} p-0">
+                        <div class="bed-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-bed fa-2x text-primary"></i>
+                                    <h5 class="fw-bold mb-0 mt-2">Bed #${bed.bed_number}</h5>
+                                </div>
+                                <div>
+                                    ${bed.is_available ?
+                                        '<span class="availability-badge badge-available"><i class="fas fa-check-circle me-1"></i>Available</span>' :
+                                        '<span class="availability-badge badge-occupied"><i class="fas fa-times-circle me-1"></i>Occupied</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <div class="mb-3">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-tag me-1"></i>Bed Type
+                                        </small>
+                                        <span class="fw-semibold">${bedTypeDisplay}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-money-bill me-1"></i>Daily Charge
+                                        </small>
+                                        <span class="bed-price">৳${bed.daily_charge}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">
+                                    <i class="fas fa-microscope me-1"></i>Equipment
+                                </small>
+                                <div>
+                                    ${bed.equipment ? bed.equipment.split(',').map(eq => `<span class="equipment-tag"><i class="fas fa-check-circle me-1"></i>${eq.trim()}</span>`).join('') : '<span class="equipment-tag">Standard ICU Equipment</span>'}
+                                </div>
+                            </div>
+
+                            ${bed.is_available ?
+                                `<div class="d-grid mt-3">
+                                    <a href="/patient/icu-beds/book/${bed.id}/" class="btn btn-primary rounded-pill book-btn">
+                                        <i class="fas fa-calendar-plus me-2"></i>Book This Bed
+                                    </a>
+                                </div>` :
+                                `<div class="d-grid mt-3">
+                                    <button class="btn btn-secondary rounded-pill" disabled>
+                                        <i class="fas fa-ban me-2"></i>Not Available
+                                    </button>
+                                </div>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        $('#bedsListContainer').html(html);
+    }
+
+    function getBedTypeDisplay(type) {
+        const types = {
+            'general': 'General ICU',
+            'cardiac': 'Cardiac ICU',
+            'pediatric': 'Pediatric ICU',
+            'neonatal': 'Neonatal ICU'
+        };
+        return types[type] || type;
+    }
+</script>
 {% endblock %}

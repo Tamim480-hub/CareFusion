@@ -1,0 +1,278 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Book ICU Bed - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .bed-info {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 25px;
+        color: white;
+    }
+    .bed-icon {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .info-row {
+        padding: 12px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .form-control, .form-select {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        padding: 12px 16px;
+        transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+    .fee-card {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 15px;
+    }
+    .book-btn {
+        transition: all 0.3s ease;
+    }
+    .book-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2 position-relative">
+                <a class="nav-link" href="{% url 'patient_cart' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Cart
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="booking-card">
+                <!-- Bed Info Header -->
+                <div class="bed-info">
+                    <div class="d-flex align-items-center">
+                        <div class="bed-icon me-3">
+                            <i class="fas fa-bed fa-3x" style="color: #667eea;"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">ICU Bed Booking</h3>
+                            <p class="mb-0 opacity-75">{{ bed.hospital.name }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bed Details -->
+                <div class="p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-info-circle text-primary me-2"></i>Bed Information
+                    </h5>
+                    
+                    <div class="bg-light rounded-4 mb-4">
+                        <div class="info-row">
+                            <div class="row">
+                                <div class="col-4">
+                                    <small class="text-muted">Bed Number</small>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">#{{ bed.bed_number }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="row">
+                                <div class="col-4">
+                                    <small class="text-muted">Bed Type</small>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">{{ bed.get_bed_type_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="row">
+                                <div class="col-4">
+                                    <small class="text-muted">Daily Charge</small>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-bold text-success fs-5">৳{{ bed.daily_charge }}</span>
+                                    <small class="text-muted">/day</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="row">
+                                <div class="col-4">
+                                    <small class="text-muted">Equipment</small>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">{{ bed.equipment|default:"Standard ICU equipment" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="row">
+                                <div class="col-4">
+                                    <small class="text-muted">Hospital</small>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">{{ bed.hospital.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Booking Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-calendar-alt text-primary me-2"></i>Expected Discharge Date *
+                            </label>
+                            <input type="date" name="expected_discharge" id="dischargeDate" class="form-control" required>
+                            <small class="text-muted">Estimated date of discharge from ICU</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-notes-medical text-primary me-2"></i>Medical Condition *
+                            </label>
+                            <textarea name="condition" class="form-control" rows="5" 
+                                      placeholder="Describe the medical condition requiring ICU admission. Include current symptoms, diagnosis, and any relevant medical history..." required></textarea>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> ICU admission requires:
+                            <ul class="mb-0 mt-2">
+                                <li>Valid doctor's recommendation</li>
+                                <li>Recent medical reports</li>
+                                <li>Advance payment of 50% of estimated charges</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4">
+                            <a href="{% url 'patient_icu_beds' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 book-btn">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Insurance Info -->
+            <div class="mt-4">
+                <div class="bg-light rounded-4 p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt text-primary fa-2x me-3"></i>
+                        <div>
+                            <strong>Insurance Information</strong><br>
+                            <small class="text-muted">We accept most major insurance plans. Please contact the hospital billing department for coverage details.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set min date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('dischargeDate').setAttribute('min', tomorrow.toISOString().split('T')[0]);
+    
+    // Set max date to 30 days from now
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    document.getElementById('dischargeDate').setAttribute('max', maxDate.toISOString().split('T')[0]);
+</script>
+{% endblock %}

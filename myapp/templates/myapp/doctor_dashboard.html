@@ -1,114 +1,368 @@
-<!-- myapp/templates/myapp/admin_dashboard.html -->
 {% extends 'myapp/base.html' %}
+{% load static %}
 
-{% block title %}Admin Dashboard - CareFusion{% endblock %}
+{% block title %}Doctor Dashboard - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .gradient-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    .gradient-info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .gradient-warning {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .card-hover {
+        transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .badge-custom {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-info { background: #d1ecf1; color: #0c5460; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
+    
+    .quick-action-btn {
+        transition: all 0.3s ease;
+    }
+    .quick-action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Doctor Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'doctor_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_patients' %}">
+                    <i class="fas fa-users me-3"></i> My Patients
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_profile' %}">
+                    <i class="fas fa-user-md me-3"></i> My Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
-<!-- Top Bar -->
-<div class="flex justify-between items-center mb-8">
-    <div>
-        <h2 class="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
-        <p class="text-gray-500">Welcome back, {{ user.first_name|default:user.username }}!</p>
-    </div>
-    <div class="flex items-center gap-3">
-        <div class="w-10 h-10 gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
-            {{ user.first_name|default:user.username|slice:":1"|upper }}
-        </div>
+<div class="container-fluid">
+    <!-- Top Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
-            <p class="font-medium text-gray-800">{{ user.get_full_name|default:user.username }}</p>
-            <p class="text-sm text-gray-500">Administrator</p>
+            <h2 class="fw-bold text-dark mb-1">Doctor Dashboard</h2>
+            <p class="text-muted">Welcome back, Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}!</p>
         </div>
-    </div>
-</div>
-
-<!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-        <div class="flex justify-between items-start">
+        <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
+            <div class="avatar-circle gradient-primary text-white fw-bold shadow-sm" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                D
+            </div>
             <div>
-                <p class="text-gray-500 text-sm">Total Patients</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ total_patients }}</h3>
-            </div>
-            <div class="w-12 h-12 gradient-primary rounded-lg flex items-center justify-center">
-                <i class="fas fa-user-injured text-white text-xl"></i>
+                <p class="fw-semibold text-dark mb-0">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</p>
+                <p class="small text-muted">{{ doctor.get_specialization_display }}</p>
             </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">Total Doctors</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ total_doctors }}</h3>
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-card p-3 card-hover">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Today's Appointments</p>
+                        <h2 class="stat-number text-primary mb-0">{{ today_appointments|default:"0" }}</h2>
+                        <p class="small text-success mt-2 mb-0">
+                            <i class="fas fa-calendar-day me-1"></i> Scheduled for today
+                        </p>
+                    </div>
+                    <div class="gradient-primary rounded-3 p-3">
+                        <i class="fas fa-calendar-check text-white fs-3"></i>
+                    </div>
+                </div>
             </div>
-            <div class="w-12 h-12 gradient-success rounded-lg flex items-center justify-center">
-                <i class="fas fa-user-md text-white text-xl"></i>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-card p-3 card-hover">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Total Appointments</p>
+                        <h2 class="stat-number text-success mb-0">{{ total_appointments|default:"0" }}</h2>
+                        <p class="small text-info mt-2 mb-0">
+                            <i class="fas fa-clock me-1"></i> {{ pending_appointments|default:"0" }} pending
+                        </p>
+                    </div>
+                    <div class="gradient-success rounded-3 p-3">
+                        <i class="fas fa-calendar-alt text-white fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-card p-3 card-hover">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Total Patients</p>
+                        <h2 class="stat-number text-info mb-0">{{ total_patients|default:"0" }}</h2>
+                        <p class="small text-warning mt-2 mb-0">
+                            <i class="fas fa-users me-1"></i> Under my care
+                        </p>
+                    </div>
+                    <div class="gradient-info rounded-3 p-3">
+                        <i class="fas fa-users text-white fs-3"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">Available Beds</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ available_beds }}/{{ total_beds }}</h3>
-            </div>
-            <div class="w-12 h-12 gradient-info rounded-lg flex items-center justify-center">
-                <i class="fas fa-bed text-white text-xl"></i>
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-12">
+            <div class="stat-card p-3">
+                <h5 class="mb-3 fw-bold">
+                    <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
+                </h5>
+                <div class="row g-2">
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{% url 'doctor_appointments' %}" class="btn btn-primary w-100 quick-action-btn">
+                            <i class="fas fa-calendar-plus me-2"></i>View Appointments
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{% url 'doctor_patients' %}" class="btn btn-outline-success w-100 quick-action-btn">
+                            <i class="fas fa-user-plus me-2"></i>View Patients
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <a href="{% url 'doctor_profile' %}" class="btn btn-outline-secondary w-100 quick-action-btn">
+                            <i class="fas fa-user-edit me-2"></i>Update Profile
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">Today's Revenue</p>
-                <h3 class="text-3xl font-bold text-gray-800 mt-1">৳{{ today_revenue }}</h3>
-            </div>
-            <div class="w-12 h-12 gradient-warning rounded-lg flex items-center justify-center">
-                <i class="fas fa-taka-sign text-white text-xl"></i>
+    <!-- Today's Appointments Table -->
+    <div class="bg-white rounded-3 shadow-sm mb-4">
+        <div class="p-4 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="fw-semibold text-dark mb-0">
+                    <i class="fas fa-calendar-day text-primary me-2"></i>
+                    Today's Appointments
+                </h5>
+                <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-link text-primary">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Time</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in today_appointments_list %}
+                    <tr>
+                        <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <strong>{{ apt.patient.full_name }}</strong>
+                            </div>
+                        </td>
+                        <td class="align-middle">
+                            {{ apt.appointment_date|date:"h:i A" }}
+                        </td>
+                        <td class="align-middle">{{ apt.patient.phone|default:"N/A" }}</td>
+                        <td class="align-middle">
+                            {% if apt.status == 'confirmed' %}
+                                <span class="badge-custom badge-success">Confirmed</span>
+                            {% elif apt.status == 'pending' %}
+                                <span class="badge-custom badge-warning">Pending</span>
+                            {% elif apt.status == 'completed' %}
+                                <span class="badge-custom badge-info">Completed</span>
+                            {% else %}
+                                <span class="badge-custom badge-danger">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            <a href="{% url 'doctor_update_appointment' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-edit me-1"></i> Update
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-times fa-3x mb-2"></i>
+                            <p class="mb-0">No appointments scheduled for today</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
-<!-- Recent Patients Table -->
-<div class="bg-white rounded-xl shadow-sm mb-8">
-    <div class="p-6 border-b border-gray-100">
-        <h3 class="text-lg font-semibold text-gray-800">
-            <i class="fas fa-users text-purple-500 mr-2"></i>
-            Recent Patients
-        </h3>
+    <!-- Recent Appointments -->
+    <div class="bg-white rounded-3 shadow-sm">
+        <div class="p-4 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="fw-semibold text-dark mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    Recent Appointments
+                </h5>
+                <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-link text-primary">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Date & Time</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in recent_appointments %}
+                    <tr>
+                        <td class="align-middle">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-info bg-opacity-10 text-info me-2" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <strong>{{ apt.patient.full_name }}</strong>
+                            </div>
+                        </td>
+                        <td class="align-middle">
+                            {{ apt.appointment_date|date:"M d, Y" }}<br>
+                            <small class="text-muted">{{ apt.appointment_date|date:"h:i A" }}</small>
+                        </td>
+                        <td class="align-middle">{{ apt.patient.phone|default:"N/A" }}</td>
+                        <td class="align-middle">
+                            {% if apt.status == 'confirmed' %}
+                                <span class="badge-custom badge-success">Confirmed</span>
+                            {% elif apt.status == 'pending' %}
+                                <span class="badge-custom badge-warning">Pending</span>
+                            {% elif apt.status == 'completed' %}
+                                <span class="badge-custom badge-info">Completed</span>
+                            {% else %}
+                                <span class="badge-custom badge-danger">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                          <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-eye me-1"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-alt fa-3x mb-2"></i>
+                            <p class="mb-0">No appointments found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood Group</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                {% for patient in recent_patients %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ patient.first_name }} {{ patient.last_name }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ patient.phone }}</td>
-                    <td class="px-6 py-4 text-sm">
-                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">{{ patient.blood_group|default:"N/A" }}</span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ patient.created_at|date:"M d, Y" }}</td>
-                    <td class="px-6 py-4 text-sm">
-                        <a href="#" class="text-blue-600 hover:text-blue-800"><i class="fas fa-eye mr-1"></i>View</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No patients yet</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Doctor Info Footer -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="stat-card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="fw-semibold mb-2">
+                            <i class="fas fa-info-circle text-primary me-2"></i>Doctor Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <small class="text-muted"><i class="fas fa-graduation-cap me-1"></i> Qualification</small>
+                                <p class="mb-0">{{ doctor.qualification|default:"MBBS" }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted"><i class="fas fa-briefcase me-1"></i> Experience</small>
+                                <p class="mb-0">{{ doctor.experience_years }} years</p>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted"><i class="fas fa-money-bill me-1"></i> Consultation Fee</small>
+                                <p class="mb-0">৳{{ doctor.consultation_fee }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 d-inline-block">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <span class="fw-semibold">Available: {{ doctor.available_from|default:"09:00" }} - {{ doctor.available_to|default:"17:00" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

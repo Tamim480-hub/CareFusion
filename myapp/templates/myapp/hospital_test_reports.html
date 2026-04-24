@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareFusion - Manage Test Reports</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; }
+
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white !important;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white !important;
+        }
+
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .badge-urgent {
+            background: #dc3545;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 0.2rem rgba(74,144,226,0.25);
+        }
+
+        @media (max-width: 768px) { .sidebar { min-height: auto; } }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <div class="text-center mb-4">
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+                    <small class="text-white-50">Hospital Admin</small>
+                </div>
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_doctors' %}"><i class="fas fa-user-md me-3"></i> Doctors</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_patients' %}"><i class="fas fa-users me-3"></i> Patients</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_appointments' %}"><i class="fas fa-calendar-check me-3"></i> Appointments</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_beds' %}"><i class="fas fa-bed me-3"></i> ICU Beds</a></li>
+                    <li class="nav-item mb-2"><a class="nav-link active" href="{% url 'hospital_test_reports' %}"><i class="fas fa-flask me-3"></i> Test Reports</a></li>
+                    <li class="nav-item mt-4 pt-3 border-top border-secondary"><a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220,53,69,0.2);"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold"><i class="fas fa-flask text-primary me-2"></i>Test Reports Management</h2>
+                    <p class="text-muted mb-0">{{ hospital.name }} - Add and manage patient test reports</p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark d-flex align-items-center" data-bs-toggle="dropdown">
+                        <div class="avatar-circle bg-primary text-white me-2"><i class="fas fa-user"></i></div>
+                        <span>{{ user.username }}</span>
+                        <i class="fas fa-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-circle me-2"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="{% url 'hospital_dashboard' %}" class="btn btn-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card p-3 text-center">
+                        <h3 class="fw-bold text-primary mb-0">{{ total_reports|default:"0" }}</h3>
+                        <small class="text-muted">Total Reports</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3 text-center">
+                        <h3 class="fw-bold text-success mb-0">{{ completed_count|default:"0" }}</h3>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3 text-center">
+                        <h3 class="fw-bold text-warning mb-0">{{ pending_count|default:"0" }}</h3>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3 text-center">
+                        <h3 class="fw-bold text-danger mb-0">{{ urgent_count|default:"0" }}</h3>
+                        <small class="text-muted">Urgent</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Report Button -->
+            <div class="mb-4 text-end">
+                <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addReportModal">
+                    <i class="fas fa-plus me-2"></i> Add New Test Report
+                </button>
+            </div>
+
+            <!-- Patient Filter -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Filter by Patient</label>
+                            <select name="patient_id" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Patients</option>
+                                {% for patient in patients %}
+                                <option value="{{ patient.id }}" {% if selected_patient and selected_patient.id == patient.id %}selected{% endif %}>
+                                    {{ patient.full_name }} (ID: #{{ patient.id }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            {% if selected_patient %}
+                            <a href="{% url 'hospital_test_reports' %}" class="btn btn-outline-secondary w-100 rounded-pill">
+                                <i class="fas fa-times me-1"></i> Clear Filter
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reports List -->
+            <div class="row g-4">
+                {% for report in reports %}
+                <div class="col-md-6">
+                    <div class="report-card p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                {% if report.is_urgent %}
+                                    <span class="badge badge-urgent mb-2">⚠️ URGENT</span>
+                                {% endif %}
+                                <h5 class="mb-1">{{ report.get_report_type_display }}</h5>
+                                <p class="text-muted small mb-0">{{ report.report_title }}</p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">{{ report.report_date|date:"M d, Y" }}</small>
+                                <br>
+                                {% if report.status == 'completed' %}
+                                    <span class="badge bg-success mt-1">✓ Completed</span>
+                                {% elif report.status == 'processing' %}
+                                    <span class="badge bg-info mt-1">⏳ Processing</span>
+                                {% elif report.status == 'pending' %}
+                                    <span class="badge bg-warning mt-1">⏰ Pending</span>
+                                {% else %}
+                                    <span class="badge bg-secondary mt-1">{{ report.status|title }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row small text-muted">
+                            <div class="col-6"><i class="fas fa-user me-1"></i> {{ report.patient.full_name }}</div>
+                            <div class="col-6"><i class="fas fa-user-md me-1"></i> Dr. {{ report.doctor.full_name|default:"N/A" }}</div>
+                            <div class="col-6 mt-1"><i class="fas fa-calendar me-1"></i> Test: {{ report.test_date|date:"M d, Y"|default:"N/A" }}</div>
+                            <div class="col-6 mt-1"><i class="fas fa-flask me-1"></i> {{ report.get_report_type_display }}</div>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-end gap-2">
+                            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="viewReport({{ report.id }})">
+                                <i class="fas fa-eye me-1"></i> View
+                            </button>
+                            <form method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <input type="hidden" name="action" value="update_status">
+                                <select name="status" class="form-select form-select-sm" style="width: 100px; display: inline-block;" onchange="this.form.submit()">
+                                    <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="processing" {% if report.status == 'processing' %}selected{% endif %}>Processing</option>
+                                    <option value="completed" {% if report.status == 'completed' %}selected{% endif %}>Completed</option>
+                                </select>
+                            </form>
+                            <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this report?')">
+                                {% csrf_token %}
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                    <i class="fas fa-trash me-1"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-flask fa-4x text-muted mb-3"></i>
+                    <h5>No Test Reports Found</h5>
+                    <p class="text-muted">Click "Add New Test Report" to add your first report.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Report Modal -->
+<div class="modal fade" id="addReportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fas fa-flask me-2"></i>Add New Test Report
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <input type="hidden" name="action" value="add_report">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Select Patient *</label>
+                            <select name="patient_id" class="form-select" required>
+                                <option value="">-- Select Patient --</option>
+                                {% for patient in patients %}
+                                <option value="{{ patient.id }}">{{ patient.full_name }} (ID: #{{ patient.id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Select Doctor *</label>
+                            <select name="doctor_id" class="form-select" required>
+                                <option value="">-- Select Doctor --</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">Dr. {{ doctor.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Report Type *</label>
+                            <select name="report_type" class="form-select" required>
+                                <option value="">-- Select Type --</option>
+                                {% for value, label in report_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Test Date</label>
+                            <input type="date" name="test_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Report Title *</label>
+                        <input type="text" name="report_title" class="form-control" placeholder="e.g., Complete Blood Count, Chest X-Ray" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Findings / Observations</label>
+                        <textarea name="findings" class="form-control" rows="3" placeholder="Describe the clinical findings..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Test Results</label>
+                        <textarea name="test_results" class="form-control" rows="3" placeholder="Enter the test results..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Doctor's Interpretation</label>
+                        <textarea name="interpretation" class="form-control" rows="2" placeholder="Doctor's interpretation of results..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Recommendations</label>
+                        <textarea name="recommendations" class="form-control" rows="2" placeholder="Recommendations based on results..."></textarea>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="is_urgent" class="form-check-input" id="isUrgent">
+                        <label class="form-check-label fw-semibold text-danger" for="isUrgent">
+                            <i class="fas fa-exclamation-triangle me-1"></i> Mark as Urgent
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pb-4 pe-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function viewReport(id) {
+        window.location.href = '/patient/test-reports/' + id + '/';
+    }
+</script>
+</body>
+</html>

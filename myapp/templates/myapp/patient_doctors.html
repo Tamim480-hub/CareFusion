@@ -1,0 +1,517 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Find Doctors - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Hospital Card Styles */
+    .hospital-card {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        background: white;
+        overflow: hidden;
+        position: relative;
+    }
+    .hospital-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    .hospital-card:hover::before {
+        transform: scaleX(1);
+    }
+    .hospital-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+    .hospital-card.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9ff, #ffffff);
+        box-shadow: 0 10px 25px rgba(102,126,234,0.2);
+    }
+
+    /* Doctor Card Styles */
+    .doctor-card {
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        background: white;
+        overflow: hidden;
+        height: 100%;
+    }
+    .doctor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border-color: #28a745;
+    }
+    .doctor-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .specialization-badge {
+        background: rgba(102,126,234,0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #667eea;
+    }
+    .rating-stars {
+        color: #ffc107;
+        font-size: 13px;
+    }
+    .book-btn {
+        transition: all 0.3s ease;
+    }
+    .book-btn:hover {
+        transform: translateY(-2px);
+    }
+    .hospital-stats {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 8px;
+        text-align: center;
+    }
+    .back-btn {
+        transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+        transform: translateX(-5px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid #e9ecef;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-user-md text-primary me-2"></i>Find Doctors
+            </h2>
+            <p class="text-muted">Select a hospital to see available doctors</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <div class="bg-light rounded-3 p-2 px-3">
+                <i class="fas fa-building me-1"></i>
+                <span class="fw-semibold">{{ hospitals|length }} Hospitals Available</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="bg-white rounded-4 shadow-sm p-3 mb-4">
+        <div class="row text-center">
+            <div class="col-md-6">
+                <div class="step-indicator" id="step1Indicator">
+                    <div class="step-circle active">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <span class="step-label ms-2">Select Hospital</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="step-indicator" id="step2Indicator">
+                    <div class="step-circle">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <span class="step-label ms-2">Select Doctor</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Hospital Selection -->
+    <div id="hospitalSelectionView">
+        <div class="row g-4">
+            {% for hospital in hospitals %}
+            <div class="col-md-6 col-lg-4">
+                <div class="hospital-card p-3" data-hospital-id="{{ hospital.id }}" data-hospital-name="{{ hospital.name }}">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="fas fa-building fa-2x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold mb-1">{{ hospital.name }}</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i> {{ hospital.address|truncatechars:50|default:"Address not available" }}
+                            </p>
+                            <div class="d-flex gap-2 mb-2">
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-code me-1"></i> {{ hospital.code }}
+                                </span>
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-phone me-1"></i> {{ hospital.phone|default:"N/A" }}
+                                </span>
+                            </div>
+                            <div class="hospital-stats mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Doctors</small>
+                                        <p class="fw-bold mb-0" id="doctor-count-{{ hospital.id }}">-</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Departments</small>
+                                        <p class="fw-bold mb-0">8+</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-hospital fa-5x text-muted mb-3 opacity-25"></i>
+                    <h4 class="text-muted">No Hospitals Found</h4>
+                    <p class="text-muted">Please contact administrator to add hospitals.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Step 2: Doctor Selection (Hidden initially) -->
+    <div id="doctorSelectionView" style="display: none;">
+        <!-- Selected Hospital Info -->
+        <div class="alert alert-info mb-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <i class="fas fa-hospital me-2"></i>
+                    <strong id="selectedHospitalNameDisplay"></strong>
+                </div>
+                <button id="backToHospitalsBtn" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Hospitals
+                </button>
+            </div>
+        </div>
+
+        <!-- Doctors List -->
+        <div id="doctorsListContainer">
+            <div class="text-center py-5">
+                <div class="loading-spinner"></div>
+                <p class="mt-3 text-muted">Loading doctors...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let selectedHospitalId = null;
+
+    // Function to load doctor counts for each hospital
+    function loadDoctorCounts() {
+        $('.hospital-card').each(function() {
+            const hospitalId = $(this).data('hospital-id');
+            $.ajax({
+                url: "/get-doctors-by-hospital/",
+                type: "GET",
+                data: { hospital_id: hospitalId },
+                success: function(data) {
+                    if (data.success && data.doctors) {
+                        $(`#doctor-count-${hospitalId}`).text(data.doctors.length);
+                    } else {
+                        $(`#doctor-count-${hospitalId}`).text('0');
+                    }
+                },
+                error: function() {
+                    $(`#doctor-count-${hospitalId}`).text('0');
+                }
+            });
+        });
+    }
+
+    // Load doctor counts on page load
+    $(document).ready(function() {
+        loadDoctorCounts();
+    });
+
+    // Hospital selection click
+    $('.hospital-card').click(function() {
+        selectedHospitalId = $(this).data('hospital-id');
+        const hospitalName = $(this).data('hospital-name');
+
+        // Update UI
+        $('.hospital-card').removeClass('selected');
+        $(this).addClass('selected');
+
+        // Update step indicator
+        $('#step1Indicator .step-circle').removeClass('active').addClass('completed');
+        $('#step2Indicator .step-circle').addClass('active');
+
+        // Update selected hospital name
+        $('#selectedHospitalNameDisplay').text(hospitalName);
+
+        // Switch views
+        $('#hospitalSelectionView').slideUp(300, function() {
+            $('#doctorSelectionView').slideDown(300);
+            loadDoctors();
+        });
+    });
+
+    // Back to hospitals button
+    $('#backToHospitalsBtn').click(function() {
+        $('#doctorSelectionView').slideUp(300, function() {
+            $('#hospitalSelectionView').slideDown(300);
+            $('#step1Indicator .step-circle').removeClass('completed').addClass('active');
+            $('#step2Indicator .step-circle').removeClass('active');
+        });
+    });
+
+    // Load doctors function
+    function loadDoctors() {
+        $('#doctorsListContainer').html('<div class="text-center py-5"><div class="loading-spinner"></div><p class="mt-3 text-muted">Loading doctors...</p></div>');
+
+        $.ajax({
+            url: "/get-doctors-by-hospital/",
+            type: "GET",
+            data: { hospital_id: selectedHospitalId },
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(data) {
+                if (data.success && data.doctors) {
+                    displayDoctors(data.doctors);
+                } else {
+                    $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-user-md fa-4x text-muted mb-3 opacity-25"></i><h4 class="text-muted">No Doctors Available</h4><p class="text-muted">No doctors are currently available at this hospital.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+                }
+            },
+            error: function() {
+                $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-exclamation-triangle fa-4x text-danger mb-3 opacity-50"></i><h4 class="text-muted">Error Loading Doctors</h4><p class="text-muted">Please try again later.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function displayDoctors(doctors) {
+        if (doctors.length === 0) {
+            $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-user-md fa-4x text-muted mb-3 opacity-25"></i><h4 class="text-muted">No Doctors Available</h4><p class="text-muted">No doctors are currently available at this hospital.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+            return;
+        }
+
+        let html = '<div class="row g-4">';
+        doctors.forEach(function(doctor) {
+            // Generate star rating
+            let stars = '';
+            const rating = doctor.rating || 4.8;
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+
+            for (let i = 1; i <= 5; i++) {
+                if (i <= fullStars) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else if (i === fullStars + 1 && hasHalfStar) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+
+            html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="doctor-card p-3">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="doctor-avatar me-3">
+                                <i class="fas fa-user-md fa-2x text-white"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold mb-0">Dr. ${doctor.name}</h5>
+                                <span class="specialization-badge mt-1 d-inline-block">${doctor.specialization_display}</span>
+                                <div class="rating-stars mt-1">
+                                    ${stars}
+                                    <span class="text-muted ms-1">${rating}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-briefcase me-1"></i>Experience
+                                    </small>
+                                    <span class="fw-semibold">${doctor.experience} years</span>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-money-bill me-1"></i>Fee
+                                    </small>
+                                    <span class="fw-bold text-success">৳${doctor.fee}</span>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-graduation-cap me-1"></i>Qualification
+                                    </small>
+                                    <span class="small">${doctor.qualification || 'MBBS'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'patient_book_appointment' %}?doctor=${doctor.id}" class="btn btn-primary rounded-pill book-btn">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                            </a>
+                            <button class="btn btn-outline-info rounded-pill" onclick="viewDoctorDetails(${doctor.id})">
+                                <i class="fas fa-info-circle me-2"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        $('#doctorsListContainer').html(html);
+    }
+
+    function viewDoctorDetails(doctorId) {
+        // You can implement a modal or redirect to doctor details page
+        window.location.href = `/patient/doctor/${doctorId}/`;
+    }
+</script>
+
+<style>
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .step-circle.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+    }
+    .step-circle.completed {
+        background: #28a745;
+        color: white;
+    }
+    .step-label {
+        font-size: 14px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

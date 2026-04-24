@@ -1,195 +1,474 @@
-<!-- templates/myapp/emergency.html -->
-{% extends 'myapp/base.html' %}
-{% load static %}
-
-{% block content %}
 <!DOCTYPE html>
-<html>
+{% load static %}
+<html lang="bn">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency 24/7 - CareFusion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --success: #28a745;
+            --info: #17a2b8;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            border-radius: 12px;
+            padding: 12px 18px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8) !important;
+            text-decoration: none;
+            display: block;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+            color: white !important;
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white !important;
+        }
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .emergency-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .emergency-header {
+            background: linear-gradient(135deg, #dc3545, #c82333, #bd2130);
+            padding: 35px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .emergency-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 80%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(25deg);
+            pointer-events: none;
+        }
+        .hospital-select-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+        .emergency-number {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border-radius: 50px;
+            padding: 12px 25px;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220,53,69,0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220,53,69,0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220,53,69,0); }
+        }
+        .info-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .ambulance-timer {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        .hospital-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .hospital-option:hover {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        .hospital-option.selected {
+            border-color: #dc3545;
+            background: #fff0f0;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
-<body style="font-family: 'Inter', sans-serif; background: #f0f2f5;">
+<body>
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Emergency Header -->
-            <div class="text-center mb-4">
-                <div class="emergency-icon mb-3">
-                    <i class="fas fa-ambulance fa-4x text-danger"></i>
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <div class="text-center mb-4">
+                    <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+                    <small class="text-white-50">Patient Portal</small>
                 </div>
-                <h1 class="display-5 fw-bold text-danger">Emergency Request</h1>
-                <p class="text-muted">Immediate medical assistance is just a form away</p>
-                <div class="alert alert-warning mt-3">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>⚠️ For life-threatening emergencies, please call 999 immediately!</strong>
-                </div>
+
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                            <i class="fas fa-calendar-check me-3"></i> Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_doctors' %}">
+                            <i class="fas fa-user-md me-3"></i> Find Doctors
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_products' %}">
+                            <i class="fas fa-capsules me-3"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2 position-relative">
+                        <a class="nav-link" href="{% url 'pharmacy_cart' %}">
+                            <i class="fas fa-shopping-cart me-3"></i> Cart
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_icu_beds' %}">
+                            <i class="fas fa-bed me-3"></i> ICU Beds
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                            <i class="fas fa-flask me-3"></i> Test Reports
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" href="{% url 'emergency' %}">
+                            <i class="fas fa-ambulance me-3"></i> Emergency
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link" href="{% url 'patient_profile' %}">
+                            <i class="fas fa-user-circle me-3"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                            <i class="fas fa-sign-out-alt me-3"></i> Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
+        </div>
 
-            <!-- Show Error Messages -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}check-circle{% endif %} me-2"></i>
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            <!-- Emergency Form Card -->
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header py-4" style="background: linear-gradient(135deg, #dc3545, #c82333);">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-phone-alt fa-3x text-white"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h3 class="text-white mb-0 fw-bold">Emergency Contact Form</h3>
-                            <p class="text-white-50 mb-0">Fill in the details - Ambulance will be dispatched immediately</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body p-4">
-                    <form method="POST" id="emergencyForm" onsubmit="return validateForm()">
-                        {% csrf_token %}
-
-                        <!-- Patient Information -->
-                        <h5 class="mb-3">
-                            <i class="fas fa-user-injured text-danger me-2"></i>
-                            Patient Information
-                        </h5>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Patient Full Name *</label>
-                                <input type="text" name="patient_name" id="patient_name" class="form-control"
-                                       value="{{ request.user.get_full_name }}" required>
-                                <small class="text-danger" id="name_error" style="display: none;">Please enter patient name</small>
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- Emergency Header -->
+                        <div class="emergency-card">
+                            <div class="emergency-header">
+                                <i class="fas fa-ambulance fa-5x text-white mb-3"></i>
+                                <h1 class="text-white fw-bold display-5">🚨 Emergency 24/7</h1>
+                                <p class="text-white-50 mb-0">Immediate medical assistance will be provided</p>
+                                <div class="mt-3">
+                                    <a href="tel:999" class="emergency-number text-white text-decoration-none">
+                                        <i class="fas fa-phone-alt me-2"></i> Call Now: 999
+                                    </a>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">Patient Age *</label>
-                                <input type="number" name="patient_age" id="patient_age" class="form-control"
-                                       min="0" max="150" step="1" required>
-                                <small class="text-danger" id="age_error" style="display: none;">Please enter valid age (1-150)</small>
+
+                            <!-- Hospital Selection -->
+                            <div class="p-4">
+                                <div class="hospital-select-card">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-hospital text-danger fa-2x me-3"></i>
+                                        <h5 class="fw-bold mb-0">Select Your Preferred Hospital</h5>
+                                    </div>
+                                    <div id="hospitalList">
+                                        {% for hospital in hospitals %}
+                                        <div class="hospital-option" data-hospital-id="{{ hospital.id }}"
+                                             data-hospital-name="{{ hospital.name }}"
+                                             data-hospital-phone="{{ hospital.phone }}"
+                                             data-hospital-address="{{ hospital.address }}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-building text-primary me-2"></i>
+                                                    <strong>{{ hospital.name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-map-marker-alt me-1"></i> {{ hospital.address|truncatechars:50 }}
+                                                    </small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-danger">📍 {{ forloop.counter }} km</span>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-phone me-1"></i> {{ hospital.phone|default:"N/A" }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% empty %}
+                                        <div class="alert alert-warning">No hospitals available. Please contact administrator.</div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="alert alert-info small">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Nearest Hospital:</strong> Ambulance will be dispatched from your selected hospital.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-danger border-0 rounded-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                                        <div>
+                                            <strong>⚠️ For Life-Threatening Emergencies:</strong><br>
+                                            Call <strong>999</strong> immediately or visit the nearest emergency room.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3">
+                                            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                                            {{ message }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                <!-- Emergency Form -->
+                                <h4 class="fw-bold mb-3">
+                                    <i class="fas fa-clipboard-list text-danger me-2"></i>Request Emergency Service
+                                </h4>
+                                <form method="POST" id="emergencyForm">
+                                    {% csrf_token %}
+
+                                    <!-- Hidden field for selected hospital -->
+                                    <input type="hidden" name="hospital_id" id="selectedHospitalId" required>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-user me-1 text-danger"></i>Patient Name *
+                                            </label>
+                                            <input type="text" name="patient_name" class="form-control rounded-3" placeholder="Full name" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-calendar me-1 text-danger"></i>Patient Age *
+                                            </label>
+                                            <input type="number" name="patient_age" class="form-control rounded-3" placeholder="Age in years" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-phone me-1 text-danger"></i>Contact Number *
+                                            </label>
+                                            <input type="tel" name="contact_number" class="form-control rounded-3" placeholder="01XXXXXXXXX" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-stethoscope me-1 text-danger"></i>Emergency Type *
+                                            </label>
+                                            <select name="emergency_type" class="form-select rounded-3" required>
+                                                <option value="">Select Type</option>
+                                                <option value="Heart Attack">❤️ Heart Attack / Chest Pain</option>
+                                                <option value="Stroke">🧠 Stroke / Paralysis</option>
+                                                <option value="Accident">🚗 Road Accident / Trauma</option>
+                                                <option value="Burn">🔥 Severe Burn</option>
+                                                <option value="Poisoning">☠️ Poisoning / Overdose</option>
+                                                <option value="Seizure">⚡ Seizure / Convulsions</option>
+                                                <option value="Breathing Difficulty">🌬️ Breathing Difficulty / Asthma</option>
+                                                <option value="Bleeding">🩸 Severe Bleeding</option>
+                                                <option value="Pregnancy">🤰 Pregnancy Emergency</option>
+                                                <option value="Other">📝 Other Emergency</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-map-marker-alt me-1 text-danger"></i>Your Location / Address *
+                                        </label>
+                                        <input type="text" name="location" class="form-control rounded-3" placeholder="House #, Road #, Area, City" required>
+                                        <small class="text-muted">Share your exact location for faster response</small>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-flag-checkered me-1 text-danger"></i>Priority Level
+                                            </label>
+                                            <select name="priority" class="form-select rounded-3">
+                                                <option value="critical">🔴 Critical - Immediate (Life Threatening)</option>
+                                                <option value="high">🟠 High - Within 5 minutes</option>
+                                                <option value="medium" selected>🟡 Medium - Within 10 minutes</option>
+                                                <option value="low">🟢 Low - Within 15 minutes</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-hand-holding-heart me-1 text-danger"></i>Any Allergies?
+                                            </label>
+                                            <select name="allergies" class="form-select rounded-3">
+                                                <option value="">No known allergies</option>
+                                                <option value="Medicine">Medicine Allergy</option>
+                                                <option value="Food">Food Allergy</option>
+                                                <option value="Insect">Insect Bite Allergy</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-notes-medical me-1 text-danger"></i>Additional Information
+                                        </label>
+                                        <textarea name="additional_info" class="form-control rounded-3" rows="3"
+                                                  placeholder="Current symptoms, medical history, current medications, etc."></textarea>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input type="checkbox" class="form-check-input" id="consent" required>
+                                        <label class="form-check-label" for="consent">
+                                            I confirm that the information provided is accurate and this is a genuine emergency.
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold rounded-3" id="submitBtn">
+                                        <i class="fas fa-ambulance me-2"></i>Request Emergency Service Now
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Contact Number *</label>
-                            <input type="tel" name="contact_number" id="contact_number" class="form-control"
-                                   value="{{ request.user.phone }}" required>
-                            <small class="text-danger" id="contact_error" style="display: none;">Please enter valid contact number</small>
-                            <small class="text-muted">Emergency contact number</small>
+                        <!-- Information Cards -->
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-4">
+                                <div class="info-card bg-white rounded-3 p-3 text-center shadow-sm">
+                                    <div class="bg-danger bg-opacity-10 rounded-circle p-3 d-inline-block mb-2">
+                                        <i class="fas fa-truck-medical fa-2x text-danger"></i>
+                                    </div>
+                                    <h6 class="fw-bold">Fast Response</h6>
+                                    <small class="text-muted">Ambulance arrives within 10-15 minutes</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-card bg-white rounded-3 p-3 text-center shadow-sm">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block mb-2">
+                                        <i class="fas fa-user-md fa-2x text-primary"></i>
+                                    </div>
+                                    <h6 class="fw-bold">Expert Team</h6>
+                                    <small class="text-muted">Trained paramedics & doctors</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-card bg-white rounded-3 p-3 text-center shadow-sm">
+                                    <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-block mb-2">
+                                        <i class="fas fa-heartbeat fa-2x text-success"></i>
+                                    </div>
+                                    <h6 class="fw-bold">24/7 Service</h6>
+                                    <small class="text-muted">Always ready to serve you</small>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Emergency Details -->
-                        <h5 class="mb-3 mt-4">
-                            <i class="fas fa-notes-medical text-danger me-2"></i>
-                            Emergency Details
-                        </h5>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Emergency Type *</label>
-                            <select name="emergency_type" id="emergency_type" class="form-select" required>
-                                <option value="">Select emergency type...</option>
-                                <option value="cardiac">Cardiac Arrest / Heart Attack</option>
-                                <option value="accident">Accident / Trauma</option>
-                                <option value="stroke">Stroke / Paralysis</option>
-                                <option value="breathing">Breathing Difficulty</option>
-                                <option value="seizure">Seizure / Epilepsy</option>
-                                <option value="poisoning">Poisoning</option>
-                                <option value="burn">Burn Injury</option>
-                                <option value="pregnancy">Pregnancy Emergency</option>
-                                <option value="other">Other Emergency</option>
-                            </select>
-                            <small class="text-danger" id="type_error" style="display: none;">Please select emergency type</small>
+                        <!-- Ambulance Tracking -->
+                        <div class="ambulance-timer mt-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8 text-white text-start">
+                                    <i class="fas fa-map-marked-alt fa-2x mb-2"></i>
+                                    <h5 class="text-white fw-bold">Ambulance Tracking System</h5>
+                                    <p class="text-white-50 small mb-0">Live tracking available after request confirmation</p>
+                                </div>
+                                <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                                    <div class="bg-white rounded-3 p-2 d-inline-block">
+                                        <i class="fas fa-clock text-danger me-1"></i>
+                                        <span class="fw-bold">ETA: 10-15 min</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Priority Level *</label>
-                            <select name="priority" id="priority" class="form-select" required>
-                                <option value="">Select priority...</option>
-                                <option value="critical">🔴 Critical - Immediate Response</option>
-                                <option value="high">🟠 High - Within 5 Minutes</option>
-                                <option value="medium">🟡 Medium - Within 10 Minutes</option>
-                                <option value="low">🟢 Low - Within 15 Minutes</option>
-                            </select>
-                            <small class="text-danger" id="priority_error" style="display: none;">Please select priority</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Incident Location *</label>
-                            <textarea name="location" id="location" class="form-control" rows="2"
-                                      placeholder="Enter full address or location description" required></textarea>
-                            <small class="text-danger" id="location_error" style="display: none;">Please enter location</small>
-                            <small class="text-muted">Click <a href="#" onclick="getLocation(); return false;">here</a> to auto-detect location</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Additional Information</label>
-                            <textarea name="additional_info" class="form-control" rows="3"
-                                      placeholder="Any other relevant information..."></textarea>
-                        </div>
-
-                        <!-- Emergency Buttons -->
-                        <div class="d-flex justify-content-between gap-3 mt-4">
-                            <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
-                                <i class="fas fa-arrow-left me-2"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-danger btn-lg px-5" id="submitBtn">
-                                <i class="fas fa-paper-plane me-2"></i>Send Emergency Request
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Emergency Instructions -->
-            <div class="row mt-4 g-3">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm text-center h-100">
-                        <div class="card-body">
-                            <i class="fas fa-phone-volume fa-2x text-danger mb-2"></i>
-                            <h6>Call 999</h6>
-                            <small class="text-muted">For immediate emergency</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm text-center h-100">
-                        <div class="card-body">
-                            <i class="fas fa-map-marker-alt fa-2x text-danger mb-2"></i>
-                            <h6>Share Location</h6>
-                            <small class="text-muted">Enable GPS for faster response</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm text-center h-100">
-                        <div class="card-body">
-                            <i class="fas fa-clock fa-2x text-danger mb-2"></i>
-                            <h6>15 Minutes</h6>
-                            <small class="text-muted">Average ambulance arrival</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Emergency Numbers -->
-            <div class="card border-danger mt-4">
-                <div class="card-body text-center">
-                    <h6 class="text-danger fw-bold mb-2">🚑 Emergency Helplines</h6>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <strong>National Emergency:</strong> <span class="text-primary">999</span>
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Ambulance:</strong> <span class="text-primary">102</span>
-                        </div>
-                        <div class="col-md-4">
-                            <strong>Hospital Hotline:</strong> <span class="text-primary">+880 1700-000000</span>
+                        <!-- Emergency Tips -->
+                        <div class="bg-white rounded-3 p-4 mt-4 shadow-sm">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>What to do while waiting for ambulance?
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Stay calm and keep patient comfortable</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Keep emergency contact numbers ready</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Have medical documents ready if available</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Don't give food or water if unconscious</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Keep the entrance clear for ambulance</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Share exact location on call</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -198,176 +477,47 @@
     </div>
 </div>
 
-<style>
-    .form-control, .form-select {
-        border-radius: 10px;
-        border: 2px solid #e9ecef;
-        padding: 12px 15px;
-        transition: all 0.3s;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-    }
-
-    .form-control.is-invalid, .form-select.is-invalid {
-        border-color: #dc3545;
-        background-color: #fff8f8;
-    }
-
-    .btn-danger {
-        transition: all 0.3s;
-    }
-
-    .btn-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
-    }
-
-    .card {
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-
-    .emergency-icon {
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-        }
-        50% {
-            transform: scale(1.1);
-        }
-        100% {
-            transform: scale(1);
-        }
-    }
-
-    .alert-warning {
-        border-radius: 10px;
-    }
-
-    .btn-outline-secondary {
-        transition: all 0.3s;
-    }
-
-    .btn-outline-secondary:hover {
-        transform: translateY(-2px);
-    }
-</style>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Form validation function
-    function validateForm() {
-        let isValid = true;
+    // Hospital selection
+    let selectedHospital = null;
 
-        // Reset error messages
-        document.querySelectorAll('.text-danger').forEach(el => {
-            el.style.display = 'none';
-        });
-        document.querySelectorAll('.form-control, .form-select').forEach(el => {
-            el.classList.remove('is-invalid');
-        });
-
-        // Validate Patient Name
-        let patientName = document.getElementById('patient_name').value.trim();
-        if (!patientName) {
-            document.getElementById('name_error').style.display = 'block';
-            document.getElementById('patient_name').classList.add('is-invalid');
-            isValid = false;
-        }
-
-        // Validate Patient Age
-        let patientAge = document.getElementById('patient_age').value;
-        if (!patientAge || patientAge < 1 || patientAge > 150) {
-            document.getElementById('age_error').style.display = 'block';
-            document.getElementById('patient_age').classList.add('is-invalid');
-            isValid = false;
-        }
-
-        // Validate Contact Number
-        let contactNumber = document.getElementById('contact_number').value.trim();
-        let phoneRegex = /^[0-9]{10,15}$/;
-        if (!contactNumber || !phoneRegex.test(contactNumber)) {
-            document.getElementById('contact_error').style.display = 'block';
-            document.getElementById('contact_number').classList.add('is-invalid');
-            isValid = false;
-        }
-
-        // Validate Emergency Type
-        let emergencyType = document.getElementById('emergency_type').value;
-        if (!emergencyType) {
-            document.getElementById('type_error').style.display = 'block';
-            document.getElementById('emergency_type').classList.add('is-invalid');
-            isValid = false;
-        }
-
-        // Validate Priority
-        let priority = document.getElementById('priority').value;
-        if (!priority) {
-            document.getElementById('priority_error').style.display = 'block';
-            document.getElementById('priority').classList.add('is-invalid');
-            isValid = false;
-        }
-
-        // Validate Location
-        let location = document.getElementById('location').value.trim();
-        if (!location) {
-            document.getElementById('location_error').style.display = 'block';
-            document.getElementById('location').classList.add('is-invalid');
-            isValid = false;
-        }
-
-        // Show confirmation if valid
-        if (isValid) {
-            return confirm('⚠️ WARNING: This is an emergency request!\n\nAmbulance will be dispatched immediately.\n\nDo you want to proceed?');
-        }
-
-        return false;
-    }
-
-    // Auto-detect location
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                let locationField = document.getElementById('location');
-                let currentLocation = `Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`;
-                locationField.value = currentLocation;
-                locationField.classList.remove('is-invalid');
-                document.getElementById('location_error').style.display = 'none';
-            }, function(error) {
-                alert('Unable to get location. Please enter address manually.');
+    document.querySelectorAll('.hospital-option').forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            document.querySelectorAll('.hospital-option').forEach(opt => {
+                opt.classList.remove('selected');
             });
-        } else {
-            alert('Geolocation is not supported by this browser.');
-        }
-    }
 
-    // Real-time validation
-    document.getElementById('patient_age').addEventListener('input', function() {
-        let val = parseInt(this.value);
-        if (val && val >= 1 && val <= 150) {
-            this.classList.remove('is-invalid');
-            document.getElementById('age_error').style.display = 'none';
-        }
+            // Add selected class to clicked option
+            this.classList.add('selected');
+
+            // Store selected hospital ID
+            selectedHospital = this.dataset.hospitalId;
+            document.getElementById('selectedHospitalId').value = selectedHospital;
+
+            // Optional: Show confirmation
+            const hospitalName = this.dataset.hospitalName;
+            console.log(`Selected hospital: ${hospitalName}`);
+        });
     });
 
-    document.getElementById('contact_number').addEventListener('input', function() {
-        let phoneRegex = /^[0-9]{10,15}$/;
-        if (phoneRegex.test(this.value)) {
-            this.classList.remove('is-invalid');
-            document.getElementById('contact_error').style.display = 'none';
+    // Form validation
+    document.getElementById('emergencyForm').addEventListener('submit', function(e) {
+        const hospitalId = document.getElementById('selectedHospitalId').value;
+
+        if (!hospitalId) {
+            e.preventDefault();
+            alert('Please select a hospital first!');
+            return false;
         }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        submitBtn.disabled = true;
+
+        return true;
     });
 </script>
-
 </body>
 </html>
-{% endblock %}

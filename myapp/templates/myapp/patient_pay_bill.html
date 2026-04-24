@@ -1,0 +1,231 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Pay Bill - CareFusion{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-primary text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-credit-card me-2"></i>Pay Bill
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Bill Summary -->
+                    <div class="bg-light rounded-4 p-3 mb-4">
+                        <h6 class="fw-bold mb-3">Bill Summary</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Bill Number:</span>
+                            <strong>{{ bill.bill_number }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Doctor:</span>
+                            <strong>Dr. {{ bill.doctor.full_name }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Amount:</span>
+                            <strong>৳{{ bill.amount }}</strong>
+                        </div>
+                        {% if bill.discount > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Discount:</span>
+                            <strong>- ৳{{ bill.discount }}</strong>
+                        </div>
+                        {% endif %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax:</span>
+                            <strong>৳{{ bill.tax }}</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Total Amount:</span>
+                            <span class="fw-bold text-primary fs-5">৳{{ bill.total_amount }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Payment Method *</label>
+                            <select name="payment_method" class="form-select" required>
+                                <option value="">Select Method</option>
+                                <option value="card">💳 Credit/Debit Card</option>
+                                <option value="online">🏦 Online Banking</option>
+                                <option value="mobile">📱 Mobile Banking (bKash, Nagad)</option>
+                                <option value="cash">💵 Cash at Hospital</option>
+                                <option value="insurance">🛡️ Insurance</option>
+                            </select>
+                        </div>
+
+                        <!-- Card Details (shown when card selected) -->
+                        <div id="cardDetails" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Card Number</label>
+                                <input type="text" name="card_number" class="form-control" placeholder="1234 5678 9012 3456">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Cardholder Name</label>
+                                    <input type="text" name="card_name" class="form-control" placeholder="Name on card">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Expiry Date</label>
+                                    <input type="text" name="expiry_date" class="form-control" placeholder="MM/YY">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">CVV</label>
+                                <input type="password" name="cvv" class="form-control" placeholder="123">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="fas fa-lock me-2"></i>
+                            Your payment information is secure and encrypted.
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <a href="{% url 'patient_bills' %}" class="btn btn-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                                <i class="fas fa-check-circle me-2"></i>Pay ৳{{ bill.total_amount }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide card details based on payment method
+    document.querySelector('select[name="payment_method"]').addEventListener('change', function() {
+        const cardDetails = document.getElementById('cardDetails');
+        if (this.value === 'card') {
+            cardDetails.style.display = 'block';
+        } else {
+            cardDetails.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Pay Bill - CareFusion{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient-primary text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="fas fa-credit-card me-2"></i>Pay Bill
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Bill Summary -->
+                    <div class="bg-light rounded-4 p-3 mb-4">
+                        <h6 class="fw-bold mb-3">Bill Summary</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Bill Number:</span>
+                            <strong>{{ bill.bill_number }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Doctor:</span>
+                            <strong>Dr. {{ bill.doctor.full_name }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Amount:</span>
+                            <strong>৳{{ bill.amount }}</strong>
+                        </div>
+                        {% if bill.discount > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Discount:</span>
+                            <strong>- ৳{{ bill.discount }}</strong>
+                        </div>
+                        {% endif %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax:</span>
+                            <strong>৳{{ bill.tax }}</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Total Amount:</span>
+                            <span class="fw-bold text-primary fs-5">৳{{ bill.total_amount }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Payment Method *</label>
+                            <select name="payment_method" class="form-select" required>
+                                <option value="">Select Method</option>
+                                <option value="card">💳 Credit/Debit Card</option>
+                                <option value="online">🏦 Online Banking</option>
+                                <option value="mobile">📱 Mobile Banking (bKash, Nagad)</option>
+                                <option value="cash">💵 Cash at Hospital</option>
+                                <option value="insurance">🛡️ Insurance</option>
+                            </select>
+                        </div>
+
+                        <!-- Card Details (shown when card selected) -->
+                        <div id="cardDetails" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Card Number</label>
+                                <input type="text" name="card_number" class="form-control" placeholder="1234 5678 9012 3456">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Cardholder Name</label>
+                                    <input type="text" name="card_name" class="form-control" placeholder="Name on card">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Expiry Date</label>
+                                    <input type="text" name="expiry_date" class="form-control" placeholder="MM/YY">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">CVV</label>
+                                <input type="password" name="cvv" class="form-control" placeholder="123">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="fas fa-lock me-2"></i>
+                            Your payment information is secure and encrypted.
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <a href="{% url 'patient_bills' %}" class="btn btn-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-success rounded-pill px-4">
+                                <i class="fas fa-check-circle me-2"></i>Pay ৳{{ bill.total_amount }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide card details based on payment method
+    document.querySelector('select[name="payment_method"]').addEventListener('change', function() {
+        const cardDetails = document.getElementById('cardDetails');
+        if (this.value === 'card') {
+            cardDetails.style.display = 'block';
+        } else {
+            cardDetails.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

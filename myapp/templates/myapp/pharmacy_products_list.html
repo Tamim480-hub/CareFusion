@@ -1,0 +1,534 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Pharmacy Store - Products{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .pharmacy-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 40px;
+        color: white;
+    }
+
+    /* Category Cards */
+    .category-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: white;
+        margin-bottom: 15px;
+    }
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .category-card.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .category-card.active .badge {
+        background: white !important;
+        color: #667eea;
+    }
+    .category-card .badge {
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+
+    /* Product Cards */
+    .product-card {
+        border: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    .product-image {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+    }
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #ff4757;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 1;
+    }
+    .product-price {
+        font-size: 24px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+    .stock-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .btn-add-cart {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    .btn-add-cart:hover:not(:disabled) {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+    .quantity-input {
+        width: 65px;
+        text-align: center;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    /* Filter Sidebar */
+    .filter-card {
+        border: none;
+        border-radius: 20px;
+        background: white;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .filter-card .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px 20px 0 0;
+        color: white;
+        padding: 15px 20px;
+        border: none;
+    }
+    .btn-filter {
+        background: #667eea;
+        border: none;
+        border-radius: 10px;
+        padding: 10px;
+        transition: all 0.3s ease;
+        color: white;
+        font-weight: 500;
+    }
+    .btn-filter:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    /* Sort Dropdown */
+    .sort-dropdown {
+        border-radius: 10px;
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        background: white;
+    }
+
+    /* Pagination */
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 5px;
+        color: #667eea;
+        border: none;
+        padding: 10px 15px;
+        background: white;
+    }
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .pagination .page-link:hover {
+        background: #f0f0f0;
+        transform: translateY(-2px);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .product-card {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+    }
+    .empty-state i {
+        font-size: 80px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    /* Debug Alert */
+    .debug-alert {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: #333;
+        color: #ff6b6b;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-family: monospace;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="container-fluid px-4">
+    <div class="pharmacy-hero shadow">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-store me-3"></i>Pharmacy Store
+                </h1>
+                <p class="lead mb-3">Your trusted online pharmacy for quality medicines and healthcare products</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <span class="badge bg-light text-dark px-3 py-2">
+                        <i class="fas fa-truck me-1"></i> Free Delivery
+                    </span>
+                    <span class="badge bg-light text-dark px-3 py-2">
+                        <i class="fas fa-shield-alt me-1"></i> Genuine Products
+                    </span>
+                    <span class="badge bg-light text-dark px-3 py-2">
+                        <i class="fas fa-clock me-1"></i> 24/7 Support
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-4 text-center d-none d-md-block">
+                <i class="fas fa-capsules" style="font-size: 120px; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-md-3">
+            <!-- Categories -->
+            <div class="card filter-card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>Categories
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'pharmacy_products_list' %}"
+                           class="list-group-item list-group-item-action category-card {% if not current_category %}active{% endif %}"
+                           style="border: none; border-radius: 0;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-th-large me-2"></i>All Products
+                                </span>
+                                <span class="badge bg-secondary">{{ products|length }}</span>
+                            </div>
+                        </a>
+                        {% for category in categories %}
+                        <a href="?category={{ category.id }}"
+                           class="list-group-item list-group-item-action category-card {% if current_category.id == category.id %}active{% endif %}"
+                           style="border: none; border-radius: 0;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-tag me-2"></i>{{ category.name }}
+                                </span>
+                                <span class="badge bg-secondary">{{ category.product_count }}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Filter -->
+            <div class="card filter-card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-dollar-sign me-2"></i>Filter by Price
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="priceFilterForm">
+                        {% if request.GET.category %}
+                        <input type="hidden" name="category" value="{{ request.GET.category }}">
+                        {% endif %}
+                        {% if request.GET.sort %}
+                        <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+                        {% endif %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Min Price (৳)</label>
+                            <input type="number" name="min_price" class="form-control"
+                                   value="{{ min_price|default:'' }}" placeholder="Min">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Max Price (৳)</label>
+                            <input type="number" name="max_price" class="form-control"
+                                   value="{{ max_price|default:'' }}" placeholder="Max">
+                        </div>
+                        <button type="submit" class="btn btn-filter w-100">
+                            <i class="fas fa-filter me-2"></i>Apply Filter
+                        </button>
+                        <a href="{% url 'pharmacy_products_list' %}" class="btn btn-outline-secondary w-100 mt-2">
+                            <i class="fas fa-undo-alt me-2"></i>Reset
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="card filter-card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-prescription-bottle fa-3x text-primary mb-3"></i>
+                    <h6>Need Help?</h6>
+                    <p class="small text-muted">Call us: +880 1234 567890<br>Email: support@pharmacy.com</p>
+                    <hr>
+                    <div class="text-start">
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-check-circle text-success me-1"></i> Nationwide Delivery
+                        </small>
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-check-circle text-success me-1"></i> Cash on Delivery
+                        </small>
+                        <small class="text-muted d-block">
+                            <i class="fas fa-check-circle text-success me-1"></i> Doctor Consultation
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-md-9">
+            <!-- CRITICAL DEBUG INFO - Shows only to super admin -->
+            {% if user.is_superuser %}
+            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                <strong><i class="fas fa-bug me-2"></i>CRITICAL DEBUG INFO:</strong>
+                <ul class="mb-0 mt-2">
+                    <li>Total Products in Database (from view): {{ total_products }}</li>
+                    <li>Products showing (from view): {{ products|length }}</li>
+                    <li>Categories count: {{ categories|length }}</li>
+                </ul>
+                {% if total_products == 0 %}
+                <hr>
+                <p class="mb-0 text-danger">
+                    <strong>⚠️ NO PRODUCTS FOUND!</strong> Please run in shell:
+                    <code>python manage.py shell</code> then
+                    <code>from myapp.models import PharmacyProduct; PharmacyProduct.objects.all().update(is_active=True, stock=100)</code>
+                </p>
+                {% endif %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+
+            <!-- Sort Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div>
+                    <h3 class="mb-0 fw-bold">
+                        <i class="fas fa-capsules text-primary me-2"></i>Our Products
+                    </h3>
+                    <p class="text-muted mt-1">
+                        Showing {{ products|length }} products
+                    </p>
+                </div>
+                <div class="dropdown">
+                    <button class="btn sort-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-sort-amount-down me-2"></i>
+                        Sort by: {{ sort_by|default:"Default"|title }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="?sort=name_asc{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            <i class="fas fa-sort-alpha-down me-2"></i>Name (A-Z)
+                        </a></li>
+                        <li><a class="dropdown-item" href="?sort=name_desc{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            <i class="fas fa-sort-alpha-up me-2"></i>Name (Z-A)
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="?sort=price_asc{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            <i class="fas fa-sort-numeric-down me-2"></i>Price (Low to High)
+                        </a></li>
+                        <li><a class="dropdown-item" href="?sort=price_desc{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">
+                            <i class="fas fa-sort-numeric-up me-2"></i>Price (High to Low)
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Products Display -->
+            {% if products %}
+            <div class="row">
+                {% for product in products %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card product-card shadow-sm">
+                        <div class="position-relative">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="product-image d-flex align-items-center justify-content-center bg-light">
+                                <i class="fas fa-capsules fa-4x text-muted"></i>
+                            </div>
+                            {% endif %}
+
+                            {% if product.discount_percent > 0 %}
+                            <div class="discount-badge">
+                                -{{ product.discount_percent }}% OFF
+                            </div>
+                            {% endif %}
+
+                            <div class="product-badge">
+                                {% if product.stock > 10 %}
+                                <span class="badge bg-success stock-badge">
+                                    <i class="fas fa-check-circle me-1"></i>In Stock
+                                </span>
+                                {% elif product.stock > 0 %}
+                                <span class="badge bg-warning stock-badge">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Low Stock
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger stock-badge">
+                                    <i class="fas fa-times-circle me-1"></i>Out of Stock
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <span class="badge bg-light text-dark mb-2">
+                                <i class="fas fa-tag me-1"></i>{{ product.get_category_display }}
+                            </span>
+                            <h5 class="card-title fw-bold mb-2">{{ product.name }}</h5>
+                            <p class="card-text text-muted small">{{ product.description|truncatewords:12 }}</p>
+
+                            <div class="mb-3">
+                                <div class="product-price">৳ {{ product.price|floatformat:2 }}</div>
+                            </div>
+
+                            {% if product.requires_prescription %}
+                            <div class="alert alert-warning py-1 px-2 mb-2 small">
+                                <i class="fas fa-prescription-bottle me-1"></i> Prescription Required
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'pharmacy_add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <div class="d-flex gap-2">
+                                    <input type="number" name="quantity" value="1" min="1"
+                                           max="{{ product.stock }}" class="quantity-input"
+                                           {% if product.stock == 0 %}disabled{% endif %}>
+                                    <button type="submit" class="btn btn-add-cart text-white flex-grow-1"
+                                            {% if product.stock == 0 %}disabled{% endif %}>
+                                        <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                                    </button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login to Buy
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                            <i class="fas fa-chevron-left me-1"></i> Previous
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for i in products.paginator.page_range %}
+                        {% if products.number == i %}
+                            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ i }}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">
+                            Next <i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-capsules"></i>
+                <h4>No Products Found</h4>
+                <p class="text-muted">We couldn't find any products matching your criteria.</p>
+                <a href="{% url 'pharmacy_products_list' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-sync-alt me-2"></i>Clear All Filters
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Auto hide messages -->
+<script>
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert:not(.alert-info)');
+        alerts.forEach(function(alert) {
+            alert.style.display = 'none';
+        });
+    }, 5000);
+</script>
+{% endblock %}

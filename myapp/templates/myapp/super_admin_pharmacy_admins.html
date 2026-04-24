@@ -1,0 +1,753 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Manage Pharmacies & Admins{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* White Theme Styles */
+    body {
+        background: #f0f2f5 !important;
+    }
+    .main-content {
+        background: #f0f2f5 !important;
+    }
+
+    /* Tabs */
+    .nav-tabs {
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .nav-tabs .nav-link {
+        border-radius: 10px;
+        padding: 10px 20px;
+        margin-right: 10px;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    .nav-tabs .nav-link:hover {
+        color: #667eea;
+    }
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+    }
+
+    /* Step Indicator */
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        position: relative;
+    }
+    .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        background: transparent;
+    }
+    .step.active .step-circle {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 0 0 5px rgba(102,126,234,0.2);
+    }
+    .step.completed .step-circle {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: bold;
+        color: #6c757d;
+        transition: all 0.3s;
+    }
+    .step small {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .step.active small {
+        color: #667eea;
+        font-weight: 600;
+    }
+    .step-line {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e0e0e0;
+        z-index: 0;
+    }
+
+    /* Password Match Styles */
+    .password-match-success {
+        color: #28a745;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    .password-match-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    /* Pharmacy Selection Cards */
+    .pharmacy-select-card {
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid #e0e0e0;
+        background: white !important;
+    }
+    .pharmacy-select-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .pharmacy-select-card.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9ff, #ffffff) !important;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.2);
+    }
+    .pharmacy-select-card.selected h6 {
+        color: #667eea !important;
+    }
+
+    /* Form Controls */
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 10px 15px;
+        border: 1px solid #e0e0e0;
+        background: white;
+        color: #333;
+        transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        outline: none;
+    }
+    .form-label {
+        color: #333;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    textarea.form-control {
+        resize: vertical;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+    .btn-primary:disabled {
+        opacity: 0.6;
+        transform: none;
+        cursor: not-allowed;
+    }
+    .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
+
+    /* Alerts */
+    .alert {
+        border-radius: 10px;
+        border: none;
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    .alert-info {
+        background: #e3f2fd;
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border-left: 4px solid #dc3545;
+    }
+
+    /* Table */
+    .table {
+        margin-bottom: 0;
+    }
+    .table thead th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        padding: 15px;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .table tbody td {
+        padding: 12px 15px;
+        vertical-align: middle;
+        color: #495057;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* Badges */
+    .badge {
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-weight: 500;
+    }
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .badge-secondary {
+        background: #e9ecef;
+        color: #495057;
+    }
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* Card */
+    .card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .card-header {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm rounded-4 border-0">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h3 class="fw-bold mb-0" style="color: #333;">
+                        <i class="fas fa-store me-2" style="color: #667eea;"></i>Pharmacy Management
+                    </h3>
+                    <p class="mb-0 text-muted">Create pharmacies and assign admins</p>
+                </div>
+                <div class="card-body">
+
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step-line"></div>
+                        <div class="step" id="step1">
+                            <div class="step-circle">1</div>
+                            <small>Create Pharmacy</small>
+                        </div>
+                        <div class="step" id="step2">
+                            <div class="step-circle">2</div>
+                            <small>Add Pharmacy Admin</small>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-4">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#createPharmacy">
+                                <i class="fas fa-plus-circle me-2"></i>Create Pharmacy
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#createAdmin">
+                                <i class="fas fa-user-plus me-2"></i>Add Pharmacy Admin
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#pharmacyList">
+                                <i class="fas fa-list me-2"></i>Pharmacies
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#adminList">
+                                <i class="fas fa-users me-2"></i>Admins
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Tab 1: Create Pharmacy -->
+                        <div class="tab-pane fade show active" id="createPharmacy">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="card rounded-4 border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <h5 class="fw-bold mb-4" style="color: #333;">
+                                                <i class="fas fa-store me-2" style="color: #667eea;"></i>Create New Pharmacy
+                                            </h5>
+                                            <form method="POST" action="{% url 'super_admin_pharmacy_admins' %}" onsubmit="return validatePharmacyForm(this)">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="create_pharmacy">
+
+                                                <div class="row">
+                                                    <div class="col-md-8 mb-3">
+                                                        <label class="form-label">Pharmacy Name <span class="text-danger">*</span></label>
+                                                        <input type="text" name="name" id="pharmacy_name" class="form-control" required placeholder="e.g., ABC Pharmacy">
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <label class="form-label">Code <span class="text-danger">*</span></label>
+                                                        <input type="text" name="code" id="pharmacy_code" class="form-control" required placeholder="PH001">
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Address <span class="text-danger">*</span></label>
+                                                    <textarea name="address" id="pharmacy_address" class="form-control" rows="2" required placeholder="Full address"></textarea>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Phone <span class="text-danger">*</span></label>
+                                                        <input type="text" name="phone" id="pharmacy_phone" class="form-control" required placeholder="01XXXXXXXXX">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                                                        <input type="email" name="email" id="pharmacy_email" class="form-control" required placeholder="pharmacy@example.com">
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Delivery Charge (৳)</label>
+                                                        <input type="number" name="delivery_charge" class="form-control" value="50">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Free Delivery Above (৳)</label>
+                                                        <input type="number" name="free_delivery_above" class="form-control" value="500">
+                                                    </div>
+                                                </div>
+
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    After creating pharmacy, go to <strong>"Add Pharmacy Admin"</strong> tab to assign an admin.
+                                                </div>
+
+                                                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                                    <i class="fas fa-save me-2"></i>Create Pharmacy
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Create Admin - With Pharmacy Selection -->
+                        <div class="tab-pane fade" id="createAdmin">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="card rounded-4 border-0 shadow-sm">
+                                        <div class="card-body p-4">
+                                            <h5 class="fw-bold mb-4" style="color: #333;">
+                                                <i class="fas fa-user-plus me-2" style="color: #667eea;"></i>Add Pharmacy Admin
+                                            </h5>
+
+                                            <!-- Pharmacy Selection -->
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Select Pharmacy <span class="text-danger">*</span></label>
+                                                <div class="row g-3">
+                                                    {% for pharmacy in pharmacies %}
+                                                    <div class="col-md-6">
+                                                        <div class="card pharmacy-select-card rounded-3" onclick="selectPharmacy({{ pharmacy.id }}, '{{ pharmacy.name }}')">
+                                                            <div class="card-body p-3">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                        <i class="fas fa-store fa-2x" style="color: #667eea;"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h6 class="mb-0" style="color: #333;">{{ pharmacy.name }}</h6>
+                                                                        <small class="text-muted">Code: {{ pharmacy.code }}</small><br>
+                                                                        <small class="text-muted">{{ pharmacy.phone }}</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% empty %}
+                                                    <div class="col-12">
+                                                        <div class="alert alert-warning mb-0">
+                                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                                            No pharmacies found. Please <a href="#createPharmacy" data-bs-toggle="tab">create a pharmacy</a> first.
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            <form method="POST" action="{% url 'super_admin_pharmacy_admins' %}" id="adminForm">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="create_admin">
+                                                <input type="hidden" name="pharmacy_id" id="selectedPharmacyId">
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                                        <input type="text" name="first_name" id="first_name" class="form-control" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                                        <input type="text" name="last_name" id="last_name" class="form-control" required>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Username <span class="text-danger">*</span></label>
+                                                        <input type="text" name="username" id="username" class="form-control" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                                                        <input type="email" name="email" id="email" class="form-control" required>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Password <span class="text-danger">*</span></label>
+                                                        <input type="password" name="password" id="password" class="form-control" required>
+                                                        <small class="text-muted">Minimum 6 characters</small>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                                        <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
+                                                        <div id="passwordMatchMsg" class="small mt-1"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Phone</label>
+                                                        <input type="text" name="phone" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label">Designation</label>
+                                                        <input type="text" name="designation" class="form-control" value="Pharmacy Manager">
+                                                    </div>
+                                                </div>
+
+                                                <div class="alert alert-info" id="selectedPharmacyInfo">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    Please select a pharmacy from above to assign admin.
+                                                </div>
+
+                                                <button type="submit" class="btn btn-primary rounded-pill px-4" id="submitAdminBtn" disabled>
+                                                    <i class="fas fa-save me-2"></i>Add Pharmacy Admin
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Pharmacy List -->
+                        <div class="tab-pane fade" id="pharmacyList">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pharmacy Name</th>
+                                            <th>Code</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pharmacy in pharmacies %}
+                                        <tr>
+                                            <td><strong>{{ pharmacy.name }}</strong></td>
+                                            <td><span class="badge bg-secondary">{{ pharmacy.code }}</span></td>
+                                            <td>{{ pharmacy.phone }}</td>
+                                            <td>{{ pharmacy.email }}</td>
+                                            <td>
+                                                {% if pharmacy.is_active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ pharmacy.created_at|date:"d M Y" }}</td>
+                                            <td>
+                                                <form method="POST" action="{% url 'super_admin_pharmacy_admins' %}" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="toggle_pharmacy">
+                                                    <input type="hidden" name="pharmacy_id" value="{{ pharmacy.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-warning rounded-pill" title="Toggle Status">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="{% url 'super_admin_pharmacy_admins' %}" style="display: inline;" onsubmit="return confirm('Delete this pharmacy? This will also delete all related data!')">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="delete_pharmacy">
+                                                    <input type="hidden" name="pharmacy_id" value="{{ pharmacy.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">No pharmacies created yet. Please create a pharmacy using the "Create Pharmacy" tab.{% if pharmacies|length == 0 %} {% endif %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tab 4: Admin List -->
+                        <div class="tab-pane fade" id="adminList">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Admin Name</th>
+                                            <th>Email</th>
+                                            <th>Pharmacy</th>
+                                            <th>Designation</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for admin in pharmacy_admins %}
+                                        <tr>
+                                            <td><strong>{{ admin.user.get_full_name }}</strong></td>
+                                            <td>{{ admin.user.email }}</td>
+                                            <td>{{ admin.pharmacy.name|default:"Not Assigned" }}</td>
+                                            <td>{{ admin.designation }}</td>
+                                            <td>
+                                                {% if admin.is_active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="{% url 'super_admin_pharmacy_admins' %}" style="display: inline;" onsubmit="return confirm('Delete this admin?')">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="delete_admin">
+                                                    <input type="hidden" name="admin_id" value="{{ admin.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4 text-muted">No pharmacy admins created yet. Please select a pharmacy and add an admin from the "Add Pharmacy Admin" tab.{% if pharmacies|length > 0 %} {% endif %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Password match checker
+const passwordInput = document.getElementById('password');
+const confirmInput = document.getElementById('confirm_password');
+const matchMsg = document.getElementById('passwordMatchMsg');
+
+function checkPasswordMatch() {
+    if (passwordInput && confirmInput) {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        if (confirm.length === 0) {
+            matchMsg.innerHTML = '';
+        } else if (password === confirm) {
+            matchMsg.innerHTML = '<i class="fas fa-check-circle"></i> Password match';
+            matchMsg.style.color = '#28a745';
+        } else {
+            matchMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Passwords do not match';
+            matchMsg.style.color = '#dc3545';
+        }
+    }
+}
+
+if (passwordInput && confirmInput) {
+    passwordInput.addEventListener('input', checkPasswordMatch);
+    confirmInput.addEventListener('input', checkPasswordMatch);
+}
+
+// Select pharmacy function
+function selectPharmacy(id, name) {
+    console.log("Selecting pharmacy:", id, name);
+
+    // Remove selected class from all cards
+    document.querySelectorAll('.pharmacy-select-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+
+    // Add selected class to clicked card
+    const cards = document.querySelectorAll('.pharmacy-select-card');
+    for (let card of cards) {
+        if (card.innerHTML.includes(name)) {
+            card.classList.add('selected');
+            break;
+        }
+    }
+
+    // Set hidden input value
+    document.getElementById('selectedPharmacyId').value = id;
+    console.log("Selected pharmacy ID set to:", id);
+
+    // Update info message
+    const infoDiv = document.getElementById('selectedPharmacyInfo');
+    infoDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i>Selected Pharmacy: <strong>${name}</strong>`;
+    infoDiv.classList.remove('alert-info');
+    infoDiv.classList.add('alert-success');
+
+    // Enable submit button
+    const submitBtn = document.getElementById('submitAdminBtn');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        console.log("Submit button enabled");
+    }
+}
+
+// Form validation and submission
+const adminForm = document.getElementById('adminForm');
+if (adminForm) {
+    adminForm.addEventListener('submit', function(e) {
+        console.log("Form submit triggered");
+
+        const pharmacyId = document.getElementById('selectedPharmacyId').value;
+        const first_name = document.getElementById('first_name')?.value;
+        const last_name = document.getElementById('last_name')?.value;
+        const username = document.getElementById('username')?.value;
+        const email = document.getElementById('email')?.value;
+        const password = document.getElementById('password')?.value;
+        const confirm_password = document.getElementById('confirm_password')?.value;
+
+        console.log("Pharmacy ID:", pharmacyId);
+        console.log("First Name:", first_name);
+        console.log("Last Name:", last_name);
+        console.log("Username:", username);
+        console.log("Email:", email);
+
+        if (!pharmacyId) {
+            e.preventDefault();
+            alert('Please select a pharmacy first!');
+            return false;
+        }
+        if (!first_name) {
+            e.preventDefault();
+            alert('Please enter first name!');
+            return false;
+        }
+        if (!last_name) {
+            e.preventDefault();
+            alert('Please enter last name!');
+            return false;
+        }
+        if (!username) {
+            e.preventDefault();
+            alert('Please enter username!');
+            return false;
+        }
+        if (!email) {
+            e.preventDefault();
+            alert('Please enter email!');
+            return false;
+        }
+        if (!password) {
+            e.preventDefault();
+            alert('Please enter password!');
+            return false;
+        }
+        if (password.length < 6) {
+            e.preventDefault();
+            alert('Password must be at least 6 characters!');
+            return false;
+        }
+        if (password !== confirm_password) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+
+        console.log("Validation passed, submitting form...");
+        return true;
+    });
+}
+
+// Auto hide alerts after 5 seconds
+setTimeout(function() {
+    var alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        if (alert && !alert.classList.contains('alert-info')) {
+            alert.style.display = 'none';
+        }
+    });
+}, 5000);
+
+// Debug: Check if elements exist
+console.log("Selected Pharmacy ID element:", document.getElementById('selectedPharmacyId'));
+console.log("Submit button:", document.getElementById('submitAdminBtn'));
+console.log("Admin form:", document.getElementById('adminForm'));
+console.log("Pharmacy cards:", document.querySelectorAll('.pharmacy-select-card').length);
+</script>
+{% endblock %}
