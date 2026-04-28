@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from decimal import Decimal, InvalidOperation
+
 from .models import (
     User, Hospital, HospitalAdminProfile, Doctor, Patient, Appointment,
     ICUBed, ICUBooking, EmergencyRequest, Product, Order, TestReport,
@@ -812,13 +812,24 @@ def hospital_appointments(request):
 
 @login_required
 def hospital_beds(request):
-    """Manage ICU beds of this hospital"""
+    """Manage ICU beds and view bookings of this hospital"""
     hospital, is_admin = check_hospital_admin(request.user)
     if not is_admin:
         return redirect('login')
 
     beds = ICUBed.objects.filter(hospital=hospital).order_by('bed_number')
-    active_bookings = ICUBooking.objects.filter(hospital=hospital, is_active=True).select_related('patient', 'bed')
+
+    # Get all active ICU bookings for this hospital
+    active_bookings = ICUBooking.objects.filter(
+        hospital=hospital,
+        is_active=True
+    ).select_related('patient', 'bed').order_by('-admission_date')
+
+    # Get booking history (inactive)
+    booking_history = ICUBooking.objects.filter(
+        hospital=hospital,
+        is_active=False
+    ).select_related('patient', 'bed').order_by('-admission_date')[:20]
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -829,8 +840,11 @@ def hospital_beds(request):
                 messages.error(request, 'Bed number already exists!')
             else:
                 ICUBed.objects.create(
-                    bed_number=bed_number, hospital=hospital, bed_type=request.POST.get('bed_type'),
-                    daily_charge=request.POST.get('daily_charge'), equipment=request.POST.get('equipment', ''),
+                    bed_number=bed_number,
+                    hospital=hospital,
+                    bed_type=request.POST.get('bed_type'),
+                    daily_charge=request.POST.get('daily_charge'),
+                    equipment=request.POST.get('equipment', ''),
                     is_available=True
                 )
                 messages.success(request, f'Bed {bed_number} added!')
@@ -847,24 +861,29 @@ def hospital_beds(request):
             messages.success(request, 'Bed deleted!')
 
         elif action == 'discharge':
-            booking = get_object_or_404(ICUBooking, id=request.POST.get('booking_id'), hospital=hospital)
+            booking_id = request.POST.get('booking_id')
+            booking = get_object_or_404(ICUBooking, id=booking_id, hospital=hospital, is_active=True)
             booking.is_active = False
             booking.save()
             bed = booking.bed
             bed.is_available = True
             bed.save()
-            messages.success(request, f'Patient discharged from Bed {bed.bed_number}!')
+            messages.success(request, f'Patient {booking.patient_name} discharged from Bed {bed.bed_number}!')
 
         return redirect('hospital_beds')
 
     context = {
-        'beds': beds, 'active_bookings': active_bookings, 'hospital': hospital,
-        'bed_types': ICUBed.BED_TYPES, 'total_beds': beds.count(),
+        'beds': beds,
+        'active_bookings': active_bookings,
+        'booking_history': booking_history,
+        'hospital': hospital,
+        'bed_types': ICUBed.BED_TYPES,
+        'total_beds': beds.count(),
         'available_beds': beds.filter(is_available=True).count(),
         'occupied_beds': beds.filter(is_available=False).count(),
+        'total_active_bookings': active_bookings.count(),
     }
     return render(request, 'myapp/hospital_beds.html', context)
-
 
 @login_required
 def hospital_products(request):
@@ -1026,9 +1045,14 @@ def patient_dashboard(request):
     hospital = patient.hospital
     cart = Cart.objects.filter(user=request.user).first()
 
-    # Get pharmacy products (from independent pharmacy)
+    # Get pharmacy products
     from .models import PharmacyProduct
     pharmacy_products = PharmacyProduct.objects.filter(is_active=True, stock__gt=0)[:4]
+
+    # Get ICU bookings
+    icu_bookings = ICUBooking.objects.filter(patient=patient).select_related('bed', 'bed__hospital')
+    icu_bookings_count = icu_bookings.filter(is_active=True).count()
+    recent_icu_bookings = icu_bookings.order_by('-admission_date')[:3]
 
     # Statistics
     upcoming = Appointment.objects.filter(
@@ -1061,8 +1085,11 @@ def patient_dashboard(request):
         'recent_appointments': recent_appointments,
         'next_appointment': next_appointment,
         'pharmacy_products': pharmacy_products,
+        'icu_bookings_count': icu_bookings_count,
+        'recent_icu_bookings': recent_icu_bookings,
     }
     return render(request, 'myapp/patient_dashboard.html', context)
+
 
 
 
@@ -1313,12 +1340,13 @@ def pharmacy_prescriptions(request):
 def patient_icu_beds(request):
     """View all ICU beds from ALL hospitals"""
     if not hasattr(request.user, 'patient_profile'):
+        messages.error(request, 'Access denied. Patient only area!')
         return redirect('login')
 
     patient = request.user.patient_profile
 
-    # ✅ সব হাসপাতালের আইসিইউ বেড দেখাবে
-    beds = ICUBed.objects.all().select_related('hospital')
+    # Get all available ICU beds
+    beds = ICUBed.objects.filter(is_available=True).select_related('hospital')
 
     # Filter by hospital
     hospital_id = request.GET.get('hospital')
@@ -1330,11 +1358,6 @@ def patient_icu_beds(request):
     if bed_type:
         beds = beds.filter(bed_type=bed_type)
 
-    # Filter by availability
-    availability = request.GET.get('availability')
-    if availability == 'available':
-        beds = beds.filter(is_available=True)
-
     # Get all hospitals for filter
     hospitals = Hospital.objects.filter(is_active=True)
 
@@ -1342,7 +1365,6 @@ def patient_icu_beds(request):
     total_beds = beds.count()
     available_beds = beds.filter(is_available=True).count()
     occupied_beds = beds.filter(is_available=False).count()
-    occupancy_rate = int((occupied_beds / total_beds) * 100) if total_beds > 0 else 0
 
     context = {
         'beds': beds,
@@ -1351,7 +1373,6 @@ def patient_icu_beds(request):
         'total_beds': total_beds,
         'available_beds': available_beds,
         'occupied_beds': occupied_beds,
-        'occupancy_rate': occupancy_rate,
         'bed_types': ICUBed.BED_TYPES,
     }
     return render(request, 'myapp/patient_icu_beds.html', context)
@@ -1359,13 +1380,13 @@ def patient_icu_beds(request):
 
 @login_required
 def patient_book_icu_bed(request, bed_id):
-    """Book an ICU bed from ANY hospital"""
+    """Book an ICU bed"""
     if not hasattr(request.user, 'patient_profile'):
         messages.error(request, 'Access denied. Patient only area!')
         return redirect('login')
 
     patient = request.user.patient_profile
-    bed = get_object_or_404(ICUBed, id=bed_id, is_available=True)  # ← hospital ফিল্টার সরানো হয়েছে
+    bed = get_object_or_404(ICUBed, id=bed_id, is_available=True)
 
     if request.method == 'POST':
         try:
@@ -1373,10 +1394,10 @@ def patient_book_icu_bed(request, bed_id):
             condition = request.POST.get('condition')
 
             # Create ICU booking
-            ICUBooking.objects.create(
+            booking = ICUBooking.objects.create(
                 patient=patient,
                 bed=bed,
-                hospital=bed.hospital,  # বেডের হাসপাতাল ব্যবহার করুন
+                hospital=bed.hospital,
                 patient_name=patient.full_name,
                 patient_age=patient.age,
                 contact_number=patient.phone,
@@ -1405,39 +1426,107 @@ def patient_book_icu_bed(request, bed_id):
 
 @login_required
 def patient_icu_bookings(request):
-    """View patient's ICU bookings"""
+    """View patient's ICU bookings (both active and discharged)"""
     if not hasattr(request.user, 'patient_profile'):
+        messages.error(request, 'Access denied. Patient only area!')
         return redirect('login')
 
     patient = request.user.patient_profile
-    bookings = ICUBooking.objects.filter(patient=patient).select_related('bed', 'hospital').order_by('-admission_date')
+
+    # Get ALL bookings (both active and inactive/discharged)
+    all_bookings = ICUBooking.objects.filter(patient=patient).select_related('bed', 'hospital').order_by(
+        '-admission_date')
+
+    # Separate active and inactive bookings
+    active_bookings_list = all_bookings.filter(is_active=True)
+    inactive_bookings_list = all_bookings.filter(is_active=False)
+
+    # Calculate statistics
+    active_count = active_bookings_list.count()
+    inactive_count = inactive_bookings_list.count()
+    total_count = all_bookings.count()
+
+    # Debug print (check console)
+    print(f"=== ICU BOOKINGS DEBUG ===")
+    print(f"Patient: {patient.full_name} (ID: {patient.id})")
+    print(f"Total bookings: {total_count}")
+    print(f"Active bookings: {active_count}")
+    print(f"Inactive/Discharged bookings: {inactive_count}")
+
+    for booking in all_bookings:
+        print(
+            f"Booking ID: {booking.id} - Active: {booking.is_active} - Bed: {booking.bed.bed_number if booking.bed else 'No Bed'} - Hospital: {booking.hospital.name if booking.hospital else 'No Hospital'}")
 
     context = {
-        'bookings': bookings,
-        'active_bookings': bookings.filter(is_active=True).count(),
+        'bookings': all_bookings,  # All bookings
+        'active_bookings': active_count,
+        'inactive_bookings': inactive_count,  # Discharged/Cancelled bookings
+        'total_bookings': total_count,
     }
     return render(request, 'myapp/patient_icu_bookings.html', context)
 
 
 @login_required
-def patient_cancel_icu_booking(request, booking_id):
-    """Cancel an ICU booking"""
+def patient_delete_icu_booking(request, booking_id):
+    """Permanently delete a discharged booking record"""
     if not hasattr(request.user, 'patient_profile'):
+        messages.error(request, 'Access denied')
         return redirect('login')
 
-    booking = get_object_or_404(ICUBooking, id=booking_id, patient=request.user.patient_profile, is_active=True)
+    try:
+        booking = get_object_or_404(
+            ICUBooking,
+            id=booking_id,
+            patient=request.user.patient_profile,
+            is_active=False  # Only allow deleting inactive/discharged bookings
+        )
 
-    # Make bed available again
-    bed = booking.bed
-    bed.is_available = True
-    bed.save()
+        booking.delete()
+        messages.success(request, 'Booking record has been permanently deleted!')
 
-    # Cancel booking
-    booking.is_active = False
-    booking.save()
+    except Exception as e:
+        messages.error(request, f'Error deleting booking: {str(e)}')
 
-    messages.success(request, f'✓ ICU Bed {bed.bed_number} booking cancelled successfully!')
     return redirect('patient_icu_bookings')
+
+@login_required
+def patient_cancel_icu_booking(request, booking_id):
+    """Cancel/Discharge an ICU booking"""
+    if not hasattr(request.user, 'patient_profile'):
+        messages.error(request, 'Access denied')
+        return redirect('login')
+
+    try:
+        booking = get_object_or_404(
+            ICUBooking,
+            id=booking_id,
+            patient=request.user.patient_profile
+        )
+
+        # Get info for message
+        bed_number = booking.bed.bed_number if booking.bed else 'N/A'
+        hospital_name = booking.hospital.name if booking.hospital else 'Hospital'
+
+        if booking.is_active:
+            # Make bed available again
+            if booking.bed:
+                booking.bed.is_available = True
+                booking.bed.save()
+
+            # Mark booking as inactive (discharged)
+            booking.is_active = False
+            booking.save()
+
+            messages.success(request,
+                             f'✓ ICU Bed {bed_number} at {hospital_name} has been discharged/cancelled successfully!')
+        else:
+            messages.warning(request, 'This booking is already discharged!')
+
+    except Exception as e:
+        messages.error(request, f'Error: {str(e)}')
+
+    return redirect('patient_icu_bookings')
+
 
 @login_required
 def patient_profile(request):
@@ -1445,27 +1534,42 @@ def patient_profile(request):
     patient = request.user.patient_profile
 
     if request.method == 'POST':
+        # প্রফাইল আপডেট করুন
         patient.first_name = request.POST.get('first_name')
         patient.last_name = request.POST.get('last_name')
         patient.phone = request.POST.get('phone')
         patient.emergency_contact = request.POST.get('emergency_contact')
         patient.address = request.POST.get('address')
         patient.blood_group = request.POST.get('blood_group')
-        if request.POST.get('date_of_birth'):
-            patient.date_of_birth = request.POST.get('date_of_birth')
+
+        # date_of_birth আপডেট করুন
+        dob = request.POST.get('date_of_birth')
+        if dob:
+            try:
+                from datetime import datetime
+                patient.date_of_birth = datetime.strptime(dob, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+
         if request.POST.get('gender'):
             patient.gender = request.POST.get('gender')
+
         patient.save()
 
+        # User model আপডেট করুন
         user = request.user
         user.first_name = patient.first_name
         user.last_name = patient.last_name
         user.phone = patient.phone
         user.save()
+
         messages.success(request, 'Profile updated successfully!')
+        return redirect('patient_profile')
 
-    return render(request, 'myapp/patient_profile.html', {'patient': patient})
-
+    context = {
+        'patient': patient,
+    }
+    return render(request, 'myapp/patient_profile.html', context)
 
 # ==================== ডাক্তার ভিউস ====================
 
@@ -1510,11 +1614,6 @@ def doctor_dashboard(request):
 
 # ==================== ইউনিভার্সাল ড্যাশবোর্ড ====================
 
-# myapp/views.py
-
-# myapp/views.py
-
-# myapp/views.py
 
 # views.py
 
@@ -1739,6 +1838,24 @@ def doctor_update_appointment(request, appointment_id):
     return render(request, 'myapp/doctor_update_appointment.html', {'appointment': appointment})
 
 
+def get_doctor_schedule(request, doctor_id):
+    from .models import DoctorSchedule
+    from django.http import JsonResponse
+
+    schedules = DoctorSchedule.objects.filter(doctor_id=doctor_id).values('day', 'is_available', 'start_time',
+                                                                          'end_time')
+    schedule_list = []
+
+    for s in schedules:
+        schedule_list.append({
+            'day': s['day'],
+            'is_available': s['is_available'],
+            'start_time': s['start_time'].strftime('%H:%M') if s['start_time'] else '09:00',
+            'end_time': s['end_time'].strftime('%H:%M') if s['end_time'] else '17:00',
+        })
+
+    return JsonResponse({'schedules': schedule_list})
+
 @login_required
 def doctor_patients(request):
     """View all patients of the doctor"""
@@ -1881,28 +1998,29 @@ import uuid
 @login_required
 def patient_bills(request):
     """Patient view all bills"""
+    from .models import Bill
+
     if not hasattr(request.user, 'patient_profile'):
         messages.error(request, 'Access denied. Patient only area!')
         return redirect('login')
 
     patient = request.user.patient_profile
-    bills = Bill.objects.filter(patient=patient).order_by('-created_at')
 
-    # Statistics
-    total_bills = bills.count()
-    pending_amount = bills.filter(status='pending').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    paid_amount = bills.filter(status='paid').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    # চেক করুন Bill মডেলটি কাজ করছে কিনা
+    try:
+        bills = Bill.objects.filter(patient=patient).order_by('-created_at')
+    except Exception as e:
+        print(f"Bill model error: {e}")
+        messages.warning(request, 'Billing system is being updated.')
+        bills = []
 
     context = {
         'bills': bills,
-        'total_bills': total_bills,
-        'pending_count': bills.filter(status='pending').count(),
-        'paid_count': bills.filter(status='paid').count(),
-        'pending_amount': pending_amount,
-        'paid_amount': paid_amount,
+        'total_bills': bills.count() if bills else 0,
+        'pending_count': bills.filter(status='pending').count() if bills else 0,
+        'paid_count': bills.filter(status='paid').count() if bills else 0,
     }
     return render(request, 'myapp/patient_bills.html', context)
-
 
 @login_required
 def patient_bill_detail(request, bill_id):

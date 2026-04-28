@@ -156,15 +156,29 @@ class Patient(models.Model):
 
     @property
     def age(self):
-        if self.date_of_birth:
+        """Calculate age from date of birth safely"""
+        if not self.date_of_birth:
+            return 0
+
+        try:
+            # যদি date_of_birth স্ট্রিং হয়
+            if isinstance(self.date_of_birth, str):
+                from datetime import datetime
+                dob = datetime.strptime(self.date_of_birth, '%Y-%m-%d').date()
+            else:
+                dob = self.date_of_birth
+
             today = date.today()
-            return today.year - self.date_of_birth.year - (
-                        (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
-        return 0
+            age = today.year - dob.year
+            # জন্মদিনের আগে থাকলে ১ কমিয়ে দিন
+            if (today.month, today.day) < (dob.month, dob.day):
+                age -= 1
+            return age if age >= 0 else 0
+        except Exception:
+            return 0
 
     def __str__(self):
         return self.full_name
-
 
 # ==================== Appointment Models ====================
 class Appointment(models.Model):
@@ -219,9 +233,11 @@ class ICUBooking(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='icu_bookings')
     bed = models.ForeignKey(ICUBed, on_delete=models.CASCADE)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='icu_bookings', null=True, blank=True)
+
     patient_name = models.CharField(max_length=100, null=True, blank=True)
     patient_age = models.IntegerField(null=True, blank=True)
     contact_number = models.CharField(max_length=15, null=True, blank=True)
+
     admission_date = models.DateTimeField(auto_now_add=True)
     expected_discharge = models.DateField()
     condition = models.TextField()
@@ -229,7 +245,6 @@ class ICUBooking(models.Model):
 
     def __str__(self):
         return f"{self.patient_name or self.patient.full_name} - {self.bed.bed_number}"
-
 
 # ==================== Emergency Models ====================
 class EmergencyRequest(models.Model):

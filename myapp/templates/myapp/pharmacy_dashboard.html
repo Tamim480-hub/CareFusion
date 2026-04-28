@@ -5,26 +5,38 @@
 
 {% block extra_css %}
 <style>
-    /* Modern Product Cards - Navy Blue Theme */
-    .product-card {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: none;
-        border-radius: 24px;
-        overflow: hidden;
-        background: #112240;
-        position: relative;
-        border: 1px solid rgba(100, 255, 218, 0.1);
-    }
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        border-color: rgba(100, 255, 218, 0.3);
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --success: #10b981;
+        --success-dark: #059669;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #3b82f6;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --gray: #64748b;
     }
 
-    /* Product Image Container */
+    /* Product Cards */
+    .product-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        background: white;
+        position: relative;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+
+    /* Product Image */
     .product-image {
         height: 180px;
-        background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -33,119 +45,148 @@
     }
     .product-image i {
         transition: transform 0.3s ease;
-        color: #64ffda;
+        color: var(--gray);
+        font-size: 60px;
     }
     .product-card:hover .product-image i {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     /* Stock Badges */
     .stock-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
+        padding: 4px 12px;
+        border-radius: 30px;
         font-size: 11px;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
         gap: 5px;
     }
-    .stock-high { background: #0d3b2e; color: #64ffda; }
-    .stock-medium { background: #3d2e1a; color: #ffd93d; }
-    .stock-low { background: #3d1a1a; color: #ff6b6b; }
+    .stock-high { background: #d1fae5; color: #065f46; }
+    .stock-medium { background: #fed7aa; color: #92400e; }
+    .stock-low { background: #fee2e2; color: #991b1b; }
 
-    /* Price Styling */
+    /* Price */
     .price {
-        font-size: 24px;
-        font-weight: 800;
-        color: #64ffda;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--primary);
         display: inline-block;
     }
 
     /* Stat Cards */
     .stat-card {
-        background: #112240;
-        border-radius: 20px;
+        background: white;
+        border-radius: 16px;
         padding: 20px;
         transition: all 0.3s;
         text-align: center;
-        border: 1px solid rgba(100, 255, 218, 0.1);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        cursor: pointer;
     }
     .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        border-color: rgba(100, 255, 218, 0.3);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
     }
     .stat-icon {
         width: 50px;
         height: 50px;
-        border-radius: 15px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 15px;
     }
     .stat-card h3 {
-        color: #64ffda;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
     }
     .stat-card small {
-        color: #ccd6f6;
+        font-size: 13px;
+        color: var(--gray);
     }
 
-    /* Modal Styling */
+    /* Modal */
     .modal-content {
         border: none;
-        border-radius: 24px;
+        border-radius: 20px;
         overflow: hidden;
-        background: #112240;
     }
     .modal-header {
-        background: linear-gradient(135deg, #0a192f, #112240);
-        padding: 20px 25px;
-        border-bottom: 1px solid rgba(100, 255, 218, 0.2);
-    }
-    .modal-footer {
-        border-top: 1px solid rgba(100, 255, 218, 0.2);
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        padding: 18px 24px;
+        border: none;
     }
     .modal-title {
-        color: #64ffda;
+        color: white;
+        font-weight: 600;
+    }
+    .modal-footer {
+        border-top: 1px solid #e2e8f0;
+        padding: 16px 24px;
     }
     .form-control, .form-select {
-        border-radius: 12px;
-        padding: 10px 15px;
-        border: 1px solid rgba(100, 255, 218, 0.2);
-        background: #0a192f;
-        color: #e6f1ff;
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
     }
     .form-control:focus, .form-select:focus {
-        border-color: #64ffda;
-        box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.1);
-        background: #0a192f;
-        color: #e6f1ff;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        outline: none;
     }
     .form-label {
-        color: #64ffda;
+        color: var(--dark);
         font-weight: 500;
+        margin-bottom: 6px;
+        font-size: 13px;
     }
 
-    /* Action Buttons */
+    /* Buttons */
+    .btn-primary {
+        background: var(--primary);
+        border: none;
+        color: white;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+    }
+    .btn-light {
+        background: #f1f5f9;
+        border: none;
+        color: var(--dark);
+        padding: 8px 20px;
+        border-radius: 10px;
+    }
+    .btn-light:hover {
+        background: #e2e8f0;
+    }
+
+    /* Action Button */
     .action-btn {
         width: 32px;
         height: 32px;
-        border-radius: 10px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         transition: all 0.3s;
-        cursor: pointer;
         background: transparent;
         border: none;
-        color: #ccd6f6;
+        color: var(--gray);
     }
     .action-btn:hover {
-        background: rgba(100, 255, 218, 0.1);
-        transform: scale(1.05);
-        color: #64ffda;
+        background: #f1f5f9;
+        color: var(--primary);
     }
 
     /* Floating Action Button */
@@ -156,24 +197,82 @@
         width: 56px;
         height: 56px;
         border-radius: 28px;
-        background: #64ffda;
-        color: #0a192f;
+        background: var(--primary);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 15px rgba(100, 255, 218, 0.4);
+        box-shadow: 0 4px 14px rgba(37,99,235,0.4);
         cursor: pointer;
         transition: all 0.3s;
         z-index: 100;
         border: none;
     }
     .fab-add:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(100, 255, 218, 0.6);
-        background: #4cd8c0;
+        transform: scale(1.08);
+        box-shadow: 0 6px 20px rgba(37,99,235,0.5);
+        background: var(--primary-dark);
     }
 
-    /* Animation */
+    /* Search Box */
+    .search-box {
+        border-radius: 40px;
+        padding: 10px 20px;
+        border: 1px solid #e2e8f0;
+        width: 250px;
+        transition: all 0.3s;
+        background: white;
+    }
+    .search-box:focus {
+        width: 280px;
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    /* Welcome Banner */
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 20px;
+        padding: 28px 32px;
+        color: white;
+        margin-bottom: 30px;
+    }
+
+    /* Badge */
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    .bg-success {
+        background: #d1fae5 !important;
+        color: #065f46;
+    }
+    .bg-secondary {
+        background: #f1f5f9 !important;
+        color: var(--gray);
+    }
+
+    /* Dropdown */
+    .dropdown-menu {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .dropdown-item {
+        color: var(--dark);
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+    .dropdown-item:hover {
+        background: #f1f5f9;
+        color: var(--primary);
+    }
+
+    /* Animations */
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -185,128 +284,29 @@
         }
     }
     .product-card {
-        animation: fadeInUp 0.5s ease-out;
-    }
-
-    /* Search Bar */
-    .search-box {
-        border-radius: 50px;
-        padding: 12px 20px;
-        border: 1px solid rgba(100, 255, 218, 0.2);
-        width: 250px;
-        transition: all 0.3s;
-        background: #0a192f;
-        color: #e6f1ff;
-    }
-    .search-box:focus {
-        width: 300px;
-        border-color: #64ffda;
-        outline: none;
-        background: #0a192f;
-        color: #e6f1ff;
-    }
-    .search-box::placeholder {
-        color: rgba(204, 214, 246, 0.5);
-    }
-
-    /* Welcome Banner */
-    .welcome-banner {
-        background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
-        border-radius: 20px;
-        padding: 30px;
-        color: #e6f1ff;
-        margin-bottom: 30px;
-        border: 1px solid rgba(100, 255, 218, 0.2);
-    }
-    .welcome-banner h2 {
-        color: #64ffda;
-    }
-
-    /* Product Name */
-    .product-card h5 {
-        color: #e6f1ff;
-    }
-    .product-card .text-muted {
-        color: #ccd6f6 !important;
-    }
-    .badge.bg-light {
-        background: #0a192f !important;
-        color: #ccd6f6 !important;
-    }
-    .btn-light {
-        background: #0a192f;
-        border: 1px solid rgba(100, 255, 218, 0.2);
-        color: #ccd6f6;
-    }
-    .btn-light:hover {
-        background: rgba(100, 255, 218, 0.1);
-        color: #64ffda;
-    }
-    .btn-primary {
-        background: #64ffda;
-        border: none;
-        color: #0a192f;
-        font-weight: 600;
-    }
-    .btn-primary:hover {
-        background: #4cd8c0;
-        transform: translateY(-2px);
-    }
-    .form-check-label {
-        color: #ccd6f6;
-    }
-    .dropdown-menu {
-        background: #112240;
-        border: 1px solid rgba(100, 255, 218, 0.2);
-    }
-    .dropdown-item {
-        color: #ccd6f6;
-    }
-    .dropdown-item:hover {
-        background: rgba(100, 255, 218, 0.1);
-        color: #64ffda;
-    }
-    .dropdown-divider {
-        border-top: 1px solid rgba(100, 255, 218, 0.2);
-    }
-    .text-primary {
-        color: #64ffda !important;
-    }
-    .bg-success {
-        background: #0d3b2e !important;
-        color: #64ffda !important;
-    }
-    .bg-secondary {
-        background: #0a192f !important;
-        color: #ccd6f6 !important;
-    }
-    .rounded-pill {
-        border-radius: 50px !important;
-    }
-    .btn-close-white {
-        filter: brightness(0) invert(1);
+        animation: fadeInUp 0.4s ease-out;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Floating Action Button -->
-<button class="fab-add" data-bs-toggle="modal" data-bs-target="#addProductModal" aria-label="Add Product">
+<button class="fab-add" data-bs-toggle="modal" data-bs-target="#addProductModal">
     <i class="fas fa-plus fa-2x"></i>
 </button>
 
 <div class="container-fluid py-4">
     <!-- Welcome Banner -->
-    <div class="welcome-banner mb-4">
+    <div class="welcome-banner">
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h2 class="fw-bold mb-2">
-                    <i class="fas fa-capsules me-2" style="color: #64ffda;"></i>Product Management
+                    <i class="fas fa-capsules me-2"></i>Product Management
                 </h2>
-                <p class="mb-0 opacity-75">Manage your pharmacy inventory, add new products, update prices and track stock levels.</p>
+                <p class="mb-0 opacity-90">Manage your pharmacy inventory, add new products, update prices and track stock levels.</p>
             </div>
             <div class="col-md-4 text-center d-none d-md-block">
-                <i class="fas fa-capsules fa-4x opacity-25" style="color: #64ffda;"></i>
+                <i class="fas fa-capsules fa-4x opacity-20"></i>
             </div>
         </div>
     </div>
@@ -314,14 +314,14 @@
     <!-- Header with Search -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h3 class="fw-bold mb-0" style="color: #e6f1ff;">
-                <i class="fas fa-box me-2" style="color: #64ffda;"></i>All Products
+            <h3 class="fw-bold mb-0 text-dark">
+                <i class="fas fa-box me-2 text-primary"></i>All Products
             </h3>
-            <p class="mt-1 mb-0" style="color: #ccd6f6;">View and manage your product catalog</p>
+            <p class="text-muted mt-1 mb-0">View and manage your product catalog</p>
         </div>
         <div>
             <div class="position-relative">
-                <i class="fas fa-search position-absolute" style="left: 15px; top: 50%; transform: translateY(-50%); color: #64ffda;"></i>
+                <i class="fas fa-search position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
                 <input type="text" id="searchInput" class="search-box ps-5" placeholder="Search products...">
             </div>
         </div>
@@ -331,28 +331,28 @@
     <div class="row g-4 mb-5">
         <div class="col-md-4">
             <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(100, 255, 218, 0.1);">
-                    <i class="fas fa-box fa-2x" style="color: #64ffda;"></i>
+                <div class="stat-icon" style="background: #eff6ff;">
+                    <i class="fas fa-box fa-2x text-primary"></i>
                 </div>
-                <h3 class="fw-bold mb-0">{{ total_products|default:"0" }}</h3>
+                <h3 class="text-primary">{{ total_products|default:"0" }}</h3>
                 <small>Total Products</small>
             </div>
         </div>
         <div class="col-md-4">
             <div class="stat-card">
-                <div class="stat-icon" style="background: #3d2e1a;">
-                    <i class="fas fa-exclamation-triangle fa-2x" style="color: #ffd93d;"></i>
+                <div class="stat-icon" style="background: #fffbeb;">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
                 </div>
-                <h3 class="fw-bold mb-0" style="color: #ffd93d;">{{ low_stock|default:"0" }}</h3>
+                <h3 class="text-warning">{{ low_stock|default:"0" }}</h3>
                 <small>Low Stock (&lt;20)</small>
             </div>
         </div>
         <div class="col-md-4">
             <div class="stat-card">
-                <div class="stat-icon" style="background: #3d1a1a;">
-                    <i class="fas fa-times-circle fa-2x" style="color: #ff6b6b;"></i>
+                <div class="stat-icon" style="background: #fef2f2;">
+                    <i class="fas fa-times-circle fa-2x text-danger"></i>
                 </div>
-                <h3 class="fw-bold mb-0" style="color: #ff6b6b;">{{ out_of_stock|default:"0" }}</h3>
+                <h3 class="text-danger">{{ out_of_stock|default:"0" }}</h3>
                 <small>Out of Stock</small>
             </div>
         </div>
@@ -364,19 +364,23 @@
         <div class="col-md-6 col-lg-4 col-xl-3 product-item" data-name="{{ product.name|lower }}">
             <div class="product-card shadow-sm">
                 <div class="product-image">
-                    <i class="fas fa-capsules fa-4x"></i>
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <i class="fas fa-capsules"></i>
+                    {% endif %}
                 </div>
                 <div class="p-3">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="fw-bold mb-0" style="font-size: 16px;">{{ product.name|truncatechars:25 }}</h5>
+                        <h5 class="fw-bold mb-0" style="font-size: 15px;">{{ product.name|truncatechars:25 }}</h5>
                         <div class="dropdown">
-                            <button class="btn action-btn" data-bs-toggle="dropdown" aria-label="Product Actions">
+                            <button class="btn action-btn" data-bs-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                 <li>
                                     <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editModal{{ product.id }}">
-                                        <i class="fas fa-edit me-2" style="color: #64ffda;"></i>Edit Product
+                                        <i class="fas fa-edit text-primary me-2"></i>Edit Product
                                     </button>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -389,8 +393,8 @@
                         </div>
                     </div>
 
-                    <p class="small mb-2" style="color: #ccd6f6;">
-                        <span class="badge bg-light rounded-pill px-2 py-1">
+                    <p class="small mb-2 text-muted">
+                        <span class="badge bg-light">
                             {{ product.get_category_display }}
                         </span>
                     </p>
@@ -405,10 +409,10 @@
                             <i class="fas
                                 {% if product.stock > 50 %}fa-check-circle
                                 {% elif product.stock > 0 %}fa-clock
-                                {% else %}fa-exclamation-circle{% endif %}"></i>
+                                {% else %}fa-exclamation-circle{% endif %} me-1"></i>
                             Stock: {{ product.stock }}
                         </span>
-                        <span class="badge {% if product.is_active %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3 py-2">
+                        <span class="badge {% if product.is_active %}bg-success{% else %}bg-secondary{% endif %}">
                             {% if product.is_active %}
                                 <i class="fas fa-check-circle me-1"></i>Active
                             {% else %}
@@ -422,13 +426,13 @@
 
         <!-- Edit Modal -->
         <div class="modal fade" id="editModal{{ product.id }}" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4">
-                    <div class="modal-header border-0">
+                    <div class="modal-header">
                         <h5 class="modal-title fw-bold">
                             <i class="fas fa-edit me-2"></i>Edit Product
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form method="POST" action="{% url 'pharmacy_products' %}">
                         {% csrf_token %}
@@ -437,11 +441,11 @@
                         <div class="modal-body p-4">
                             <div class="row">
                                 <div class="col-md-8 mb-3">
-                                    <label class="form-label fw-semibold">Product Name</label>
+                                    <label class="form-label">Product Name</label>
                                     <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-semibold">Category</label>
+                                    <label class="form-label">Category</label>
                                     <select name="category" class="form-select">
                                         {% for code, name in categories %}
                                         <option value="{{ code }}" {% if product.category == code %}selected{% endif %}>{{ name }}</option>
@@ -451,26 +455,26 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">Price (৳)</label>
+                                    <label class="form-label">Price (৳)</label>
                                     <input type="number" step="0.01" name="price" class="form-control" value="{{ product.price }}" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">Stock</label>
+                                    <label class="form-label">Stock</label>
                                     <input type="number" name="stock" class="form-control" value="{{ product.stock }}" required>
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Description</label>
+                                <label class="form-label">Description</label>
                                 <textarea name="description" class="form-control" rows="3">{{ product.description }}</textarea>
                             </div>
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="is_active" value="true" id="activeSwitch{{ product.id }}" {% if product.is_active %}checked{% endif %}>
-                                <label class="form-check-label" for="activeSwitch{{ product.id }}">Product Active (visible to customers)</label>
+                                <label class="form-check-label" for="activeSwitch{{ product.id }}">Active (visible to customers)</label>
                             </div>
                         </div>
-                        <div class="modal-footer border-0 p-4 pt-0">
-                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary rounded-pill">
                                 <i class="fas fa-save me-2"></i>Save Changes
                             </button>
                         </div>
@@ -481,9 +485,9 @@
         {% empty %}
         <div class="col-12">
             <div class="text-center py-5">
-                <i class="fas fa-capsules fa-5x mb-3 opacity-25" style="color: #64ffda;"></i>
-                <h4 style="color: #ccd6f6;">No Products Found</h4>
-                <p style="color: #ccd6f6;">Click the + button to add your first product.</p>
+                <i class="fas fa-capsules fa-5x text-muted mb-3 opacity-25"></i>
+                <h4 class="text-muted">No Products Found</h4>
+                <p class="text-muted">Click the + button to add your first product.</p>
             </div>
         </div>
         {% endfor %}
@@ -494,11 +498,11 @@
 <div class="modal fade" id="addProductModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content rounded-4">
-            <div class="modal-header border-0">
+            <div class="modal-header">
                 <h5 class="modal-title fw-bold">
                     <i class="fas fa-plus-circle me-2"></i>Add New Product
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{% url 'pharmacy_products' %}">
                 {% csrf_token %}
@@ -506,11 +510,11 @@
                 <div class="modal-body p-4">
                     <div class="row">
                         <div class="col-md-8 mb-3">
-                            <label class="form-label fw-semibold">Product Name <span class="text-danger">*</span></label>
+                            <label class="form-label">Product Name <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" required placeholder="Enter product name">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <label class="form-label">Category <span class="text-danger">*</span></label>
                             <select name="category" class="form-select" required>
                                 <option value="">Select Category</option>
                                 {% for code, name in categories %}
@@ -521,16 +525,16 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Price (৳) <span class="text-danger">*</span></label>
+                            <label class="form-label">Price (৳) <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" name="price" class="form-control" required placeholder="0.00">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Stock <span class="text-danger">*</span></label>
+                            <label class="form-label">Stock <span class="text-danger">*</span></label>
                             <input type="number" name="stock" class="form-control" required placeholder="Quantity">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Description</label>
+                        <label class="form-label">Description</label>
                         <textarea name="description" class="form-control" rows="3" placeholder="Product description..."></textarea>
                     </div>
                     <div class="form-check form-switch">
@@ -538,9 +542,9 @@
                         <label class="form-check-label" for="activeSwitch">Active (visible to customers)</label>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill">
                         <i class="fas fa-plus-circle me-2"></i>Add Product
                     </button>
                 </div>

@@ -54,12 +54,14 @@
             width: 280px;
             z-index: 1000;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .main-content {
             margin-left: 280px;
             padding: 20px;
             min-height: 100vh;
+            transition: all 0.3s ease;
         }
 
         /* Sidebar links */
@@ -129,6 +131,29 @@
             min-width: 300px;
         }
 
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .main-content {
+            animation: fadeIn 0.3s ease-in;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -145,19 +170,6 @@
                 left: 10px;
                 min-width: auto;
             }
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
         }
     </style>
 
@@ -195,12 +207,11 @@
                         <small class="text-white-50">Super Admin Portal</small>
                     </div>
                     <ul class="nav nav-pills flex-column">
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'admin_manage_hospitals' %}"><i class="fas fa-hospital me-3"></i> Hospitals</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'admin_manage_hospital_admins' %}"><i class="fas fa-user-tie me-3"></i> Hospital Admins</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'super_admin_pharmacy_admins' %}"><i class="fas fa-store me-3"></i> Pharmacy Admins</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'create_pharmacy_admin' %}"><i class="fas fa-user-plus me-3"></i> Create Pharmacy Admin</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'admin_hospital_reports' %}"><i class="fas fa-chart-line me-3"></i> Reports</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'admin_manage_hospitals' %}active{% endif %}" href="{% url 'admin_manage_hospitals' %}"><i class="fas fa-hospital me-3"></i> Hospitals</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'admin_manage_hospital_admins' %}active{% endif %}" href="{% url 'admin_manage_hospital_admins' %}"><i class="fas fa-user-tie me-3"></i> Hospital Admins</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'super_admin_pharmacy_admins' %}active{% endif %}" href="{% url 'super_admin_pharmacy_admins' %}"><i class="fas fa-store me-3"></i> Pharmacy Admins</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'create_pharmacy_admin' %}active{% endif %}" href="{% url 'create_pharmacy_admin' %}"><i class="fas fa-user-plus me-3"></i> Create Pharmacy Admin</a></li>
                         <li class="nav-item mt-4 pt-3 border-top"><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
                     </ul>
                 </div>
@@ -218,13 +229,13 @@
                         <small class="text-white-50">Hospital Admin Portal</small>
                     </div>
                     <ul class="nav nav-pills flex-column">
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_doctors' %}"><i class="fas fa-user-md me-3"></i> Doctors</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_patients' %}"><i class="fas fa-users me-3"></i> Patients</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_appointments' %}"><i class="fas fa-calendar-check me-3"></i> Appointments</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_beds' %}"><i class="fas fa-bed me-3"></i> ICU Beds</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_products' %}"><i class="fas fa-capsules me-3"></i> Products</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'hospital_orders' %}"><i class="fas fa-shopping-cart me-3"></i> Orders</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_dashboard' %}active{% endif %}" href="{% url 'hospital_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_doctors' %}active{% endif %}" href="{% url 'hospital_doctors' %}"><i class="fas fa-user-md me-3"></i> Doctors</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_patients' %}active{% endif %}" href="{% url 'hospital_patients' %}"><i class="fas fa-users me-3"></i> Patients</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_appointments' %}active{% endif %}" href="{% url 'hospital_appointments' %}"><i class="fas fa-calendar-check me-3"></i> Appointments</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_beds' %}active{% endif %}" href="{% url 'hospital_beds' %}"><i class="fas fa-bed me-3"></i> ICU Beds</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_products' %}active{% endif %}" href="{% url 'hospital_products' %}"><i class="fas fa-capsules me-3"></i> Products</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'hospital_orders' %}active{% endif %}" href="{% url 'hospital_orders' %}"><i class="fas fa-shopping-cart me-3"></i> Orders</a></li>
                         <li class="nav-item mt-4 pt-3 border-top"><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
                     </ul>
                 </div>
@@ -242,17 +253,17 @@
                         <small class="text-white-50">Doctor Portal</small>
                     </div>
                     <ul class="nav nav-pills flex-column">
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'doctor_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'doctor_appointments' %}"><i class="fas fa-calendar-check me-3"></i> Appointments</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'doctor_patients' %}"><i class="fas fa-users me-3"></i> My Patients</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'doctor_schedule' %}"><i class="fas fa-clock me-3"></i> Schedule</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'doctor_dashboard' %}active{% endif %}" href="{% url 'doctor_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'doctor_appointments' %}active{% endif %}" href="{% url 'doctor_appointments' %}"><i class="fas fa-calendar-check me-3"></i> Appointments</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'doctor_patients' %}active{% endif %}" href="{% url 'doctor_patients' %}"><i class="fas fa-users me-3"></i> My Patients</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'doctor_schedule' %}active{% endif %}" href="{% url 'doctor_schedule' %}"><i class="fas fa-clock me-3"></i> Schedule</a></li>
                         <li class="nav-item mt-4 pt-3 border-top"><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
                     </ul>
                 </div>
             </div>
 
         {% elif request.user.user_type == 'patient' %}
-            <!-- Patient Sidebar -->
+            <!-- Patient Sidebar - Fixed Version -->
             <div class="sidebar">
                 <div class="p-3">
                     <div class="text-center mb-4">
@@ -262,16 +273,84 @@
                         <h5 class="text-white mt-2 mb-1">CareFusion</h5>
                         <small class="text-white-50">Patient Portal</small>
                     </div>
+
+                    <!-- Patient Profile Info -->
+                    {% if request.user.patient_profile %}
+                    <div class="text-center mb-3 pb-2 border-bottom border-secondary">
+                        <span class="badge bg-primary rounded-pill px-3 py-2">
+                            <i class="fas fa-id-card me-1"></i> ID: {{ request.user.patient_profile.id }}
+                        </span>
+                        <p class="text-white-50 small mt-2 mb-0">
+                            <i class="fas fa-tint me-1"></i> {{ request.user.patient_profile.blood_group|default:"Not set" }}
+                        </p>
+                    </div>
+                    {% endif %}
+
                     <ul class="nav nav-pills flex-column">
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'patient_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'patient_book_appointment' %}"><i class="fas fa-calendar-plus me-3"></i> Book Appointment</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'patient_my_appointments' %}"><i class="fas fa-list me-3"></i> My Appointments</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'patient_doctors' %}"><i class="fas fa-user-md me-3"></i> Find Doctors</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'pharmacy_products_list' %}"><i class="fas fa-store me-3"></i> Pharmacy Store</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'pharmacy_cart' %}"><i class="fas fa-shopping-cart me-3"></i> Cart</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'patient_orders' %}"><i class="fas fa-shopping-cart me-3"></i> My Orders</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'patient_bills' %}"><i class="fas fa-receipt me-3"></i> Bills</a></li>
-                        <li class="nav-item mt-4 pt-3 border-top"><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_dashboard' %}active{% endif %}"
+                               href="{% url 'patient_dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_book_appointment' %}active{% endif %}"
+                               href="{% url 'patient_book_appointment' %}">
+                                <i class="fas fa-calendar-plus me-3"></i> Book Appointment
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_my_appointments' %}active{% endif %}"
+                               href="{% url 'patient_my_appointments' %}">
+                                <i class="fas fa-list me-3"></i> My Appointments
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_doctors' %}active{% endif %}"
+                               href="{% url 'patient_doctors' %}">
+                                <i class="fas fa-user-md me-3"></i> Find Doctors
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'pharmacy_products_list' %}active{% endif %}"
+                               href="{% url 'pharmacy_products_list' %}">
+                                <i class="fas fa-store me-3"></i> Pharmacy Store
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2 position-relative">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'pharmacy_cart' %}active{% endif %}"
+                               href="{% url 'pharmacy_cart' %}">
+                                <i class="fas fa-shopping-cart me-3"></i> Cart
+                                {% if cart_items_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ cart_items_count }}
+                                </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_orders' %}active{% endif %}"
+                               href="{% url 'patient_orders' %}">
+                                <i class="fas fa-shopping-bag me-3"></i> My Orders
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_bills' %}active{% endif %}"
+                               href="{% url 'patient_bills' %}">
+                                <i class="fas fa-receipt me-3"></i> Bills
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'patient_profile' %}active{% endif %}"
+                               href="{% url 'patient_profile' %}">
+                                <i class="fas fa-user-circle me-3"></i> Profile
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3 pt-2 border-top border-secondary">
+                            <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                                <i class="fas fa-sign-out-alt me-3"></i> Logout
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -288,9 +367,9 @@
                         <small class="text-white-50">Pharmacy Portal</small>
                     </div>
                     <ul class="nav nav-pills flex-column">
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'pharmacy_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'pharmacy_products' %}"><i class="fas fa-capsules me-3"></i> Products</a></li>
-                        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'pharmacy_orders' %}"><i class="fas fa-shopping-cart me-3"></i> Orders</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'pharmacy_dashboard' %}active{% endif %}" href="{% url 'pharmacy_dashboard' %}"><i class="fas fa-tachometer-alt me-3"></i> Dashboard</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'pharmacy_products' %}active{% endif %}" href="{% url 'pharmacy_products' %}"><i class="fas fa-capsules me-3"></i> Products</a></li>
+                        <li class="nav-item mb-2"><a class="nav-link {% if request.resolver_match.url_name == 'pharmacy_orders' %}active{% endif %}" href="{% url 'pharmacy_orders' %}"><i class="fas fa-shopping-cart me-3"></i> Orders</a></li>
                         <li class="nav-item mt-4 pt-3 border-top"><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-3"></i> Logout</a></li>
                     </ul>
                 </div>
@@ -327,8 +406,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Auto-hide messages -->
+    <!-- Auto-hide messages and fix sidebar -->
     <script>
+        // Auto-hide messages after 3 seconds
         setTimeout(function() {
             var alerts = document.querySelectorAll('.alert');
             alerts.forEach(function(alert) {
@@ -338,6 +418,18 @@
                 }, 3000);
             });
         }, 1000);
+
+        // Ensure sidebar stays visible on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlight current menu item
+            var currentUrl = window.location.pathname;
+            document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+                var href = link.getAttribute('href');
+                if (href && href !== '#' && currentUrl.includes(href)) {
+                    link.classList.add('active');
+                }
+            });
+        });
     </script>
 
     {% block extra_js %}{% endblock %}

@@ -114,4 +114,7 @@ urlpatterns = [
 
     # ==================== Patient Doctor Detail ====================
     path('patient/doctor/<int:doctor_id>/', views.patient_doctor_detail, name='patient_doctor_detail'),
+    path('get-doctor-schedule/<int:doctor_id>/', views.get_doctor_schedule, name='get_doctor_schedule'),
+    path('patient/delete-icu-booking/<int:booking_id>/', views.patient_delete_icu_booking,
+         name='patient_delete_icu_booking'),
 ]

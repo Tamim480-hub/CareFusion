@@ -11,15 +11,6 @@
         --danger-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     }
 
-    /* Page Header Animation */
-    .page-header {
-        background: linear-gradient(135deg, #f8f9fa, #ffffff);
-        border-radius: 24px;
-        padding: 20px 25px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
     /* Stat Cards */
     .stat-card {
         background: white;
@@ -104,14 +95,12 @@
         gap: 5px;
     }
 
-    /* Booking Header */
     .booking-header {
         background: linear-gradient(135deg, #f8f9fa, #ffffff);
         padding: 20px;
         border-bottom: 1px solid #e9ecef;
     }
 
-    /* Hospital Badge */
     .hospital-badge {
         background: rgba(102,126,234,0.12);
         padding: 5px 14px;
@@ -124,7 +113,6 @@
         gap: 6px;
     }
 
-    /* Info Row */
     .info-row {
         padding: 10px 0;
         border-bottom: 1px solid #f0f0f0;
@@ -133,45 +121,15 @@
         border-bottom: none;
     }
 
-    /* Cancel Button */
-    .cancel-btn {
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    .cancel-btn::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(220,53,69,0.2);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    .cancel-btn:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    .cancel-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(220,53,69,0.3);
-    }
-
-    /* Modal Styles */
-    .modal-content {
-        border-radius: 28px;
-        overflow: hidden;
-        border: none;
-    }
-    .modal-header {
+    .price-tag {
+        font-size: 22px;
+        font-weight: 800;
         background: var(--primary-gradient);
-        padding: 20px 25px;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
     }
 
-    /* Empty State */
     .empty-state {
         animation: fadeInUp 0.6s ease-out;
         background: linear-gradient(135deg, #ffffff, #f8f9fa);
@@ -183,113 +141,35 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Price Tag */
-    .price-tag {
-        font-size: 22px;
-        font-weight: 800;
+    .modal-content {
+        border-radius: 28px;
+        overflow: hidden;
+        border: none;
+    }
+    .modal-header {
         background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+        padding: 20px 25px;
     }
-
-    /* Hover Effects */
-    .view-details-btn {
-        transition: all 0.3s ease;
+    .btn-close-white {
+        filter: brightness(0) invert(1);
     }
-    .view-details-btn:hover {
-        transform: translateX(3px);
-    }
-
-    /* Animation Delays */
-    .booking-card:nth-child(1) { animation-delay: 0.1s; }
-    .booking-card:nth-child(2) { animation-delay: 0.2s; }
-    .booking-card:nth-child(3) { animation-delay: 0.3s; }
-    .booking-card:nth-child(4) { animation-delay: 0.4s; }
 </style>
-{% endblock %}
-
-{% block sidebar %}
-<div class="sidebar">
-    <div class="p-3">
-        <div class="text-center mb-4">
-            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
-            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
-            <small class="text-white-50">Patient Portal</small>
-        </div>
-
-        <ul class="nav nav-pills flex-column">
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_dashboard' %}">
-                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
-                    <i class="fas fa-calendar-check me-3"></i> Appointments
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_doctors' %}">
-                    <i class="fas fa-user-md me-3"></i> Find Doctors
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_products' %}">
-                    <i class="fas fa-capsules me-3"></i> Products
-                </a>
-            </li>
-            <li class="nav-item mb-2 position-relative">
-                <a class="nav-link" href="{% url 'patient_cart' %}">
-                    <i class="fas fa-shopping-cart me-3"></i> Cart
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_icu_beds' %}">
-                    <i class="fas fa-bed me-3"></i> ICU Beds
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_test_reports' %}">
-                    <i class="fas fa-flask me-3"></i> Test Reports
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link active" href="{% url 'patient_icu_bookings' %}">
-                    <i class="fas fa-calendar-check me-3"></i> My ICU Bookings
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link" href="{% url 'patient_profile' %}">
-                    <i class="fas fa-user-circle me-3"></i> Profile
-                </a>
-            </li>
-            <li class="nav-item mt-4 pt-3 border-top border-secondary">
-                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
-                    <i class="fas fa-sign-out-alt me-3"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     <!-- Page Header -->
-    <div class="page-header">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-                <h2 class="fw-bold mb-1" style="background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">
-                    <i class="fas fa-calendar-check me-2"></i>My ICU Bookings
-                </h2>
-                <p class="text-muted mb-0">Track and manage all your ICU bed bookings</p>
-            </div>
-            <div class="mt-2 mt-md-0">
-                <a href="{% url 'patient_icu_beds' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                    <i class="fas fa-plus-circle me-2"></i>Book New ICU Bed
-                </a>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-calendar-check text-primary me-2"></i>My ICU Bookings
+            </h2>
+            <p class="text-muted">Track and manage all your ICU bed bookings</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{% url 'patient_icu_beds' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="fas fa-plus-circle me-2"></i>Book New ICU Bed
+            </a>
         </div>
     </div>
 
@@ -343,7 +223,6 @@
         {% for booking in bookings %}
         <div class="col-md-6 col-lg-6">
             <div class="booking-card shadow-sm {% if booking.is_active %}active-booking{% endif %}">
-                <!-- Card Header -->
                 <div class="booking-header">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -355,7 +234,7 @@
                                     <h5 class="fw-bold mb-0">Bed #{{ booking.bed.bed_number }}</h5>
                                     <div class="mt-1">
                                         <span class="hospital-badge">
-                                            <i class="fas fa-building me-1"></i>{{ booking.hospital.name }}
+                                            <i class="fas fa-building me-1"></i>{{ booking.bed.hospital.name|default:"Hospital" }}
                                         </span>
                                     </div>
                                 </div>
@@ -363,19 +242,18 @@
                         </div>
                         <div>
                             {% if booking.is_active %}
-                                <div class="status-active">
+                                <span class="status-active">
                                     <i class="fas fa-check-circle"></i> Active
-                                </div>
+                                </span>
                             {% else %}
-                                <div class="status-discharged">
+                                <span class="status-discharged">
                                     <i class="fas fa-check-double"></i> Discharged
-                                </div>
+                                </span>
                             {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Card Body -->
                 <div class="p-3">
                     <!-- Dates Row -->
                     <div class="row g-2 mb-3">
@@ -432,16 +310,17 @@
 
                     <!-- Action Buttons -->
                     <div class="d-flex gap-2 mt-3">
-                        <button class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 view-details-btn"
+                        <button class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1"
                                 data-bs-toggle="modal" data-bs-target="#viewModal{{ booking.id }}">
                             <i class="fas fa-eye me-1"></i> View Details
                         </button>
                         {% if booking.is_active %}
-                        <a href="/patient/icu-booking/cancel/{{ booking.id }}/"
-                           class="btn btn-sm btn-outline-danger rounded-pill flex-grow-1 cancel-btn"
-                           onclick="return confirm('⚠️ Are you sure you want to cancel this ICU booking? This action cannot be undone.')">
-                            <i class="fas fa-times me-1"></i> Cancel
-                        </a>
+                        <form method="POST" action="{% url 'patient_cancel_icu_booking' booking.id %}" style="display: inline; width: 100%;" onsubmit="return confirmCancel()">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill flex-grow-1">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>
@@ -452,12 +331,12 @@
         <div class="modal fade" id="viewModal{{ booking.id }}" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content rounded-4">
-                    <div class="modal-header" style="background: var(--primary-gradient); color: white;">
+                    <div class="modal-header">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="fas fa-file-medical fa-2x"></i>
+                            <i class="fas fa-file-medical fa-2x text-white"></i>
                             <div>
-                                <h5 class="modal-title fw-bold">ICU Booking Details</h5>
-                                <p class="mb-0 opacity-75 small">Bed #{{ booking.bed.bed_number }} | {{ booking.hospital.name }}</p>
+                                <h5 class="modal-title fw-bold text-white">ICU Booking Details</h5>
+                                <p class="mb-0 opacity-75 text-white small">Bed #{{ booking.bed.bed_number }} | {{ booking.bed.hospital.name|default:"Hospital" }}</p>
                             </div>
                         </div>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -488,12 +367,6 @@
                                             <div class="col-7"><span class="fw-bold text-success fs-5">৳{{ booking.bed.daily_charge }}</span></div>
                                         </div>
                                     </div>
-                                    <div class="info-row">
-                                        <div class="row">
-                                            <div class="col-5"><small class="text-muted">Equipment</small></div>
-                                            <div class="col-7"><span>{{ booking.bed.equipment|default:"Standard ICU equipment" }}</span></div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -506,19 +379,19 @@
                                     <div class="info-row">
                                         <div class="row">
                                             <div class="col-5"><small class="text-muted">Hospital Name</small></div>
-                                            <div class="col-7"><span class="fw-semibold">{{ booking.hospital.name }}</span></div>
+                                            <div class="col-7"><span class="fw-semibold">{{ booking.bed.hospital.name|default:"N/A" }}</span></div>
                                         </div>
                                     </div>
                                     <div class="info-row">
                                         <div class="row">
                                             <div class="col-5"><small class="text-muted">Address</small></div>
-                                            <div class="col-7"><span>{{ booking.hospital.address|default:"Not provided" }}</span></div>
+                                            <div class="col-7"><span>{{ booking.bed.hospital.address|default:"Not provided" }}</span></div>
                                         </div>
                                     </div>
                                     <div class="info-row">
                                         <div class="row">
                                             <div class="col-5"><small class="text-muted">Phone</small></div>
-                                            <div class="col-7"><span>{{ booking.hospital.phone|default:"N/A" }}</span></div>
+                                            <div class="col-7"><span>{{ booking.bed.hospital.phone|default:"N/A" }}</span></div>
                                         </div>
                                     </div>
                                 </div>
@@ -567,9 +440,12 @@
                             <i class="fas fa-times me-2"></i>Close
                         </button>
                         {% if booking.is_active %}
-                        <a href="/patient/icu-booking/cancel/{{ booking.id }}/" class="btn btn-danger rounded-pill" onclick="return confirm('Cancel this booking?')">
-                            <i class="fas fa-trash me-2"></i>Cancel Booking
-                        </a>
+                        <form method="POST" action="{% url 'patient_cancel_icu_booking' booking.id %}" style="display: inline;" onsubmit="return confirmCancel()">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger rounded-pill">
+                                <i class="fas fa-trash me-2"></i>Cancel Booking
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>
@@ -577,26 +453,6 @@
         </div>
         {% endfor %}
     </div>
-
-    <!-- Pagination (Optional) -->
-    {% if bookings.has_other_pages %}
-    <div class="d-flex justify-content-center mt-5">
-        <nav>
-            <ul class="pagination">
-                {% if bookings.has_previous %}
-                <li class="page-item"><a class="page-link rounded-circle mx-1" href="?page={{ bookings.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
-                {% endif %}
-                {% for i in bookings.paginator.page_range %}
-                <li class="page-item {% if bookings.number == i %}active{% endif %}"><a class="page-link rounded-circle mx-1" href="?page={{ i }}">{{ i }}</a></li>
-                {% endfor %}
-                {% if bookings.has_next %}
-                <li class="page-item"><a class="page-link rounded-circle mx-1" href="?page={{ bookings.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
-    {% endif %}
-
     {% else %}
     <!-- Empty State -->
     <div class="empty-state p-5 text-center">
@@ -607,10 +463,16 @@
         </div>
         <h4 class="text-muted mb-2">No ICU Bookings Found</h4>
         <p class="text-muted mb-4">You haven't booked any ICU beds yet.<br>Click the button below to book your first ICU bed.</p>
-        <a href="{% url 'patient_icu_beds' %}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+        <a href="{% url 'patient_icu_beds' %}" class="btn btn-primary rounded-pill px-4 py-2">
             <i class="fas fa-plus-circle me-2"></i>Book ICU Bed
         </a>
     </div>
     {% endif %}
 </div>
+
+<script>
+    function confirmCancel() {
+        return confirm('⚠️ Are you sure you want to cancel this ICU booking?\n\nThe bed will become available for other patients.\n\nThis action cannot be undone.');
+    }
+</script>
 {% endblock %}
