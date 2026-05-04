@@ -31,6 +31,18 @@
         transform: translateY(-5px);
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -60,6 +72,11 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_notifications' %}">
+                    <i class="fas fa-bell me-3"></i> Notifications
+                </a>
+            </li>
+            <li class="nav-item mb-2">
                 <a class="nav-link" href="{% url 'doctor_profile' %}">
                     <i class="fas fa-user-md me-3"></i> My Profile
                 </a>
@@ -75,11 +92,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
-            <h2 class="fw-bold text-dark mb-1">My Patients</h2>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-users text-primary me-2"></i>My Patients
+            </h2>
             <p class="text-muted">View and manage all your patients</p>
         </div>
         <div class="mt-2 mt-md-0">
@@ -117,7 +136,7 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <form method="GET" class="d-flex gap-2 flex-wrap">
-                    <input type="text" name="search" class="form-control form-control-sm rounded-pill" 
+                    <input type="text" name="search" class="form-control form-control-sm rounded-pill"
                            placeholder="Search by name, phone..." value="{{ search }}" style="width: 250px;">
                     <select name="blood_group" class="form-select form-select-sm rounded-pill" style="width: 150px;">
                         <option value="">All Blood Groups</option>
@@ -143,274 +162,249 @@
 
     <!-- Patients Grid View -->
     <div class="row g-4">
-        {% for patient in patients %}
-        <div class="col-md-6 col-lg-4">
-            <div class="bg-white rounded-3 shadow-sm patient-card">
-                <div class="p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-circle gradient-primary text-white me-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-0">{{ patient.full_name }}</h5>
-                            <p class="text-muted small mb-0">Patient ID: #{{ patient.id }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="row">
-                            <div class="col-6 mb-2">
-                                <small class="text-muted d-block">Age</small>
-                                <span class="fw-semibold">{{ patient.age|default:"N/A" }} years</span>
+        {% if patients %}
+            {% for patient in patients %}
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-white rounded-3 shadow-sm patient-card h-100">
+                    <div class="p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-circle gradient-primary me-3">
+                                <i class="fas fa-user fa-2x"></i>
                             </div>
-                            <div class="col-6 mb-2">
-                                <small class="text-muted d-block">Blood Group</small>
-                                <span class="badge bg-danger">{{ patient.blood_group|default:"N/A" }}</span>
-                            </div>
-                            <div class="col-6 mb-2">
-                                <small class="text-muted d-block">Gender</small>
-                                <span>{{ patient.get_gender_display|default:"N/A" }}</span>
-                            </div>
-                            <div class="col-6 mb-2">
-                                <small class="text-muted d-block">Phone</small>
-                                <span>{{ patient.phone|default:"N/A" }}</span>
+                            <div>
+                                <h5 class="fw-bold mb-0">{{ patient.full_name }}</h5>
+                                <p class="text-muted small mb-0">Patient ID: #{{ patient.id }}</p>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Emergency Contact</small>
-                        <span>{{ patient.emergency_contact|default:"N/A" }}</span>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1" 
-                                data-bs-toggle="modal" data-bs-target="#viewModal{{ patient.id }}">
-                            <i class="fas fa-eye me-1"></i> View Details
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill flex-grow-1"
-                                data-bs-toggle="modal" data-bs-target="#historyModal{{ patient.id }}">
-                            <i class="fas fa-history me-1"></i> History
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- View Patient Modal -->
-        <div class="modal fade" id="viewModal{{ patient.id }}" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4">
-                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fas fa-user-circle me-2"></i>Patient Details
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-3">
-                            <div class="avatar-circle gradient-primary text-white mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <h4 class="fw-bold mb-0">{{ patient.full_name }}</h4>
-                            <p class="text-muted">Patient ID: #{{ patient.id }}</p>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="text-muted small">First Name</label>
-                                <p class="fw-semibold mb-0">{{ patient.first_name }}</p>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="text-muted small">Last Name</label>
-                                <p class="fw-semibold mb-0">{{ patient.last_name }}</p>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="text-muted small">Date of Birth</label>
-                                <p class="fw-semibold mb-0">{{ patient.date_of_birth|date:"M d, Y"|default:"N/A" }}</p>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="text-muted small">Age</label>
-                                <p class="fw-semibold mb-0">{{ patient.age|default:"N/A" }} years</p>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="text-muted small">Gender</label>
-                                <p class="fw-semibold mb-0">{{ patient.get_gender_display|default:"N/A" }}</p>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="text-muted small">Blood Group</label>
-                                <p class="fw-semibold mb-0">{{ patient.blood_group|default:"N/A" }}</p>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label class="text-muted small">Phone</label>
-                                <p class="fw-semibold mb-0">{{ patient.phone|default:"N/A" }}</p>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label class="text-muted small">Emergency Contact</label>
-                                <p class="fw-semibold mb-0">{{ patient.emergency_contact|default:"N/A" }}</p>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <label class="text-muted small">Address</label>
-                                <p class="fw-semibold mb-0">{{ patient.address|default:"Not provided" }}</p>
-                            </div>
-                            <div class="col-12">
-                                <label class="text-muted small">Registered On</label>
-                                <p class="fw-semibold mb-0">{{ patient.created_at|date:"M d, Y h:i A" }}</p>
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted d-block">Age</small>
+                                    <span class="fw-semibold">{{ patient.age|default:"N/A" }} years</span>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted d-block">Blood Group</small>
+                                    <span class="badge bg-danger">{{ patient.blood_group|default:"N/A" }}</span>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted d-block">Gender</small>
+                                    <span>{{ patient.get_gender_display|default:"N/A" }}</span>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted d-block">Phone</small>
+                                    <span>{{ patient.phone|default:"N/A" }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
-                        <a href="{% url 'doctor_add_test_report' patient.id %}" class="btn btn-primary rounded-pill">
-                            <i class="fas fa-flask me-1"></i> Add Test Report
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Patient History Modal -->
-        <div class="modal fade" id="historyModal{{ patient.id }}" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content rounded-4">
-                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fas fa-history me-2"></i>Medical History - {{ patient.full_name }}
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <ul class="nav nav-tabs mb-3" id="historyTab{{ patient.id }}" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#appointments{{ patient.id }}" type="button" role="tab">
-                                    <i class="fas fa-calendar-check me-1"></i> Appointments
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reports{{ patient.id }}" type="button" role="tab">
-                                    <i class="fas fa-flask me-1"></i> Test Reports
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#prescriptions{{ patient.id }}" type="button" role="tab">
-                                    <i class="fas fa-prescription me-1"></i> Prescriptions
-                                </button>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content">
-                            <!-- Appointments Tab -->
-                            <div class="tab-pane fade show active" id="appointments{{ patient.id }}" role="tabpanel">
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Doctor</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for apt in patient.appointments.all %}
-                                            <tr>
-                                                <td>{{ apt.appointment_date|date:"M d, Y h:i A" }}</td>
-                                                <td>Dr. {{ apt.doctor.full_name }}</td>
-                                                <td>
-                                                    {% if apt.status == 'confirmed' %}
-                                                        <span class="badge bg-success">Confirmed</span>
-                                                    {% elif apt.status == 'pending' %}
-                                                        <span class="badge bg-warning">Pending</span>
-                                                    {% elif apt.status == 'completed' %}
-                                                        <span class="badge bg-info">Completed</span>
-                                                    {% else %}
-                                                        <span class="badge bg-danger">Cancelled</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr><td colspan="3" class="text-center text-muted">No appointments found</td></tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- Test Reports Tab -->
-                            <div class="tab-pane fade" id="reports{{ patient.id }}" role="tabpanel">
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Report Type</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for report in patient.test_reports.all %}
-                                            <tr>
-                                                <td>{{ report.created_at|date:"M d, Y" }}</td>
-                                                <td>{{ report.get_report_type_display }}</td>
-                                                <td>
-                                                    {% if report.status == 'completed' %}
-                                                        <span class="badge bg-success">Completed</span>
-                                                    {% else %}
-                                                        <span class="badge bg-warning">Pending</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr><td colspan="3" class="text-center text-muted">No test reports found</td></tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- Prescriptions Tab -->
-                            <div class="tab-pane fade" id="prescriptions{{ patient.id }}" role="tabpanel">
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Diagnosis</th>
-                                                <th>Prescription</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for report in patient.reports.all %}
-                                            <tr>
-                                                <td>{{ report.created_at|date:"M d, Y" }}</td>
-                                                <td>{{ report.diagnosis|truncatechars:50 }}</td>
-                                                <td>{{ report.prescription|truncatechars:50|default:"N/A" }}</td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr><td colspan="3" class="text-center text-muted">No medical reports found</td></tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Emergency Contact</small>
+                            <span>{{ patient.emergency_contact|default:"N/A" }}</span>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1"
+                                    data-bs-toggle="modal" data-bs-target="#viewModal{{ patient.id }}">
+                                <i class="fas fa-eye me-1"></i> View Details
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill flex-grow-1"
+                                    data-bs-toggle="modal" data-bs-target="#historyModal{{ patient.id }}">
+                                <i class="fas fa-history me-1"></i> History
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% empty %}
+
+            <!-- View Patient Modal -->
+            <div class="modal fade" id="viewModal{{ patient.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fas fa-user-circle me-2"></i>Patient Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <div class="avatar-circle gradient-primary mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0">{{ patient.full_name }}</h4>
+                                <p class="text-muted">Patient ID: #{{ patient.id }}</p>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">First Name</label>
+                                    <p class="fw-semibold mb-0">{{ patient.first_name }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Last Name</label>
+                                    <p class="fw-semibold mb-0">{{ patient.last_name }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Date of Birth</label>
+                                    <p class="fw-semibold mb-0">{{ patient.date_of_birth|date:"M d, Y"|default:"N/A" }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Age</label>
+                                    <p class="fw-semibold mb-0">{{ patient.age|default:"N/A" }} years</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Gender</label>
+                                    <p class="fw-semibold mb-0">{{ patient.get_gender_display|default:"N/A" }}</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">Blood Group</label>
+                                    <p class="fw-semibold mb-0">{{ patient.blood_group|default:"N/A" }}</p>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="text-muted small">Phone</label>
+                                    <p class="fw-semibold mb-0">{{ patient.phone|default:"N/A" }}</p>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="text-muted small">Emergency Contact</label>
+                                    <p class="fw-semibold mb-0">{{ patient.emergency_contact|default:"N/A" }}</p>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="text-muted small">Address</label>
+                                    <p class="fw-semibold mb-0">{{ patient.address|default:"Not provided" }}</p>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-muted small">Registered On</label>
+                                    <p class="fw-semibold mb-0">{{ patient.created_at|date:"M d, Y h:i A" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                            <a href="#" class="btn btn-primary rounded-pill">
+                                <i class="fas fa-prescription me-1"></i> Add Prescription
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient History Modal -->
+            <div class="modal fade" id="historyModal{{ patient.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fas fa-history me-2"></i>Medical History - {{ patient.full_name }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="nav nav-tabs mb-3" role="tablist">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#appointments{{ patient.id }}" type="button" role="tab">
+                                        <i class="fas fa-calendar-check me-1"></i> Appointments
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reports{{ patient.id }}" type="button" role="tab">
+                                        <i class="fas fa-flask me-1"></i> Test Reports
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <!-- Appointments Tab -->
+                                <div class="tab-pane fade show active" id="appointments{{ patient.id }}" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for apt in patient.appointments.all|dictsortreversed:"appointment_date" %}
+                                                <tr>
+                                                    <td>{{ apt.appointment_date|date:"M d, Y h:i A" }}</td>
+                                                    <td>
+                                                        {% if apt.status == 'confirmed' %}
+                                                            <span class="badge bg-success">Confirmed</span>
+                                                        {% elif apt.status == 'pending' %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% elif apt.status == 'completed' %}
+                                                            <span class="badge bg-info">Completed</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Cancelled</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr><td colspan="2" class="text-center text-muted">No appointments found</td></tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Test Reports Tab -->
+                                <div class="tab-pane fade" id="reports{{ patient.id }}" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Report Type</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for report in patient.test_reports.all|dictsortreversed:"created_at" %}
+                                                <tr>
+                                                    <td>{{ report.created_at|date:"M d, Y" }}</td>
+                                                    <td>{{ report.get_report_type_display }}</td>
+                                                    <td>
+                                                        {% if report.status == 'completed' %}
+                                                            <span class="badge bg-success">Completed</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr><td colspan="3" class="text-center text-muted">No test reports found</td></tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
         <div class="col-12">
             <div class="text-center py-5">
-                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <i class="fas fa-users fa-4x text-muted mb-3 opacity-25"></i>
                 <h5 class="text-muted">No Patients Found</h5>
-                <p class="text-muted">You don't have any patients yet.</p>
+                <p class="text-muted">You don't have any patients yet. When patients book appointments with you, they will appear here.</p>
             </div>
         </div>
-        {% endfor %}
+        {% endif %}
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Initialize Bootstrap modals
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
 {% endblock %}

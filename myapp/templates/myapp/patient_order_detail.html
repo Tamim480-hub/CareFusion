@@ -6,43 +6,50 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary: #4f46e5;
+        --primary-dark: #4338ca;
+    }
     .detail-card {
-        background: var(--navy-light);
+        background: white;
         border-radius: 20px;
-        border: 1px solid rgba(100, 255, 218, 0.1);
+        border: 1px solid #e5e7eb;
         padding: 25px;
         margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     .tracking-steps {
         display: flex;
         justify-content: space-between;
         margin: 30px 0;
         position: relative;
+        flex-wrap: wrap;
     }
     .tracking-step {
         text-align: center;
         flex: 1;
         position: relative;
         z-index: 1;
+        min-width: 80px;
     }
     .step-circle {
         width: 40px;
         height: 40px;
-        background: var(--navy-dark);
+        background: #e5e7eb;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 10px;
-        color: var(--text-light);
+        color: #6b7280;
     }
     .tracking-step.active .step-circle {
-        background: var(--primary);
-        color: var(--navy-dark);
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
     }
     .tracking-step.completed .step-circle {
-        background: #0d3b2e;
-        color: var(--primary);
+        background: #10b981;
+        color: white;
     }
     .tracking-line {
         position: absolute;
@@ -50,53 +57,138 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: rgba(100, 255, 218, 0.2);
+        background: #e5e7eb;
         z-index: 0;
     }
     .info-row {
         display: flex;
         justify-content: space-between;
         padding: 10px 0;
-        border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        border-bottom: 1px solid #e5e7eb;
     }
     .info-label {
-        color: var(--text-light);
+        color: #6c757d;
         font-weight: 500;
     }
     .info-value {
-        color: var(--text-white);
+        color: #1f2937;
+        font-weight: 500;
     }
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-processing { background: #d1ecf1; color: #0c5460; }
+    .status-shipped { background: #d4edda; color: #155724; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
 </style>
 {% endblock %}
 
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_orders' %}">
+                    <i class="fas fa-truck me-3"></i> My Orders
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'pharmacy_cart' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Cart
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
+<div class="container-fluid py-4">
     <!-- Back Button -->
-    <a href="{% url 'patient_orders' %}" class="btn btn-outline-primary rounded-pill mb-4">
-        <i class="fas fa-arrow-left me-2"></i>Back to Orders
-    </a>
+    <div class="mb-4">
+        <a href="{% url 'patient_orders' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i>Back to Orders
+        </a>
+    </div>
 
     <!-- Order Status Tracking -->
     <div class="detail-card">
+        <h5 class="mb-3 fw-bold">
+            <i class="fas fa-chart-line text-primary me-2"></i>Order Status
+        </h5>
         <div class="tracking-steps">
             <div class="tracking-line"></div>
-            <div class="tracking-step {% if order.status in 'pending,confirmed,processing,ready,shipped,delivered' %}completed{% endif %}">
+            <div class="tracking-step {% if order.status != 'pending' %}completed{% endif %}">
                 <div class="step-circle"><i class="fas fa-shopping-cart"></i></div>
                 <small>Order Placed</small>
             </div>
-            <div class="tracking-step {% if order.status in 'confirmed,processing,ready,shipped,delivered' %}completed{% endif %}">
+            <div class="tracking-step {% if order.status in 'confirmed,processing,shipped,delivered' %}completed{% elif order.status == 'pending' %}active{% endif %}">
                 <div class="step-circle"><i class="fas fa-check-circle"></i></div>
                 <small>Confirmed</small>
             </div>
-            <div class="tracking-step {% if order.status in 'processing,ready,shipped,delivered' %}active{% elif order.status in 'processing,ready,shipped,delivered' %}completed{% endif %}">
+            <div class="tracking-step {% if order.status in 'processing,shipped,delivered' %}completed{% elif order.status == 'confirmed' %}active{% endif %}">
                 <div class="step-circle"><i class="fas fa-spinner"></i></div>
                 <small>Processing</small>
             </div>
-            <div class="tracking-step {% if order.status in 'shipped,delivered' %}completed{% endif %}">
+            <div class="tracking-step {% if order.status in 'shipped,delivered' %}completed{% elif order.status == 'processing' %}active{% endif %}">
                 <div class="step-circle"><i class="fas fa-truck"></i></div>
                 <small>Shipped</small>
             </div>
-            <div class="tracking-step {% if order.status == 'delivered' %}completed{% endif %}">
+            <div class="tracking-step {% if order.status == 'delivered' %}completed{% elif order.status == 'shipped' %}active{% endif %}">
                 <div class="step-circle"><i class="fas fa-check-double"></i></div>
                 <small>Delivered</small>
             </div>
@@ -107,7 +199,7 @@
         <!-- Order Info -->
         <div class="col-md-6">
             <div class="detail-card">
-                <h5 class="mb-3" style="color: var(--primary);">
+                <h5 class="mb-3 fw-bold" style="color: var(--primary);">
                     <i class="fas fa-info-circle me-2"></i>Order Information
                 </h5>
                 <div class="info-row">
@@ -122,17 +214,25 @@
                     <span class="info-label">Status:</span>
                     <span class="info-value">
                         <span class="status-badge status-{{ order.status }}">
-                            {{ order.get_status_display }}
+                            {% if order.status == 'pending' %}
+                                <i class="fas fa-clock me-1"></i>Pending
+                            {% elif order.status == 'confirmed' %}
+                                <i class="fas fa-check-circle me-1"></i>Confirmed
+                            {% elif order.status == 'processing' %}
+                                <i class="fas fa-spinner me-1"></i>Processing
+                            {% elif order.status == 'shipped' %}
+                                <i class="fas fa-truck me-1"></i>Shipped
+                            {% elif order.status == 'delivered' %}
+                                <i class="fas fa-check-double me-1"></i>Delivered
+                            {% else %}
+                                <i class="fas fa-times-circle me-1"></i>Cancelled
+                            {% endif %}
                         </span>
                     </span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Payment Method:</span>
-                    <span class="info-value">{{ order.get_payment_method_display }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Payment Status:</span>
-                    <span class="info-value">{{ order.get_payment_status_display }}</span>
+                    <span class="info-value">{{ order.get_payment_method_display|default:"Cash on Delivery" }}</span>
                 </div>
             </div>
         </div>
@@ -140,16 +240,16 @@
         <!-- Delivery Info -->
         <div class="col-md-6">
             <div class="detail-card">
-                <h5 class="mb-3" style="color: var(--primary);">
+                <h5 class="mb-3 fw-bold" style="color: var(--primary);">
                     <i class="fas fa-truck me-2"></i>Delivery Information
                 </h5>
                 <div class="info-row">
                     <span class="info-label">Shipping Address:</span>
-                    <span class="info-value">{{ order.shipping_address }}</span>
+                    <span class="info-value">{{ order.shipping_address|default:"Not provided" }}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Phone Number:</span>
-                    <span class="info-value">{{ order.phone }}</span>
+                    <span class="info-value">{{ order.phone|default:"N/A" }}</span>
                 </div>
                 {% if order.notes %}
                 <div class="info-row">
@@ -163,13 +263,13 @@
 
     <!-- Order Items -->
     <div class="detail-card">
-        <h5 class="mb-3" style="color: var(--primary);">
+        <h5 class="mb-3 fw-bold" style="color: var(--primary);">
             <i class="fas fa-boxes me-2"></i>Order Items
         </h5>
         <div class="table-responsive">
             <table class="table">
                 <thead>
-                    <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.2);">
+                    <tr style="border-bottom: 2px solid #e5e7eb;">
                         <th>Product</th>
                         <th>Quantity</th>
                         <th>Price</th>
@@ -178,32 +278,32 @@
                 </thead>
                 <tbody>
                     {% for item in order_items %}
-                    <tr style="border-bottom: 1px solid rgba(100, 255, 218, 0.1);">
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
                         <td>
                             <div>
                                 <strong>{{ item.product.name }}</strong>
                                 <br>
-                                <small class="text-muted">{{ item.product.get_category_display }}</small>
+                                <small class="text-muted">{{ item.product.get_category_display|default:"Medicine" }}</small>
                             </div>
-                        </td>
-                        <td>{{ item.quantity }}</td>
-                        <td>৳{{ item.price|floatformat:2 }}</td>
-                        <td><strong>৳{{ item.subtotal|floatformat:2 }}</strong></td>
+                        </div>
+                        <td>{{ item.quantity }}</div>
+                        <td>৳{{ item.price|floatformat:2 }}</div>
+                        <td><strong>৳{{ item.subtotal|floatformat:2 }}</strong></div>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
-                        <td>৳{{ order.subtotal|floatformat:2 }}</td>
+                        <td><strong>৳{{ order.subtotal|floatformat:2 }}</strong></td>
                     </tr>
                     <tr>
                         <td colspan="3" class="text-end"><strong>Delivery Charge:</strong></td>
-                        <td>৳{{ order.delivery_charge|floatformat:2 }}</td>
+                        <td>৳{{ order.delivery_charge|default:0|floatformat:2 }}</td>
                     </tr>
                     <tr>
-                        <td colspan="3" class="text-end"><strong class="fs-5">Total:</strong></td>
-                        <td><strong class="fs-5" style="color: var(--primary);">৳{{ order.total_amount|floatformat:2 }}</strong></td>
+                        <td colspan="3" class="text-end"><strong class="fs-5">Grand Total:</strong></td>
+                        <td><strong class="fs-5 text-primary">৳{{ order.total_amount|floatformat:2 }}</strong></td>
                     </tr>
                 </tfoot>
             </table>
@@ -211,11 +311,11 @@
     </div>
 
     {% if order.status == 'delivered' %}
-    <div class="text-center">
+    <div class="text-center mt-3">
         <a href="#" class="btn btn-primary rounded-pill px-4">
             <i class="fas fa-star me-2"></i>Rate Your Order
         </a>
-        <a href="#" class="btn btn-outline-primary rounded-pill px-4 ms-2">
+        <a href="{% url 'patient_products' %}" class="btn btn-outline-primary rounded-pill px-4 ms-2">
             <i class="fas fa-shopping-cart me-2"></i>Reorder
         </a>
     </div>

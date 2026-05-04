@@ -1,0 +1,50 @@
+{% extends 'myapp/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm rounded-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Doctor Login Information</h4>
+        </div>
+        <div class="card-body">
+            <h5>Dr. {{ doctor.full_name }}</h5>
+            <table class="table">
+                <tr>
+                    <th>Username:</th>
+                    <td><code>{{ doctor.user.username }}</code></td>
+                </tr>
+                <tr>
+                    <th>Email:</th>
+                    <td>{{ doctor.user.email }}</td>
+                </tr>
+                <tr>
+                    <th>Password:</th>
+                    <td>
+                        <span class="text-muted">(Newly created - check email or reset)</span>
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="alert alert-info">
+                <strong>⚠️ Note:</strong> 
+                <ul>
+                    <li>Password has been sent to the doctor's email</li>
+                    <li>If doctor didn't receive email, you can reset password</li>
+                    <li>Doctor can login at: <code>http://127.0.0.1:8000/login/</code></li>
+                </ul>
+            </div>
+            
+            <a href="{% url 'hospital_doctors' %}" class="btn btn-secondary">Back</a>
+            <button onclick="copyInfo()" class="btn btn-primary">Copy Info</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyInfo() {
+    const text = `Username: {{ doctor.user.username }}\nEmail: {{ doctor.user.email }}\nLogin URL: http://127.0.0.1:8000/login/`;
+    navigator.clipboard.writeText(text);
+    alert('Login info copied!');
+}
+</script>
+{% endblock %}

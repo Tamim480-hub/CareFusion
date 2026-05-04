@@ -344,5 +344,12 @@
 
         return true;
     });
+
+    // Auto-fill phone from URL parameter if any
+    const urlParams = new URLSearchParams(window.location.search);
+    const phoneParam = urlParams.get('phone');
+    if (phoneParam && document.getElementById('phone')) {
+        document.getElementById('phone').value = phoneParam;
+    }
 </script>
 {% endblock %}

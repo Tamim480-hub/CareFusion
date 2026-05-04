@@ -34,6 +34,7 @@ urlpatterns = [
     path('hospital/orders/<int:order_id>/', views.hospital_order_detail, name='hospital_order_detail'),
     path('hospital/test-reports/', views.hospital_test_reports, name='hospital_test_reports'),
     path('hospital/emergencies/', views.hospital_emergencies, name='hospital_emergencies'),
+    path('hospital/doctor-login-info/<int:doctor_id>/', views.doctor_login_info, name='doctor_login_info'),
 
     # ==================== Patient URLs ====================
     path('patient/dashboard/', views.patient_dashboard, name='patient_dashboard'),
@@ -50,6 +51,14 @@ urlpatterns = [
     path('patient/icu-bookings/', views.patient_icu_bookings, name='patient_icu_bookings'),
     path('patient/icu-booking/cancel/<int:booking_id>/', views.patient_cancel_icu_booking,
          name='patient_cancel_icu_booking'),
+    path('patient/delete-icu-booking/<int:booking_id>/', views.patient_delete_icu_booking,
+         name='patient_delete_icu_booking'),
+    path('patient/appointment/<int:appointment_id>/', views.patient_appointment_detail,
+         name='patient_appointment_detail'),
+    path('patient/doctor/<int:doctor_id>/', views.patient_doctor_detail, name='patient_doctor_detail'),
+    path('patient/orders/', views.patient_orders, name='patient_orders'),
+    path('patient/order/<int:order_id>/', views.patient_order_detail, name='patient_order_detail'),
+    path('patient/cancel-order/<int:order_id>/', views.patient_cancel_order, name='patient_cancel_order'),
 
     # Patient Bills URLs
     path('patient/bills/', views.patient_bills, name='patient_bills'),
@@ -63,11 +72,15 @@ urlpatterns = [
     path('doctor/profile/', views.doctor_profile, name='doctor_profile'),
     path('doctor/appointments/', views.doctor_appointments, name='doctor_appointments'),
     path('doctor/appointments/today/', views.doctor_today_appointments, name='doctor_today_appointments'),
-    path('doctor/appointments/update/<int:appointment_id>/', views.doctor_update_appointment,
+    path('doctor/appointment/<int:appointment_id>/', views.doctor_appointment_detail, name='doctor_appointment_detail'),
+    path('doctor/appointment/update/<int:appointment_id>/', views.doctor_update_appointment,
          name='doctor_update_appointment'),
     path('doctor/patients/', views.doctor_patients, name='doctor_patients'),
     path('doctor/patient/<int:patient_id>/', views.doctor_patient_detail, name='doctor_patient_detail'),
     path('doctor/schedule/', views.doctor_schedule, name='doctor_schedule'),
+    path('doctor/notifications/', views.doctor_notifications, name='doctor_notifications'),
+    path('doctor/notification/read/<int:notification_id>/', views.doctor_mark_notification_read,
+         name='doctor_mark_notification_read'),
 
     # ==================== Public URLs ====================
     path('emergency/', views.emergency, name='emergency'),
@@ -82,6 +95,7 @@ urlpatterns = [
     # ==================== AJAX URLs ====================
     path('get-doctors-by-hospital/', views.get_doctors_by_hospital, name='get_doctors_by_hospital'),
     path('get-beds-by-hospital/', views.get_beds_by_hospital, name='get_beds_by_hospital'),
+    path('get-doctor-schedule/<int:doctor_id>/', views.get_doctor_schedule, name='get_doctor_schedule'),
     path('check-username/', views.check_username, name='check_username'),
     path('check-email/', views.check_email, name='check_email'),
 
@@ -93,28 +107,26 @@ urlpatterns = [
     path('pharmacy/update-order-status/<int:order_id>/', views.pharmacy_update_order_status,
          name='pharmacy_update_order_status'),
 
-    # ==================== Pharmacy Customer URLs (Patient Pharmacy) ====================
+    # ==================== Pharmacy Store (Patient View) ====================
     path('pharmacy/store/', views.pharmacy_products_list, name='pharmacy_products_list'),
-    path('pharmacy/store/add-to-cart/<int:product_id>/', views.pharmacy_add_to_cart, name='pharmacy_add_to_cart'),
-    path('pharmacy/store/cart/', views.pharmacy_cart, name='pharmacy_cart'),
-    path('pharmacy/store/cart/update/<int:item_id>/', views.pharmacy_update_cart, name='pharmacy_update_cart'),
-    path('pharmacy/store/cart/remove/<int:item_id>/', views.pharmacy_remove_from_cart,
-         name='pharmacy_remove_from_cart'),
     path('pharmacy/store/checkout/', views.pharmacy_checkout, name='pharmacy_checkout'),
     path('pharmacy/order-confirmation/<int:order_id>/', views.pharmacy_order_confirmation,
          name='pharmacy_order_confirmation'),
 
-    # Patient products (alias for pharmacy store)
+    # ==================== Patient Pharmacy (Alias) ====================
     path('patient/products/', views.pharmacy_products_list, name='patient_products'),
 
-    # ==================== Patient Pharmacy Orders URLs ====================
-    path('patient/orders/', views.patient_orders, name='patient_orders'),
-    path('patient/order/<int:order_id>/', views.patient_order_detail, name='patient_order_detail'),
-    path('patient/cancel-order/<int:order_id>/', views.patient_cancel_order, name='patient_cancel_order'),
+    # ==================== Cart URLs (একীভূত) ====================
+    path('add-to-cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/', views.view_cart, name='pharmacy_cart'),
 
-    # ==================== Patient Doctor Detail ====================
-    path('patient/doctor/<int:doctor_id>/', views.patient_doctor_detail, name='patient_doctor_detail'),
-    path('get-doctor-schedule/<int:doctor_id>/', views.get_doctor_schedule, name='get_doctor_schedule'),
-    path('patient/delete-icu-booking/<int:booking_id>/', views.patient_delete_icu_booking,
-         name='patient_delete_icu_booking'),
+    # ✅ pharmacy_remove_from_cart নামে URL যোগ করুন
+    path('pharmacy/store/cart/remove/<int:item_id>/', views.remove_from_cart, name='pharmacy_remove_from_cart'),
+path('remove-from-cart/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('update-cart/<int:item_id>/', views.update_cart_quantity, name='update_cart_quantity'),
+    path('pharmacy/store/cart/update/<int:item_id>/', views.update_cart_quantity, name='pharmacy_update_cart'),
+
+
+    # ==================== Checkout ====================
+    path('checkout/', views.pharmacy_checkout, name='pharmacy_checkout'),
 ]

@@ -91,11 +91,69 @@
         padding: 8px;
         text-align: center;
     }
-    .back-btn {
-        transition: all 0.3s ease;
+
+    /* Search Section Styles */
+    .search-section {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
-    .back-btn:hover {
-        transform: translateX(-5px);
+    .search-input-group {
+        position: relative;
+    }
+    .search-input-group .form-control {
+        border-radius: 50px;
+        padding: 12px 20px;
+        padding-right: 100px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+    }
+    .search-input-group .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+    }
+    .search-input-group .btn-search {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        border-radius: 50px;
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    .filter-badge {
+        background: #f8f9fa;
+        padding: 8px 15px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        display: inline-block;
+        font-size: 13px;
+    }
+    .filter-badge:hover {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        transform: translateY(-2px);
+    }
+    .filter-badge.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+    }
+    .clear-search {
+        cursor: pointer;
+        color: #dc3545;
+        font-size: 14px;
+    }
+    .clear-search:hover {
+        text-decoration: underline;
     }
 
     /* Empty State */
@@ -121,6 +179,59 @@
 
     @keyframes spin {
         to { transform: rotate(360deg); }
+    }
+
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .step-circle.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+    }
+    .step-circle.completed {
+        background: #28a745;
+        color: white;
+    }
+    .step-label {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Sort Dropdown */
+    .sort-dropdown {
+        border-radius: 30px;
+        padding: 8px 15px;
+        border: 2px solid #e9ecef;
+        background: white;
+        cursor: pointer;
+    }
+
+    .search-highlight {
+        background: rgba(102,126,234,0.2);
+        padding: 2px 5px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .result-badge {
+        background: #667eea;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
     }
 </style>
 {% endblock %}
@@ -188,7 +299,7 @@
             <h2 class="fw-bold text-dark mb-1">
                 <i class="fas fa-user-md text-primary me-2"></i>Find Doctors
             </h2>
-            <p class="text-muted">Select a hospital to see available doctors</p>
+            <p class="text-muted">Search and book appointments with top doctors</p>
         </div>
         <div class="mt-2 mt-md-0">
             <div class="bg-light rounded-3 p-2 px-3">
@@ -245,13 +356,9 @@
                             </div>
                             <div class="hospital-stats mt-2">
                                 <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Doctors</small>
+                                    <div class="col-12">
+                                        <small class="text-muted">Available Doctors</small>
                                         <p class="fw-bold mb-0" id="doctor-count-{{ hospital.id }}">-</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Departments</small>
-                                        <p class="fw-bold mb-0">8+</p>
                                     </div>
                                 </div>
                             </div>
@@ -279,11 +386,64 @@
                 <div>
                     <i class="fas fa-hospital me-2"></i>
                     <strong id="selectedHospitalNameDisplay"></strong>
+                    <span id="doctorCountDisplay" class="ms-2 badge bg-light text-dark"></span>
                 </div>
                 <button id="backToHospitalsBtn" class="btn btn-sm btn-outline-secondary rounded-pill">
                     <i class="fas fa-arrow-left me-2"></i>Back to Hospitals
                 </button>
             </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="search-input-group">
+                        <input type="text" id="searchDoctorInput" class="form-control" placeholder="🔍 Search by doctor name, specialization, qualification...">
+                        <button class="btn-search" onclick="applyFiltersAndDisplay()">
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select id="sortDoctors" class="sort-dropdown form-select w-100" onchange="applyFiltersAndDisplay()">
+                        <option value="name_asc">Sort by Name (A-Z)</option>
+                        <option value="name_desc">Sort by Name (Z-A)</option>
+                        <option value="fee_low">Sort by Fee (Low to High)</option>
+                        <option value="fee_high">Sort by Fee (High to Low)</option>
+                        <option value="experience_high">Sort by Experience (High to Low)</option>
+                        <option value="rating_high">Sort by Rating (High to Low)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-end">
+                        <span class="clear-search" onclick="clearAllFilters()">
+                            <i class="fas fa-times-circle me-1"></i>Clear All Filters
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialization Filters -->
+            <div class="mt-3" id="specializationFilters">
+                <strong class="me-2">Filter by Specialization:</strong>
+                <span class="filter-badge active" data-specialization="all" onclick="selectSpecialization('all')">All</span>
+                <span class="filter-badge" data-specialization="Cardiologist" onclick="selectSpecialization('Cardiologist')">❤️ Cardiologist</span>
+                <span class="filter-badge" data-specialization="neurology" onclick="selectSpecialization('neurology')">🧠 Neurology</span>
+                <span class="filter-badge" data-specialization="pediatrics" onclick="selectSpecialization('pediatrics')">👶 Pediatrics</span>
+                <span class="filter-badge" data-specialization="orthopedics" onclick="selectSpecialization('orthopedics')">🦴 Orthopedics</span>
+                <span class="filter-badge" data-specialization="dermatology" onclick="selectSpecialization('dermatology')">🧴 Dermatology</span>
+                <span class="filter-badge" data-specialization="Psychiatrist" onclick="selectSpecialization('Psychiatrist')">👩 Psychiatrist</span>
+                <span class="filter-badge" data-specialization="ophthalmology" onclick="selectSpecialization('ophthalmology')">👁️ Ophthalmology</span>
+                <span class="filter-badge" data-specialization="ent" onclick="selectSpecialization('ent')">👂 ENT</span>
+                <span class="filter-badge" data-specialization="general" onclick="selectSpecialization('general')">🏥 General</span>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div class="mt-3" id="activeFilters"></div>
+
+            <!-- Search Result Count -->
+            <div class="mt-3" id="searchResultCount"></div>
         </div>
 
         <!-- Doctors List -->
@@ -299,6 +459,10 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     let selectedHospitalId = null;
+    let allDoctors = [];
+    let currentFilterSpecialization = 'all';
+    let currentSearchTerm = '';
+    let currentSort = 'name_asc';
 
     // Function to load doctor counts for each hospital
     function loadDoctorCounts() {
@@ -325,6 +489,12 @@
     // Load doctor counts on page load
     $(document).ready(function() {
         loadDoctorCounts();
+
+        // Add live search
+        $('#searchDoctorInput').on('keyup', function() {
+            currentSearchTerm = $(this).val().toLowerCase();
+            applyFiltersAndDisplay();
+        });
     });
 
     // Hospital selection click
@@ -343,12 +513,64 @@
         // Update selected hospital name
         $('#selectedHospitalNameDisplay').text(hospitalName);
 
+        // Reset all filters
+        resetFilters();
+
         // Switch views
         $('#hospitalSelectionView').slideUp(300, function() {
             $('#doctorSelectionView').slideDown(300);
             loadDoctors();
         });
     });
+
+    // Reset filters function
+    function resetFilters() {
+        currentSearchTerm = '';
+        currentFilterSpecialization = 'all';
+        currentSort = 'name_asc';
+        $('#searchDoctorInput').val('');
+        $('#sortDoctors').val('name_asc');
+        $('.filter-badge').removeClass('active');
+        $('.filter-badge[data-specialization="all"]').addClass('active');
+        updateActiveFiltersDisplay();
+    }
+
+    // Select specialization
+    function selectSpecialization(specialization) {
+        currentFilterSpecialization = specialization;
+        $('.filter-badge').removeClass('active');
+        $(`.filter-badge[data-specialization="${specialization}"]`).addClass('active');
+        applyFiltersAndDisplay();
+        updateActiveFiltersDisplay();
+    }
+
+    // Update active filters display
+    function updateActiveFiltersDisplay() {
+        let activeFiltersHtml = '';
+        if (currentFilterSpecialization !== 'all') {
+            let specName = currentFilterSpecialization;
+            switch(specName) {
+                case 'Cardiologist': specName = 'Cardiologist'; break;
+                case 'neurology': specName = 'Neurology'; break;
+                case 'pediatrics': specName = 'Pediatrics'; break;
+                case 'orthopedics': specName = 'Orthopedics'; break;
+                case 'dermatology': specName = 'Dermatology'; break;
+                case 'Psychiatrist': specName = 'Psychiatrist'; break;
+                case 'ophthalmology': specName = 'Ophthalmology'; break;
+                case 'ent': specName = 'ENT'; break;
+                case 'general': specName = 'General'; break;
+                default: specName = specName;
+            }
+            activeFiltersHtml += `<span class="badge bg-primary me-2"><i class="fas fa-tag me-1"></i>${specName}</span>`;
+        }
+        if (currentSearchTerm) {
+            activeFiltersHtml += `<span class="badge bg-info me-2"><i class="fas fa-search me-1"></i>Search: ${currentSearchTerm}</span>`;
+        }
+        if (activeFiltersHtml) {
+            activeFiltersHtml = `<strong>Active Filters:</strong> ${activeFiltersHtml}`;
+        }
+        $('#activeFilters').html(activeFiltersHtml);
+    }
 
     // Back to hospitals button
     $('#backToHospitalsBtn').click(function() {
@@ -371,16 +593,91 @@
                 'X-CSRFToken': getCookie('csrftoken')
             },
             success: function(data) {
+                console.log("Doctors data:", data);
                 if (data.success && data.doctors) {
-                    displayDoctors(data.doctors);
+                    allDoctors = data.doctors;
+                    $('#doctorCountDisplay').text(`(${allDoctors.length} doctors)`);
+                    applyFiltersAndDisplay();
                 } else {
                     $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-user-md fa-4x text-muted mb-3 opacity-25"></i><h4 class="text-muted">No Doctors Available</h4><p class="text-muted">No doctors are currently available at this hospital.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
                 }
             },
-            error: function() {
-                $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-exclamation-triangle fa-4x text-danger mb-3 opacity-50"></i><h4 class="text-muted">Error Loading Doctors</h4><p class="text-muted">Please try again later.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-exclamation-triangle fa-4x text-danger mb-3 opacity-50"></i><h4 class="text-muted">Error Loading Doctors</h4><p class="text-muted">Please try again later.</p></div>');
             }
         });
+    }
+
+    // Clear all filters
+    function clearAllFilters() {
+        currentSearchTerm = '';
+        currentFilterSpecialization = 'all';
+        currentSort = 'name_asc';
+        $('#searchDoctorInput').val('');
+        $('#sortDoctors').val('name_asc');
+        $('.filter-badge').removeClass('active');
+        $('.filter-badge[data-specialization="all"]').addClass('active');
+        updateActiveFiltersDisplay();
+        applyFiltersAndDisplay();
+    }
+
+    // Apply all filters and display
+    function applyFiltersAndDisplay() {
+        if (!allDoctors || allDoctors.length === 0) {
+            return;
+        }
+
+        let filteredDoctors = [...allDoctors];
+
+        // Apply search filter
+        if (currentSearchTerm) {
+            filteredDoctors = filteredDoctors.filter(doctor => {
+                const nameMatch = doctor.name && doctor.name.toLowerCase().includes(currentSearchTerm);
+                const specMatch = doctor.specialization && doctor.specialization.toLowerCase().includes(currentSearchTerm);
+                const qualMatch = doctor.qualification && doctor.qualification.toLowerCase().includes(currentSearchTerm);
+                return nameMatch || specMatch || qualMatch;
+            });
+        }
+
+        // Apply specialization filter (CASE INSENSITIVE matching)
+        if (currentFilterSpecialization !== 'all') {
+            filteredDoctors = filteredDoctors.filter(doctor => {
+                if (!doctor.specialization) return false;
+                // Match both exact and partial
+                const specLower = doctor.specialization.toLowerCase();
+                const filterLower = currentFilterSpecialization.toLowerCase();
+                return specLower === filterLower || specLower.includes(filterLower);
+            });
+        }
+
+        // Apply sorting
+        filteredDoctors.sort((a, b) => {
+            switch(currentSort) {
+                case 'name_asc':
+                    return (a.name || '').localeCompare(b.name || '');
+                case 'name_desc':
+                    return (b.name || '').localeCompare(a.name || '');
+                case 'fee_low':
+                    return (parseFloat(a.fee) || 0) - (parseFloat(b.fee) || 0);
+                case 'fee_high':
+                    return (parseFloat(b.fee) || 0) - (parseFloat(a.fee) || 0);
+                case 'experience_high':
+                    return (parseInt(b.experience) || 0) - (parseInt(a.experience) || 0);
+                case 'rating_high':
+                    return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
+                default:
+                    return 0;
+            }
+        });
+
+        // Update result count
+        const resultText = filteredDoctors.length === 0 ? 'No doctors found matching your criteria' : `Found ${filteredDoctors.length} doctor${filteredDoctors.length !== 1 ? 's' : ''}`;
+        $('#searchResultCount').html(`<div class="result-badge d-inline-block"><i class="fas fa-stethoscope me-1"></i> ${resultText}</div>`);
+
+        // Display doctors
+        displayDoctors(filteredDoctors);
+        updateActiveFiltersDisplay();
     }
 
     function getCookie(name) {
@@ -400,7 +697,16 @@
 
     function displayDoctors(doctors) {
         if (doctors.length === 0) {
-            $('#doctorsListContainer').html('<div class="text-center py-5"><i class="fas fa-user-md fa-4x text-muted mb-3 opacity-25"></i><h4 class="text-muted">No Doctors Available</h4><p class="text-muted">No doctors are currently available at this hospital.</p><button class="btn btn-outline-primary rounded-pill mt-3" onclick="$(\'#backToHospitalsBtn\').click()"><i class="fas fa-arrow-left me-2"></i>Back to Hospitals</button></div>');
+            $('#doctorsListContainer').html(`
+                <div class="text-center py-5 empty-state">
+                    <i class="fas fa-user-md fa-5x text-muted mb-3 opacity-25"></i>
+                    <h4 class="text-muted">No Doctors Found</h4>
+                    <p class="text-muted">No doctors match "${currentSearchTerm || 'your search criteria'}"</p>
+                    <button class="btn btn-outline-primary rounded-pill mt-3" onclick="clearAllFilters()">
+                        <i class="fas fa-undo-alt me-2"></i>Clear All Filters
+                    </button>
+                </div>
+            `);
             return;
         }
 
@@ -408,7 +714,7 @@
         doctors.forEach(function(doctor) {
             // Generate star rating
             let stars = '';
-            const rating = doctor.rating || 4.8;
+            const rating = doctor.rating || 4.5;
             const fullStars = Math.floor(rating);
             const hasHalfStar = rating % 1 >= 0.5;
 
@@ -422,6 +728,17 @@
                 }
             }
 
+            // Get specialization display name
+            let specDisplay = doctor.specialization_display || doctor.specialization || 'General Physician';
+            specDisplay = specDisplay.charAt(0).toUpperCase() + specDisplay.slice(1);
+
+            // Highlight search term in name
+            let doctorName = doctor.name;
+            if (currentSearchTerm && doctorName && doctorName.toLowerCase().includes(currentSearchTerm)) {
+                const regex = new RegExp(`(${currentSearchTerm})`, 'gi');
+                doctorName = doctorName.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="doctor-card p-3">
@@ -430,11 +747,11 @@
                                 <i class="fas fa-user-md fa-2x text-white"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h5 class="fw-bold mb-0">Dr. ${doctor.name}</h5>
-                                <span class="specialization-badge mt-1 d-inline-block">${doctor.specialization_display}</span>
+                                <h5 class="fw-bold mb-0 doctor-name">Dr. ${doctorName}</h5>
+                                <span class="specialization-badge mt-1 d-inline-block">${specDisplay}</span>
                                 <div class="rating-stars mt-1">
                                     ${stars}
-                                    <span class="text-muted ms-1">${rating}</span>
+                                    <span class="text-muted ms-1">(${rating})</span>
                                 </div>
                             </div>
                         </div>
@@ -445,25 +762,25 @@
                                     <small class="text-muted d-block">
                                         <i class="fas fa-briefcase me-1"></i>Experience
                                     </small>
-                                    <span class="fw-semibold">${doctor.experience} years</span>
+                                    <span class="fw-semibold">${doctor.experience || 5}+ years</span>
                                 </div>
                                 <div class="col-6 mb-2">
                                     <small class="text-muted d-block">
-                                        <i class="fas fa-money-bill me-1"></i>Fee
+                                        <i class="fas fa-money-bill me-1"></i>Consultation Fee
                                     </small>
-                                    <span class="fw-bold text-success">৳${doctor.fee}</span>
+                                    <span class="fw-bold text-success">৳${doctor.fee || 800}</span>
                                 </div>
                                 <div class="col-12">
                                     <small class="text-muted d-block">
                                         <i class="fas fa-graduation-cap me-1"></i>Qualification
                                     </small>
-                                    <span class="small">${doctor.qualification || 'MBBS'}</span>
+                                    <span class="small">${doctor.qualification || 'MBBS, FCPS'}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2">
-                            <a href="{% url 'patient_book_appointment' %}?doctor=${doctor.id}" class="btn btn-primary rounded-pill book-btn">
+                            <a href="{% url 'patient_book_appointment' %}?doctor_id=${doctor.id}" class="btn btn-primary rounded-pill book-btn">
                                 <i class="fas fa-calendar-plus me-2"></i>Book Appointment
                             </a>
                             <button class="btn btn-outline-info rounded-pill" onclick="viewDoctorDetails(${doctor.id})">
@@ -479,39 +796,7 @@
     }
 
     function viewDoctorDetails(doctorId) {
-        // You can implement a modal or redirect to doctor details page
         window.location.href = `/patient/doctor/${doctorId}/`;
     }
 </script>
-
-<style>
-    .step-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .step-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #e9ecef;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-    .step-circle.active {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        box-shadow: 0 5px 15px rgba(102,126,234,0.3);
-    }
-    .step-circle.completed {
-        background: #28a745;
-        color: white;
-    }
-    .step-label {
-        font-size: 14px;
-        font-weight: 500;
-    }
-</style>
 {% endblock %}

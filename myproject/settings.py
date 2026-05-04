@@ -120,6 +120,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Gmail এর জন্য
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email@gmail.com'  # আপনার ইমেইল
+EMAIL_HOST_PASSWORD = 'your_app_password'  # Gmail অ্যাপ পাসওয়ার্ড
+DEFAULT_FROM_EMAIL = 'CareFusion <your_email@gmail.com>'
+
 
 
 STATIC_URL = '/static/'

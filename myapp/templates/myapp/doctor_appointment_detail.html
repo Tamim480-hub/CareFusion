@@ -1,0 +1,319 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Appointment Details - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .appointment-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 20px;
+        padding: 25px;
+        color: white;
+        margin-bottom: 25px;
+    }
+    .info-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+    }
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -12px rgba(0,0,0,0.1);
+    }
+    .info-label {
+        font-size: 11px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-confirmed {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .action-btn {
+        border-radius: 30px;
+        padding: 10px 24px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+    .doctor-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 15px 0;
+    }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Doctor Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'doctor_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_patients' %}">
+                    <i class="fas fa-users me-3"></i> My Patients
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_notifications' %}">
+                    <i class="fas fa-bell me-3"></i> Notifications
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_profile' %}">
+                    <i class="fas fa-user-md me-3"></i> My Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{% url 'doctor_appointments' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i>Back to Appointments
+        </a>
+    </div>
+
+    <!-- Appointment Header -->
+    <div class="appointment-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h3 class="fw-bold mb-2">
+                    <i class="fas fa-calendar-alt me-2"></i>Appointment Details
+                </h3>
+                <p class="mb-0 opacity-90">Appointment ID: #{{ appointment.id }}</p>
+            </div>
+            <div>
+                {% if appointment.status == 'confirmed' %}
+                    <span class="status-badge status-confirmed">
+                        <i class="fas fa-check-circle me-1"></i>Confirmed
+                    </span>
+                {% elif appointment.status == 'pending' %}
+                    <span class="status-badge status-pending">
+                        <i class="fas fa-clock me-1"></i>Pending
+                    </span>
+                {% elif appointment.status == 'completed' %}
+                    <span class="status-badge status-completed">
+                        <i class="fas fa-check-double me-1"></i>Completed
+                    </span>
+                {% else %}
+                    <span class="status-badge status-cancelled">
+                        <i class="fas fa-times-circle me-1"></i>Cancelled
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Patient Information -->
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-user-circle me-2" style="color: #667eea;"></i>Patient Information
+                </h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value">{{ appointment.patient.full_name }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Age</div>
+                        <div class="info-value">{{ appointment.patient.age }} years</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">{{ appointment.patient.phone|default:"N/A" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Blood Group</div>
+                        <div class="info-value">{{ appointment.patient.blood_group|default:"N/A" }}</div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ appointment.patient.address|default:"Not provided" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment Information -->
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-info-circle me-2" style="color: #667eea;"></i>Appointment Information
+                </h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Appointment Date</div>
+                        <div class="info-value">
+                            <i class="far fa-calendar-alt me-2 text-muted"></i>
+                            {{ appointment.appointment_date|date:"l, d M Y" }}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="info-label">Appointment Time</div>
+                        <div class="info-value">
+                            <i class="far fa-clock me-2 text-muted"></i>
+                            {{ appointment.appointment_date|date:"h:i A" }}
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <div class="info-label">Symptoms / Reason</div>
+                        <div class="info-value">
+                            {{ appointment.symptoms|default:"No symptoms specified" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Symptoms -->
+            {% if appointment.symptoms %}
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-stethoscope me-2" style="color: #667eea;"></i>Symptoms & Reason
+                </h5>
+                <p class="mb-0">{{ appointment.symptoms }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Action Buttons -->
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-cog me-2" style="color: #667eea;"></i>Actions
+                </h5>
+                <div class="d-grid gap-3">
+                    <a href="{% url 'doctor_update_appointment' appointment.id %}" class="btn btn-primary action-btn">
+                        <i class="fas fa-edit me-2"></i>Update Status
+                    </a>
+                    <button class="btn btn-secondary action-btn" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Details
+                    </button>
+                    <a href="{% url 'doctor_appointments' %}" class="btn btn-outline-primary action-btn">
+                        <i class="fas fa-calendar-alt me-2"></i>View All Appointments
+                    </a>
+                </div>
+            </div>
+
+            <!-- Important Notes -->
+            <div class="info-card" style="background: #fef3c7;">
+                <h5 class="fw-semibold mb-3" style="color: #92400e;">
+                    <i class="fas fa-lightbulb me-2"></i>Important Notes
+                </h5>
+                <ul class="small mb-0" style="color: #92400e; padding-left: 18px;">
+                    <li class="mb-2">Please check patient's vitals during visit</li>
+                    <li class="mb-2">Update medical records after consultation</li>
+                    <li class="mb-2">Prescribe medicines if needed</li>
+                    <li>For cancellation, please inform the patient</li>
+                </ul>
+            </div>
+
+            <!-- Need Help -->
+            <div class="info-card" style="background: #e0f2fe;">
+                <h5 class="fw-semibold mb-3" style="color: #075985;">
+                    <i class="fas fa-headset me-2"></i>Need Help?
+                </h5>
+                <p class="small mb-2" style="color: #075985;">
+                    <i class="fas fa-phone me-2"></i>Call support: +880 1234 567890
+                </p>
+                <p class="small mb-0" style="color: #075985;">
+                    <i class="fas fa-envelope me-2"></i>Email: support@carefusion.com
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function cancelAppointment(appointmentId) {
+        if (confirm('Are you sure you want to cancel this appointment?\n\nThis action cannot be undone.')) {
+            fetch(`/doctor/appointment/${appointmentId}/cancel/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Appointment cancelled successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error cancelling appointment. Please try again.');
+            });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,4 +1,7 @@
+# myapp/models.py
+
 from datetime import date, timedelta, datetime
+from decimal import Decimal
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -156,21 +159,16 @@ class Patient(models.Model):
 
     @property
     def age(self):
-        """Calculate age from date of birth safely"""
         if not self.date_of_birth:
             return 0
-
         try:
-            # যদি date_of_birth স্ট্রিং হয়
             if isinstance(self.date_of_birth, str):
                 from datetime import datetime
                 dob = datetime.strptime(self.date_of_birth, '%Y-%m-%d').date()
             else:
                 dob = self.date_of_birth
-
             today = date.today()
             age = today.year - dob.year
-            # জন্মদিনের আগে থাকলে ১ কমিয়ে দিন
             if (today.month, today.day) < (dob.month, dob.day):
                 age -= 1
             return age if age >= 0 else 0
@@ -179,6 +177,7 @@ class Patient(models.Model):
 
     def __str__(self):
         return self.full_name
+
 
 # ==================== Appointment Models ====================
 class Appointment(models.Model):
@@ -196,11 +195,6 @@ class Appointment(models.Model):
     symptoms = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-        if not self.hospital and self.doctor:
-            self.hospital = self.doctor.hospital
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.patient.full_name} - {self.doctor.full_name}"
@@ -233,11 +227,9 @@ class ICUBooking(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='icu_bookings')
     bed = models.ForeignKey(ICUBed, on_delete=models.CASCADE)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='icu_bookings', null=True, blank=True)
-
     patient_name = models.CharField(max_length=100, null=True, blank=True)
     patient_age = models.IntegerField(null=True, blank=True)
     contact_number = models.CharField(max_length=15, null=True, blank=True)
-
     admission_date = models.DateTimeField(auto_now_add=True)
     expected_discharge = models.DateField()
     condition = models.TextField()
@@ -245,6 +237,7 @@ class ICUBooking(models.Model):
 
     def __str__(self):
         return f"{self.patient_name or self.patient.full_name} - {self.bed.bed_number}"
+
 
 # ==================== Emergency Models ====================
 class EmergencyRequest(models.Model):
@@ -299,27 +292,19 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def total_amount(self):
-        return sum(item.subtotal for item in self.items.all())
-
-    @property
-    def total_items(self):
-        return self.items.count()
-
     def __str__(self):
         return f"Cart - {self.user.username}"
 
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey('PharmacyProduct', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     added_at = models.DateTimeField(auto_now_add=True)
 
-    @property
-    def subtotal(self):
-        return self.product.price * self.quantity
+    def total_price(self):
+        return self.quantity * self.price
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
@@ -578,7 +563,38 @@ class PharmacyCustomer(models.Model):
         return self.user.get_full_name() or self.user.username
 
 
-class Prescription(models.Model):
+class PharmacyCart(models.Model):
+    customer = models.OneToOneField(PharmacyCustomer, on_delete=models.CASCADE, related_name='cart', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_items(self):
+        return self.items.count()
+
+    @property
+    def subtotal(self):
+        return sum(item.subtotal for item in self.items.all())
+
+    def __str__(self):
+        return f"Cart - {self.customer.user.username if self.customer else 'No Customer'}"
+
+
+class PharmacyCartItem(models.Model):
+    cart = models.ForeignKey(PharmacyCart, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
+    product = models.ForeignKey(PharmacyProduct, on_delete=models.CASCADE, null=True, blank=True)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def subtotal(self):
+        return self.product.selling_price * self.quantity if self.product else 0
+
+    def __str__(self):
+        return f"{self.product.name if self.product else 'No Product'} x {self.quantity}"
+
+
+class PharmacyPrescription(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending Review'),
         ('verified', 'Verified'),
@@ -611,37 +627,6 @@ class Prescription(models.Model):
         return f"RX-{self.prescription_number}"
 
 
-class PharmacyCart(models.Model):
-    customer = models.OneToOneField(PharmacyCustomer, on_delete=models.CASCADE, related_name='cart', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    @property
-    def total_items(self):
-        return self.items.count()
-
-    @property
-    def subtotal(self):
-        return sum(item.subtotal for item in self.items.all())
-
-    def __str__(self):
-        return f"Cart - {self.customer.user.username if self.customer else 'No Customer'}"
-
-
-class PharmacyCartItem(models.Model):
-    cart = models.ForeignKey(PharmacyCart, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
-    product = models.ForeignKey(PharmacyProduct, on_delete=models.CASCADE, null=True, blank=True)
-    quantity = models.PositiveIntegerField(default=1)
-    added_at = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def subtotal(self):
-        return self.product.selling_price * self.quantity if self.product else 0
-
-    def __str__(self):
-        return f"{self.product.name if self.product else 'No Product'} x {self.quantity}"
-
-
 class PharmacyOrder(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -662,7 +647,7 @@ class PharmacyOrder(models.Model):
     order_number = models.CharField(max_length=50, unique=True)
     customer = models.ForeignKey(PharmacyCustomer, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE, related_name='orders', null=True, blank=True)
-    prescription = models.ForeignKey(Prescription, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    prescription = models.ForeignKey(PharmacyPrescription, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=50)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -697,3 +682,44 @@ class PharmacyOrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
+
+
+# ==================== Medical Prescription ====================
+class MedicalPrescription(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_prescriptions')
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='medical_prescriptions')
+    date = models.DateField(auto_now_add=True)
+    diagnosis = models.TextField()
+    medicines = models.TextField(help_text="Medicine names with dosage")
+    instructions = models.TextField(blank=True)
+    next_visit_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Prescription for {self.patient.full_name} on {self.date}"
+
+
+# ==================== Notification Model ====================
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('doctor_created', 'Doctor Account Created'),
+        ('appointment', 'New Appointment'),
+        ('schedule', 'Schedule Update'),
+        ('patient', 'Patient Message'),
+        ('system', 'System Alert'),
+        ('reminder', 'Reminder'),
+    )
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='system')
+    is_read = models.BooleanField(default=False)
+    link = models.CharField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.recipient.username}"

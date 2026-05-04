@@ -1,4 +1,6 @@
+import string
 from datetime import datetime
+from random import random
 
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
@@ -7,13 +9,16 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
+from . import models
 from .models import (
-    User, Hospital, HospitalAdminProfile, Doctor, Patient, Appointment,
-    ICUBed, ICUBooking, EmergencyRequest, Product, Order, TestReport,
-    Cart, MedicalReport, Bill,  # ← Bill যোগ করুন
-    PharmacyProduct, PharmacyOrder, PharmacyAdmin, Pharmacy,
-    Prescription, PharmacyCustomer, PharmacyCart, PharmacyCartItem, DoctorSchedule
+    User, Hospital, HospitalAdminProfile, Doctor, DoctorSchedule,
+    Patient, Appointment, ICUBed, ICUBooking, EmergencyRequest,
+    Product, Cart, CartItem, Order, MedicalReport, TestReport,
+    Bill, Pharmacy, PharmacyAdmin,
+    PharmacyProduct, PharmacyCustomer,  # ← Prescription পরিবর্তে PharmacyPrescription
+    PharmacyCart, PharmacyCartItem, PharmacyOrder, Notification, PharmacyOrderItem
 )
+from .utils import send_doctor_welcome_email_and_notification
 
 
 # ==================== হেল্পার ফাংশন ====================
@@ -617,57 +622,63 @@ def hospital_emergencies(request):
 
 # views.py - hospital_doctors ভিউ
 
+
+# views.py - hospital_doctors ভিউ
+
 @login_required
 def hospital_doctors(request):
-    """Hospital admin - Manage doctors"""
+    """Hospital admin - manage doctors"""
+
     if not hasattr(request.user, 'hospital_admin_profile'):
-        messages.error(request, 'Access denied!')
+        messages.error(request, 'Access denied. Hospital admin only!')
         return redirect('dashboard')
 
-    hospital = request.user.hospital_admin_profile.hospital
-    doctors = Doctor.objects.filter(hospital=hospital).order_by('-id')
-
-    # Get counts
-    available_doctors = doctors.filter(is_available=True).count()
-    specializations_count = doctors.values('specialization').distinct().count()
+    hospital_admin = request.user.hospital_admin_profile
+    hospital = hospital_admin.hospital
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
         if action == 'add':
             try:
-                print("=== Adding Doctor ===")  # Debug
-
                 # Get form data
-                username = request.POST.get('username')
-                email = request.POST.get('email')
-                password = request.POST.get('password')
-                first_name = request.POST.get('first_name')
-                last_name = request.POST.get('last_name')
+                first_name = request.POST.get('first_name', '').strip()
+                last_name = request.POST.get('last_name', '').strip()
+                username = request.POST.get('username', '').strip()
+                email = request.POST.get('email', '').strip()
+                password = request.POST.get('password', '')
                 phone = request.POST.get('phone', '')
                 specialization = request.POST.get('specialization')
                 qualification = request.POST.get('qualification', '')
                 experience_years = request.POST.get('experience_years', 0)
                 consultation_fee = request.POST.get('consultation_fee', 500)
+                bio = request.POST.get('bio', '')
                 available_from = request.POST.get('available_from', '09:00')
                 available_to = request.POST.get('available_to', '17:00')
-                bio = request.POST.get('bio', '')
 
-                print(f"Username: {username}")
-                print(f"Email: {email}")
-                print(f"Specialization: {specialization}")
+                # Validation
+                if not first_name or not last_name:
+                    messages.error(request, 'First name and last name are required!')
+                    return redirect('hospital_doctors')
+                if not username:
+                    messages.error(request, 'Username is required!')
+                    return redirect('hospital_doctors')
+                if not email:
+                    messages.error(request, 'Email is required!')
+                    return redirect('hospital_doctors')
+                if not password:
+                    messages.error(request, 'Password is required!')
+                    return redirect('hospital_doctors')
 
-                # Check if username exists
+                # Check if username or email exists
                 if User.objects.filter(username=username).exists():
-                    messages.error(request, 'Username already exists!')
+                    messages.error(request, f'Username "{username}" already exists!')
                     return redirect('hospital_doctors')
-
-                # Check if email exists
                 if User.objects.filter(email=email).exists():
-                    messages.error(request, 'Email already exists!')
+                    messages.error(request, f'Email "{email}" already exists!')
                     return redirect('hospital_doctors')
 
-                # Create user
+                # Create User
                 user = User.objects.create_user(
                     username=username,
                     email=email,
@@ -675,75 +686,93 @@ def hospital_doctors(request):
                     first_name=first_name,
                     last_name=last_name,
                     phone=phone,
-                    user_type='doctor'
+                    user_type='doctor',
+                    is_active=True
                 )
 
-                print(f"User created: {user.id}")
-
-                # Create doctor
+                # Create Doctor profile
                 doctor = Doctor.objects.create(
                     user=user,
                     hospital=hospital,
                     specialization=specialization,
                     qualification=qualification,
-                    experience_years=experience_years,
-                    consultation_fee=consultation_fee,
+                    experience_years=int(experience_years) if experience_years else 0,
+                    consultation_fee=float(consultation_fee) if consultation_fee else 500,
+                    bio=bio,
                     available_from=available_from,
                     available_to=available_to,
-                    bio=bio,
                     is_available=True
                 )
 
-                print(f"Doctor created: {doctor.id}")
+                # ========== 📧 ইমেইল এবং নোটিফিকেশন পাঠান ==========
+                email_notification_sent = send_doctor_welcome_email_and_notification(doctor, password)
 
-                # Create schedule automatically
-                days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-                for day in days:
-                    DoctorSchedule.objects.create(
+                if email_notification_sent:
+                    messages.success(request,
+                                     f'✅ Dr. {first_name} {last_name} added successfully! Welcome email sent & notification added to doctor\'s dashboard.')
+                else:
+                    messages.warning(request,
+                                     f'✅ Dr. {first_name} {last_name} added but email could not be sent. Notification added to dashboard.')
+
+                # Create default schedule
+                weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+                for day in weekdays:
+                    DoctorSchedule.objects.get_or_create(
                         doctor=doctor,
                         day=day,
-                        is_available=True,
-                        start_time=available_from,
-                        end_time=available_to,
-                        max_patients=20,
-                        consultation_duration=30
+                        defaults={
+                            'is_available': True,
+                            'start_time': available_from,
+                            'end_time': available_to,
+                            'max_patients': 20,
+                            'consultation_duration': 30
+                        }
                     )
-                    print(f"Schedule created for {day}")
-
-                messages.success(request, f'Dr. {first_name} {last_name} added successfully with schedule!')
 
             except Exception as e:
-                print(f"Error: {str(e)}")
-                messages.error(request, f'Error: {str(e)}')
+                messages.error(request, f'Error adding doctor: {str(e)}')
 
             return redirect('hospital_doctors')
 
+        # Toggle and Delete actions...
         elif action == 'toggle':
             doctor_id = request.POST.get('doctor_id')
-            doctor = get_object_or_404(Doctor, id=doctor_id, hospital=hospital)
-            doctor.is_available = not doctor.is_available
-            doctor.save()
-            messages.success(request, 'Doctor availability updated!')
+            try:
+                doctor = Doctor.objects.get(id=doctor_id, hospital=hospital)
+                doctor.is_available = not doctor.is_available
+                doctor.save()
+                status = "available" if doctor.is_available else "unavailable"
+                messages.success(request, f'Dr. {doctor.full_name} is now {status}')
+            except Doctor.DoesNotExist:
+                messages.error(request, 'Doctor not found')
             return redirect('hospital_doctors')
 
         elif action == 'delete':
             doctor_id = request.POST.get('doctor_id')
-            doctor = get_object_or_404(Doctor, id=doctor_id, hospital=hospital)
-            doctor_name = doctor.full_name
-            doctor.user.delete()
-            messages.success(request, f'Dr. {doctor_name} deleted successfully!')
+            try:
+                doctor = Doctor.objects.get(id=doctor_id, hospital=hospital)
+                doctor_name = doctor.full_name
+                doctor.user.delete()
+                messages.success(request, f'Dr. {doctor_name} has been deleted')
+            except Doctor.DoesNotExist:
+                messages.error(request, 'Doctor not found')
             return redirect('hospital_doctors')
 
+    # GET request
+    doctors = Doctor.objects.filter(hospital=hospital).select_related('user')
+    available_doctors = doctors.filter(is_available=True).count()
+    specializations_count = doctors.values('specialization').distinct().count()
+
     context = {
-        'doctors': doctors,
         'hospital': hospital,
+        'doctors': doctors,
         'available_doctors': available_doctors,
         'specializations_count': specializations_count,
         'specialization_choices': Doctor.SPECIALIZATION_CHOICES,
+        'default_start_time': '09:00',
+        'default_end_time': '17:00',
     }
     return render(request, 'myapp/hospital_doctors.html', context)
-
-
 
 
 @login_required
@@ -1074,6 +1103,15 @@ def patient_dashboard(request):
         status__in=['pending', 'confirmed']
     ).order_by('appointment_date').first()
 
+    # Fix: cart_items_count using total_items property or fallback
+    cart_items_count = 0
+    if cart:
+        if hasattr(cart, 'total_items'):
+            cart_items_count = cart.total_items
+        else:
+            # Fallback: count items directly
+            cart_items_count = CartItem.objects.filter(cart=cart).count()
+
     context = {
         'patient': patient,
         'hospital': hospital,
@@ -1081,7 +1119,7 @@ def patient_dashboard(request):
         'completed_appointments': completed,
         'total_appointments': total,
         'total_orders': total_orders,
-        'cart_items_count': cart.total_items if cart else 0,
+        'cart_items_count': cart_items_count,
         'recent_appointments': recent_appointments,
         'next_appointment': next_appointment,
         'pharmacy_products': pharmacy_products,
@@ -1091,6 +1129,23 @@ def patient_dashboard(request):
     return render(request, 'myapp/patient_dashboard.html', context)
 
 
+# myapp/views.py
+
+@login_required
+def patient_appointment_detail(request, appointment_id):
+    """Patient appointment details view"""
+    if not hasattr(request.user, 'patient_profile'):
+        messages.error(request, 'Access denied!')
+        return redirect('login')
+
+    patient = request.user.patient_profile
+    appointment = get_object_or_404(Appointment, id=appointment_id, patient=patient)
+
+    context = {
+        'appointment': appointment,
+        'patient': patient,
+    }
+    return render(request, 'myapp/patient_appointment_detail.html', context)
 
 
 # myapp/views.py - সম্পূর্ণ ফিক্সড পেশন্ট বুক অ্যাপয়েন্টমেন্ট ভিউ
@@ -1285,6 +1340,10 @@ def patient_test_report_detail(request, report_id):
 
 
 # ==================== প্রেসক্রিপশন আপলোড ====================
+
+class Prescription:
+    objects = None
+
 
 @login_required
 def pharmacy_upload_prescription(request):
@@ -1575,7 +1634,7 @@ def patient_profile(request):
 
 @login_required
 def doctor_dashboard(request):
-    """Doctor Dashboard"""
+    """Doctor Dashboard with Notifications and Appointments"""
     if not hasattr(request.user, 'doctor_profile'):
         messages.error(request, 'Access denied. Doctor only area!')
         return redirect('login')
@@ -1583,32 +1642,83 @@ def doctor_dashboard(request):
     doctor = request.user.doctor_profile
     today = timezone.now().date()
 
-    # Today's appointments
+    # ========== Get Notifications ==========
+    notifications = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).order_by('-created_at')[:10]
+
+    unread_notification_count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).count()
+
+    all_notifications = Notification.objects.filter(
+        recipient=request.user
+    ).order_by('-created_at')[:20]
+
+    # ========== Today's Appointments ==========
+    # appointment_time না থাকায় appointment_date ব্যবহার করছি
     today_appointments = Appointment.objects.filter(
         doctor=doctor,
-        appointment_date__date=today
-    ).select_related('patient')
+        appointment_date__date=today,
+        status__in=['pending', 'confirmed']
+    ).select_related('patient', 'patient__user').order_by('appointment_date')
 
-    # Recent appointments (last 10)
+    today_appointments_count = today_appointments.count()
+    today_appointments_list = today_appointments[:10]
+
+    # ========== Upcoming Appointments ==========
+    upcoming_appointments = Appointment.objects.filter(
+        doctor=doctor,
+        appointment_date__date__gt=today,
+        status__in=['pending', 'confirmed']
+    ).select_related('patient', 'patient__user').order_by('appointment_date')[:10]
+
+    # ========== Recent Appointments (last 10) ==========
     recent_appointments = Appointment.objects.filter(
         doctor=doctor
-    ).select_related('patient').order_by('-appointment_date')[:10]
+    ).select_related('patient', 'patient__user').order_by('-appointment_date')[:10]
 
-    # Statistics
+    # ========== Statistics ==========
     total_appointments = Appointment.objects.filter(doctor=doctor).count()
     pending_appointments = Appointment.objects.filter(doctor=doctor, status='pending').count()
+    confirmed_appointments = Appointment.objects.filter(doctor=doctor, status='confirmed').count()
     completed_appointments = Appointment.objects.filter(doctor=doctor, status='completed').count()
+    cancelled_appointments = Appointment.objects.filter(doctor=doctor, status='cancelled').count()
+
     total_patients = Appointment.objects.filter(doctor=doctor).values('patient').distinct().count()
 
     context = {
+        # Doctor Info
         'doctor': doctor,
-        'today_appointments': today_appointments.count(),
-        'today_appointments_list': today_appointments,
+
+        # Notifications
+        'notifications': notifications,
+        'unread_notification_count': unread_notification_count,
+        'all_notifications': all_notifications,
+
+        # Today's Appointments
+        'today_appointments_count': today_appointments_count,
+        'today_appointments': today_appointments_list,
+
+        # Upcoming Appointments
+        'upcoming_appointments': upcoming_appointments,
+
+        # Recent Appointments
         'recent_appointments': recent_appointments,
+
+        # Statistics
         'total_appointments': total_appointments,
         'pending_appointments': pending_appointments,
+        'confirmed_appointments': confirmed_appointments,
         'completed_appointments': completed_appointments,
+        'cancelled_appointments': cancelled_appointments,
         'total_patients': total_patients,
+
+        # Current date/time
+        'current_date': today,
+        'current_time': timezone.now().time(),
     }
     return render(request, 'myapp/doctor_dashboard.html', context)
 
@@ -1782,26 +1892,54 @@ def doctor_profile(request):
 def doctor_appointments(request):
     """View all appointments of the doctor"""
     if not hasattr(request.user, 'doctor_profile'):
+        messages.error(request, 'Access denied. Doctor only area!')
         return redirect('login')
 
     doctor = request.user.doctor_profile
-    appointments = Appointment.objects.filter(doctor=doctor).select_related('patient').order_by('-appointment_date')
 
+    # Base query - appointment_time নেই, তাই শুধু appointment_date দিয়ে order
+    all_appointments = Appointment.objects.filter(doctor=doctor).select_related('patient').order_by('-appointment_date')
+
+    # Total count (before filter)
+    total_count = all_appointments.count()
+
+    # Status counts (before filter)
+    pending_count = Appointment.objects.filter(doctor=doctor, status='pending').count()
+    confirmed_count = Appointment.objects.filter(doctor=doctor, status='confirmed').count()
+    completed_count = Appointment.objects.filter(doctor=doctor, status='completed').count()
+    cancelled_count = Appointment.objects.filter(doctor=doctor, status='cancelled').count()
+
+    # Apply status filter
     status_filter = request.GET.get('status')
-    if status_filter:
+    appointments = all_appointments
+
+    if status_filter and status_filter != 'all':
         appointments = appointments.filter(status=status_filter)
 
-    return render(request, 'myapp/doctor_appointments.html', {
-        'appointments': appointments,
-        'total': appointments.count(),
-        'pending': appointments.filter(status='pending').count(),
-        'confirmed': appointments.filter(status='confirmed').count(),
-        'completed': appointments.filter(status='completed').count(),
-        'cancelled': appointments.filter(status='cancelled').count(),
-        'current_status': status_filter,
-        'status_choices': Appointment.STATUS_CHOICES,
-    })
+    # Apply search filter
+    search_query = request.GET.get('search')
+    if search_query:
+        appointments = appointments.filter(patient__full_name__icontains=search_query)
 
+    # Apply date filter
+    date_filter = request.GET.get('date')
+    if date_filter:
+        appointments = appointments.filter(appointment_date__date=date_filter)
+
+    context = {
+        'appointments': appointments,
+        'total': total_count,
+        'pending_count': pending_count,
+        'confirmed_count': confirmed_count,
+        'completed_count': completed_count,
+        'cancelled_count': cancelled_count,
+        'current_status': status_filter,
+        'search': search_query if search_query else '',
+        'date_filter': date_filter if date_filter else '',
+        'status_choices': Appointment.STATUS_CHOICES,
+        'doctor': doctor,
+    }
+    return render(request, 'myapp/doctor_appointments.html', context)
 
 @login_required
 def doctor_today_appointments(request):
@@ -1821,22 +1959,45 @@ def doctor_today_appointments(request):
 
 @login_required
 def doctor_update_appointment(request, appointment_id):
-    """Update appointment status by doctor"""
+    """Doctor update appointment status"""
     if not hasattr(request.user, 'doctor_profile'):
+        messages.error(request, 'Access denied. Doctor only area!')
         return redirect('login')
 
-    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user.doctor_profile)
+    doctor = request.user.doctor_profile
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
 
     if request.method == 'POST':
-        new_status = request.POST.get('status')
-        if new_status in dict(Appointment.STATUS_CHOICES).keys():
-            appointment.status = new_status
+        status = request.POST.get('status')
+        notes = request.POST.get('notes', '')
+
+        if status in ['pending', 'confirmed', 'completed', 'cancelled']:
+            appointment.status = status
+            appointment.notes = notes
             appointment.save()
-            messages.success(request, f'Appointment #{appointment.id} status updated to {new_status}!')
+
+            # পেশন্টকে নোটিফিকেশন পাঠান
+            from .utils import send_notification_to_user
+            send_notification_to_user(
+                user=appointment.patient.user,
+                title=f'Appointment {status.title()}',
+                message=f'Your appointment with Dr. {doctor.full_name} on {appointment.appointment_date} has been {status}.',
+                notification_type='appointment',
+                link=f'/patient/appointment/{appointment.id}/'
+            )
+
+            messages.success(request, f'Appointment {status} successfully!')
+        else:
+            messages.error(request, 'Invalid status!')
+
         return redirect('doctor_appointments')
 
-    return render(request, 'myapp/doctor_update_appointment.html', {'appointment': appointment})
-
+    context = {
+        'appointment': appointment,
+        'doctor': doctor,
+        'status_choices': Appointment.STATUS_CHOICES,
+    }
+    return render(request, 'myapp/doctor_update_appointment.html', context)
 
 def get_doctor_schedule(request, doctor_id):
     from .models import DoctorSchedule
@@ -1856,17 +2017,54 @@ def get_doctor_schedule(request, doctor_id):
 
     return JsonResponse({'schedules': schedule_list})
 
+
 @login_required
 def doctor_patients(request):
-    """View all patients of the doctor"""
+    """Doctor's patients list"""
     if not hasattr(request.user, 'doctor_profile'):
+        messages.error(request, 'Access denied. Doctor only area!')
         return redirect('login')
 
     doctor = request.user.doctor_profile
-    patients = Patient.objects.filter(assigned_doctor=doctor).order_by('-created_at')
 
-    return render(request, 'myapp/doctor_patients.html', {'patients': patients, 'doctor': doctor})
+    # যেসব পেশন্ট অ্যাপয়েন্টমেন্ট করেছেন তাদের ইউনিক আইডি বের করুন
+    appointments = Appointment.objects.filter(doctor=doctor).select_related('patient')
 
+    # ইউনিক পেশন্ট আইডি বের করুন
+    patient_ids = appointments.values_list('patient_id', flat=True).distinct()
+
+    # পেশন্ট ডিটেইলস নিন
+    patients = Patient.objects.filter(id__in=patient_ids, is_active=True).order_by('-created_at')
+
+    # Search filter
+    search_query = request.GET.get('search', '')
+    if search_query:
+        patients = patients.filter(
+            models.Q(first_name__icontains=search_query) |
+            models.Q() |
+            models.Q(phone__icontains=search_query)
+        )
+
+    # Blood group filter
+    blood_group = request.GET.get('blood_group', '')
+    if blood_group:
+        patients = patients.filter(blood_group=blood_group)
+
+    # Active patients count
+    active_patients = patients.count()
+
+    # Total appointments count
+    total_appointments = appointments.count()
+
+    context = {
+        'doctor': doctor,
+        'patients': patients,
+        'active_patients': active_patients,
+        'total_appointments': total_appointments,
+        'search': search_query,
+        'blood_group': blood_group,
+    }
+    return render(request, 'myapp/doctor_patients.html', context)
 
 @login_required
 def doctor_patient_detail(request, patient_id):
@@ -2912,27 +3110,6 @@ def pharmacy_cart(request):
     return render(request, 'myapp/pharmacy_cart.html', context)
 
 
-def pharmacy_products_by_category(request, category_id):
-    """Display products by category for pharmacy store"""
-    from .models import Category, Product  # আপনার মডেল অনুযায়ী নাম দিন
-
-    categories = Category.objects.all()
-    current_category = Category.objects.get(id=category_id)
-    products = Product.objects.filter(category=current_category, is_available=True)
-
-    # Add product count to each category
-    for category in categories:
-        category.product_count = Product.objects.filter(category=category, is_available=True).count()
-
-    context = {
-        'products': products,
-        'categories': categories,
-        'current_category': current_category,
-    }
-
-    return render(request, 'myapp/pharmacy_products_list.html', context)
-
-
 def pharmacy_update_cart(request, item_id):
     """Update cart item quantity"""
     if request.method == 'POST':
@@ -2969,67 +3146,85 @@ def pharmacy_remove_from_cart(request, item_id):
 
 # views.py - চেকআউট ভিউ সম্পূর্ণ আপডেট
 
+class Decimal:
+    pass
+
+
 @login_required
 def pharmacy_checkout(request):
-    """Process checkout and create order"""
-    from .models import PharmacyCustomer, PharmacyCart, PharmacyOrder, PharmacyOrderItem, Pharmacy
+    """Checkout page - Order summary and payment"""
+    from decimal import Decimal  # ফাংশনের ভিতরেও ইম্পোর্ট করতে পারেন
 
-    customer = PharmacyCustomer.objects.filter(user=request.user).first()
+    cart = Cart.objects.filter(user=request.user).first()
 
-    if not customer:
-        messages.error(request, 'Please complete your profile first!')
-        return redirect('pharmacy_products_list')
-
-    cart = PharmacyCart.objects.filter(customer=customer).first()
-
-    if not cart or cart.items.count() == 0:
+    if not cart:
         messages.warning(request, 'Your cart is empty!')
-        return redirect('pharmacy_products_list')
+        return redirect('patient_products')
+
+    cart_items = CartItem.objects.filter(cart=cart).select_related('product')
+
+    if not cart_items:
+        messages.warning(request, 'Your cart is empty!')
+        return redirect('patient_products')
+
+    subtotal = sum(item.total_price() for item in cart_items)
+    delivery_charge = Decimal('50') if subtotal < Decimal('500') else Decimal('0')
+    tax = subtotal * Decimal('0.02')
+    grand_total = subtotal + delivery_charge + tax
 
     if request.method == 'POST':
         try:
-            shipping_address = request.POST.get('address')
-            phone = request.POST.get('phone')
-            payment_method = request.POST.get('payment_method', 'cod')
+            # ফাংশনের ভিতরে Decimal ইম্পোর্ট
+            from decimal import Decimal
+            import random
+            from datetime import datetime
 
-            # ফার্মেসি পেতে (প্রথম ফার্মেসি অথবা ডিফল্ট)
+            # Get or create pharmacy customer
+            customer, created = PharmacyCustomer.objects.get_or_create(
+                user=request.user,
+                defaults={
+                    'phone': request.POST.get('phone'),
+                    'address': request.POST.get('address')
+                }
+            )
+
+            # Get pharmacy
             pharmacy = Pharmacy.objects.first()
-
             if not pharmacy:
-                # যদি ফার্মেসি না থাকে, একটি ডিফল্ট ফার্মেসি তৈরি করুন
                 pharmacy = Pharmacy.objects.create(
-                    name="Main Pharmacy",
-                    code="PH001",
+                    name="CareFusion Pharmacy",
+                    code="CFP001",
                     address="Dhaka, Bangladesh",
                     phone="01700000000",
                     email="pharmacy@carefusion.com"
                 )
-                print(f"Created default pharmacy: {pharmacy.name}")
 
-            # অর্ডার নম্বর জেনারেট করুন
-            import random
-            from datetime import datetime
+            # Generate order number
             order_number = f"ORD-{datetime.now().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
 
-            # অর্ডার তৈরি করুন - গুরুত্বপূর্ণ: pharmacy ফিল্ডটি সেট করুন
+            # Decimal কে float এ কনভার্ট না করে সরাসরি ব্যবহার করুন
+            subtotal_decimal = subtotal if isinstance(subtotal, Decimal) else Decimal(str(subtotal))
+            delivery_charge_decimal = delivery_charge if isinstance(delivery_charge, Decimal) else Decimal(
+                str(delivery_charge))
+            grand_total_decimal = grand_total if isinstance(grand_total, Decimal) else Decimal(str(grand_total))
+
+            # Create order
             order = PharmacyOrder.objects.create(
                 order_number=order_number,
                 customer=customer,
-                pharmacy=pharmacy,  # ← এই ফিল্ডটি অবশ্যই সেট করুন
-                subtotal=cart.subtotal,
-                delivery_charge=50 if cart.subtotal < 500 else 0,
-                total_amount=cart.subtotal + (50 if cart.subtotal < 500 else 0),
-                shipping_address=shipping_address,
-                phone=phone,
-                payment_method=payment_method,
+                pharmacy=pharmacy,
+                subtotal=subtotal_decimal,
+                delivery_charge=delivery_charge_decimal,
+                total_amount=grand_total_decimal,
+                shipping_address=request.POST.get('address'),
+                phone=request.POST.get('phone'),
+                payment_method=request.POST.get('payment_method', 'cod'),
                 status='pending',
                 payment_status='pending'
             )
 
-            print(f"Order created: {order.order_number} for pharmacy: {pharmacy.name} (ID: {pharmacy.id})")
-
-            # অর্ডার আইটেম তৈরি করুন
-            for cart_item in cart.items.all():
+            # Create order items
+            for cart_item in cart_items:
                 PharmacyOrderItem.objects.create(
                     order=order,
                     product=cart_item.product,
@@ -3037,32 +3232,31 @@ def pharmacy_checkout(request):
                     price=cart_item.product.price
                 )
 
-                # স্টক আপডেট করুন
+                # Update stock
                 product = cart_item.product
                 product.stock -= cart_item.quantity
                 product.save()
-                print(f"Product {product.name} stock updated to {product.stock}")
 
-            # কার্ট পরিষ্কার করুন
-            cart.items.all().delete()
+            # Clear cart
+            cart_items.delete()
 
             messages.success(request, f'Order placed successfully! Order ID: {order.order_number}')
             return redirect('pharmacy_order_confirmation', order_id=order.id)
 
         except Exception as e:
-            print(f"Error creating order: {str(e)}")
-            messages.error(request, f'Error: {str(e)}')
+            print(f"Error: {str(e)}")
+            messages.error(request, f'Error placing order: {str(e)}')
             return redirect('pharmacy_checkout')
 
     context = {
-        'cart': cart,
-        'cart_items': cart.items.all(),
-        'subtotal': cart.subtotal,
-        'delivery_charge': 0 if cart.subtotal >= 500 else 50,
-        'total': cart.subtotal + (0 if cart.subtotal >= 500 else 50),
-        'total_items': cart.items.count(),
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'delivery_charge': delivery_charge,
+        'tax': tax,
+        'total': grand_total,
+        'total_items': sum(item.quantity for item in cart_items),
     }
-    return render(request, 'myapp/pharmacy_checkout.html', context)
+    return render(request, 'myapp/checkout.html', context)
 
 
 # views.py - এই ভিউটি যোগ করুন
@@ -3114,11 +3308,16 @@ def pharmacy_update_order_status(request, order_id):
 @login_required
 def patient_orders(request):
     """Patient - View my pharmacy orders"""
-    customer = PharmacyCustomer.objects.filter(user=request.user).first()
+    # প্রথমে PharmacyCustomer চেক করুন
+    try:
+        customer = PharmacyCustomer.objects.filter(user=request.user).first()
+    except Exception as e:
+        print(f"Error getting PharmacyCustomer: {e}")
+        customer = None
 
     if not customer:
         messages.info(request, 'No orders found.')
-        return render(request, 'myapp/patient_orders.html', {'orders': []})
+        return render(request, 'myapp/patient_orders.html', {'orders': [], 'current_status': None})
 
     orders = PharmacyOrder.objects.filter(customer=customer).order_by('-created_at')
 
@@ -3137,7 +3336,10 @@ def patient_orders(request):
 @login_required
 def patient_order_detail(request, order_id):
     """Patient - View order details"""
-    customer = PharmacyCustomer.objects.filter(user=request.user).first()
+    try:
+        customer = PharmacyCustomer.objects.filter(user=request.user).first()
+    except Exception:
+        customer = None
 
     if not customer:
         messages.error(request, 'Order not found!')
@@ -3157,18 +3359,20 @@ def patient_order_detail(request, order_id):
 def patient_cancel_order(request, order_id):
     """Patient - Cancel order"""
     if request.method == 'POST':
-        customer = PharmacyCustomer.objects.filter(user=request.user).first()
-        order = get_object_or_404(PharmacyOrder, id=order_id, customer=customer)
+        try:
+            customer = PharmacyCustomer.objects.filter(user=request.user).first()
+            order = get_object_or_404(PharmacyOrder, id=order_id, customer=customer)
 
-        if order.status == 'pending':
-            order.status = 'cancelled'
-            order.save()
-            return JsonResponse({'success': True, 'message': 'Order cancelled successfully!'})
-        else:
-            return JsonResponse({'success': False, 'message': 'Cannot cancel this order!'})
+            if order.status == 'pending':
+                order.status = 'cancelled'
+                order.save()
+                return JsonResponse({'success': True, 'message': 'Order cancelled successfully!'})
+            else:
+                return JsonResponse({'success': False, 'message': 'Cannot cancel this order!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
 
     return JsonResponse({'success': False, 'message': 'Invalid request!'})
-
 
 # views.py - ডাক্তারের শিডিউল দেখার ভিউ
 
@@ -3237,3 +3441,303 @@ def patient_doctor_detail(request, doctor_id):
         'schedules': schedules,
     }
     return render(request, 'myapp/patient_doctor_detail.html', context)
+
+
+# views.py - add_to_cart ভিউ
+
+# views.py - add_to_cart ভিউ
+
+@login_required
+def add_to_cart(request, product_id):
+    """Add product to cart and redirect to cart page"""
+    if request.method == 'POST':
+        try:
+            # Get the product
+            product = get_object_or_404(PharmacyProduct, id=product_id, is_active=True)
+            print(f"Product found: {product.name}, Stock: {product.stock}")
+
+            # Check stock
+            if product.stock <= 0:
+                message = f'Sorry, {product.name} is out of stock!'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'message': message})
+                messages.error(request, message)
+                return redirect(request.META.get('HTTP_REFERER', 'patient_products'))
+
+            # Get or create cart
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            quantity = int(request.POST.get('quantity', 1))
+
+            # Check if product already in cart
+            cart_item = CartItem.objects.filter(cart=cart, product=product).first()
+
+            if cart_item:
+                # Update existing cart item
+                new_quantity = cart_item.quantity + quantity
+                if new_quantity <= product.stock:
+                    cart_item.quantity = new_quantity
+                    cart_item.save()
+                    message = f'✅ Updated {product.name} quantity to {cart_item.quantity}'
+                else:
+                    message = f'⚠️ Only {product.stock} items available!'
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'message': message})
+                    messages.warning(request, message)
+                    return redirect(request.META.get('HTTP_REFERER', 'patient_products'))
+            else:
+                # Create new cart item
+                CartItem.objects.create(
+                    cart=cart,
+                    product=product,
+                    quantity=quantity,
+                    price=product.price
+                )
+                message = f'✅ {product.name} added to cart!'
+
+            # Calculate cart count
+            cart_items = CartItem.objects.filter(cart=cart)
+            cart_count = sum(item.quantity for item in cart_items)
+
+            # AJAX request handler
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': message,
+                    'cart_count': cart_count
+                })
+
+            # Normal POST request - redirect to cart page
+            messages.success(request, message)
+            return redirect('pharmacy_cart')
+
+        except Exception as e:
+            print(f"ERROR in add_to_cart: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            error_msg = f'Error: {str(e)}'
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': error_msg})
+
+            messages.error(request, error_msg)
+            return redirect('patient_products')
+
+    # GET request - redirect to products page
+    return redirect('patient_products')
+
+
+
+@login_required
+def view_cart(request):
+    """View shopping cart"""
+    from decimal import Decimal
+
+    cart = Cart.objects.filter(user=request.user).first()
+
+    if cart:
+        cart_items = CartItem.objects.filter(cart=cart).select_related('product')
+        subtotal = sum(item.total_price() for item in cart_items)
+
+        # Decimal এর সাথে Decimal ব্যবহার করুন
+        delivery_charge = Decimal('50') if subtotal < Decimal('500') else Decimal('0')
+        tax = subtotal * Decimal('0.02')  # 0.02 কে Decimal এ রূপান্তর করুন
+        total = subtotal + delivery_charge + tax
+        cart_count = sum(item.quantity for item in cart_items)
+    else:
+        cart_items = []
+        subtotal = Decimal('0')
+        delivery_charge = Decimal('0')
+        tax = Decimal('0')
+        total = Decimal('0')
+        cart_count = 0
+
+    context = {
+        'cart': cart,
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'delivery_charge': delivery_charge,
+        'tax': tax,
+        'total': total,
+        'cart_items_count': cart_count,
+    }
+    return render(request, 'myapp/pharmacy_cart.html', context)
+
+
+@login_required
+def remove_from_cart(request, item_id):
+    """Remove item from cart"""
+    try:
+        # CartItem মডেল ব্যবহার করুন, PharmacyCartItem না
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        product_name = cart_item.product.name
+        cart_item.delete()
+        messages.success(request, f'{product_name} removed from cart!')
+    except Exception as e:
+        messages.error(request, f'Error removing item: {str(e)}')
+
+    return redirect('pharmacy_cart')
+
+
+@login_required
+def update_cart_quantity(request, item_id):
+    """Update cart item quantity"""
+    if request.method == 'POST':
+        cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+        quantity = int(request.POST.get('quantity', 1))
+
+        if quantity > 0:
+            cart_item.quantity = quantity
+            cart_item.save()
+            messages.success(request, 'Cart updated!')
+        else:
+            cart_item.delete()
+            messages.success(request, 'Item removed from cart!')
+
+    return redirect('pharmacy_cart')
+
+def generate_simple_password():
+    """সিম্পল পাসওয়ার্ড জেনারেটর"""
+    # 2 uppercase + 2 lowercase + 2 digits
+    uppercase = ''.join(random.choices(string.ascii_uppercase, k=2))
+    lowercase = ''.join(random.choices(string.ascii_lowercase, k=2))
+    digits = ''.join(random.choices(string.digits, k=2))
+    return uppercase + lowercase + digits + "@123"
+
+
+# views.py
+
+@login_required
+def doctor_login_info(request, doctor_id):
+    """ডাক্তারের লগইন তথ্য দেখানোর জন্য (শুধু হাসপাতাল অ্যাডমিন দেখতে পারবে)"""
+
+    # Check if user is hospital admin
+    if not hasattr(request.user, 'hospital_admin_profile'):
+        messages.error(request, 'Access denied!')
+        return redirect('dashboard')
+
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+
+    context = {
+        'doctor': doctor,
+        'username': doctor.user.username,
+        'email': doctor.user.email,
+    }
+    return render(request, 'myapp/doctor_login_info.html', context)
+
+
+@login_required
+def doctor_appointment_detail(request, appointment_id):
+    """Doctor view appointment details"""
+    if not hasattr(request.user, 'doctor_profile'):
+        messages.error(request, 'Access denied. Doctor only area!')
+        return redirect('login')
+
+    doctor = request.user.doctor_profile
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status in ['confirmed', 'completed', 'cancelled']:
+            appointment.status = status
+            appointment.save()
+            messages.success(request, f'Appointment status updated to {status}')
+
+            # Send notification to patient
+            from .utils import send_notification_to_user
+            send_notification_to_user(
+                user=appointment.patient.user,
+                title=f'Appointment {status.title()}',
+                message=f'Your appointment with Dr. {doctor.full_name} on {appointment.appointment_date} has been {status}.',
+                notification_type='appointment',
+                link=f'/patient/appointment/{appointment.id}/'
+            )
+
+            return redirect('doctor_appointment_detail', appointment_id=appointment.id)
+
+    context = {
+        'appointment': appointment,
+        'doctor': doctor,
+    }
+    return render(request, 'myapp/doctor_appointment_detail.html', context)
+
+
+@login_required
+def doctor_notifications(request):
+    """Doctor notifications page"""
+    if not hasattr(request.user, 'doctor_profile'):
+        messages.error(request, 'Access denied. Doctor only area!')
+        return redirect('login')
+
+    if request.method == 'POST':
+        # Mark all as read
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        messages.success(request, 'All notifications marked as read!')
+        return redirect('doctor_notifications')
+
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+
+    context = {
+        'notifications': notifications,
+        'unread_count': unread_count,
+    }
+    return render(request, 'myapp/doctor_notifications.html', context)
+
+
+@login_required
+def doctor_mark_notification_read(request, notification_id):
+    """Mark single notification as read"""
+    if not hasattr(request.user, 'doctor_profile'):
+        return JsonResponse({'error': 'Access denied'}, status=403)
+
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.is_read = True
+    notification.save()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+
+    return redirect(request.META.get('HTTP_REFERER', 'doctor_dashboard'))
+
+
+@login_required
+def doctor_update_appointment(request, appointment_id):
+    """Doctor update appointment status"""
+    if not hasattr(request.user, 'doctor_profile'):
+        messages.error(request, 'Access denied. Doctor only area!')
+        return redirect('login')
+
+    doctor = request.user.doctor_profile
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+
+    if request.method == 'POST':
+        status = request.POST.get('status')
+
+        if status in ['pending', 'confirmed', 'completed', 'cancelled']:
+            appointment.status = status
+            appointment.save()
+
+            # পেশন্টকে নোটিফিকেশন পাঠান
+            from .utils import send_notification_to_user
+            send_notification_to_user(
+                user=appointment.patient.user,
+                title=f'Appointment {status.title()}',
+                message=f'Your appointment with Dr. {doctor.full_name} on {appointment.appointment_date} has been {status}.',
+                notification_type='appointment',
+                link=f'/patient/appointment/{appointment.id}/'
+            )
+
+            messages.success(request, f'Appointment {status} successfully!')
+        else:
+            messages.error(request, 'Invalid status!')
+
+        return redirect('doctor_appointments')
+
+    context = {
+        'appointment': appointment,
+        'doctor': doctor,
+        'status_choices': Appointment.STATUS_CHOICES,
+    }
+    return render(request, 'myapp/doctor_update_appointment.html', context)
+
+

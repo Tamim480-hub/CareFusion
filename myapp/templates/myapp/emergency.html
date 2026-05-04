@@ -258,8 +258,6 @@
                                                     </small>
                                                 </div>
                                                 <div class="text-end">
-                                                    <span class="badge bg-danger">📍 {{ forloop.counter }} km</span>
-                                                    <br>
                                                     <small class="text-muted">
                                                         <i class="fas fa-phone me-1"></i> {{ hospital.phone|default:"N/A" }}
                                                     </small>
@@ -355,30 +353,20 @@
                                         <input type="text" name="location" class="form-control rounded-3" placeholder="House #, Road #, Area, City" required>
                                         <small class="text-muted">Share your exact location for faster response</small>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-semibold">
-                                                <i class="fas fa-flag-checkered me-1 text-danger"></i>Priority Level
-                                            </label>
-                                            <select name="priority" class="form-select rounded-3">
-                                                <option value="critical">🔴 Critical - Immediate (Life Threatening)</option>
-                                                <option value="high">🟠 High - Within 5 minutes</option>
-                                                <option value="medium" selected>🟡 Medium - Within 10 minutes</option>
-                                                <option value="low">🟢 Low - Within 15 minutes</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-semibold">
-                                                <i class="fas fa-hand-holding-heart me-1 text-danger"></i>Any Allergies?
-                                            </label>
-                                            <select name="allergies" class="form-select rounded-3">
-                                                <option value="">No known allergies</option>
-                                                <option value="Medicine">Medicine Allergy</option>
-                                                <option value="Food">Food Allergy</option>
-                                                <option value="Insect">Insect Bite Allergy</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                        </div>
+
+                                    <!-- Priority Level Removed - সরিয়ে দেওয়া হয়েছে -->
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-hand-holding-heart me-1 text-danger"></i>Any Allergies?
+                                        </label>
+                                        <select name="allergies" class="form-select rounded-3">
+                                            <option value="">No known allergies</option>
+                                            <option value="Medicine">Medicine Allergy</option>
+                                            <option value="Food">Food Allergy</option>
+                                            <option value="Insect">Insect Bite Allergy</option>
+                                            <option value="Other">Other</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">

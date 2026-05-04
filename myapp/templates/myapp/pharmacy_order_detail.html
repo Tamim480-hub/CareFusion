@@ -1,0 +1,374 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Pharmacy Order Details - CareFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 25px;
+        color: white;
+        margin-bottom: 30px;
+    }
+    .status-badge {
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-pending {
+        background: #ffc107;
+        color: #333;
+    }
+    .status-confirmed {
+        background: #17a2b8;
+        color: white;
+    }
+    .status-processing {
+        background: #fd7e14;
+        color: white;
+    }
+    .status-shipped {
+        background: #6f42c1;
+        color: white;
+    }
+    .status-delivered {
+        background: #28a745;
+        color: white;
+    }
+    .status-cancelled {
+        background: #dc3545;
+        color: white;
+    }
+    .order-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    .info-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+    .table-custom {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .table-custom thead {
+        background: #f8f9fa;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .btn-action {
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+    .total-amount {
+        font-size: 28px;
+        font-weight: 800;
+        color: #28a745;
+    }
+    .status-update-form {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .product-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    .product-placeholder {
+        width: 50px;
+        height: 50px;
+        background: #e9ecef;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Back Button -->
+            <a href="{% url 'pharmacy_orders' %}" class="btn btn-outline-secondary rounded-pill mb-4">
+                <i class="fas fa-arrow-left me-2"></i>Back to Orders
+            </a>
+
+            <!-- Order Header -->
+            <div class="order-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h3 class="fw-bold mb-2">
+                            <i class="fas fa-shopping-cart me-2"></i>Order #{{ order.order_number }}
+                        </h3>
+                        <p class="mb-0 opacity-75">
+                            Placed on {{ order.created_at|date:"d M Y, h:i A" }}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="status-badge status-{{ order.status }}">
+                            <i class="fas {% if order.status == 'pending' %}fa-clock{% elif order.status == 'confirmed' %}fa-check-circle{% elif order.status == 'processing' %}fa-cogs{% elif order.status == 'shipped' %}fa-truck{% elif order.status == 'delivered' %}fa-check-double{% else %}fa-times-circle{% endif %} me-2"></i>
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column - Order Info -->
+                <div class="col-lg-4">
+                    <!-- Order Information -->
+                    <div class="order-info-card">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle text-primary me-2"></i>Order Information
+                        </h5>
+                        <div class="mb-3">
+                            <div class="info-label">Order Number</div>
+                            <div class="info-value">{{ order.order_number }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Order Date</div>
+                            <div class="info-value">{{ order.created_at|date:"d M Y, h:i A" }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Payment Method</div>
+                            <div class="info-value">{{ order.get_payment_method_display|default:"Cash on Delivery" }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Payment Status</div>
+                            <div class="info-value">
+                                {% if order.is_paid %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if order.tracking_number %}
+                        <div class="mb-3">
+                            <div class="info-label">Tracking Number</div>
+                            <div class="info-value">{{ order.tracking_number }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Customer Information - FIXED VERSION -->
+                    <div class="order-info-card">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-user text-primary me-2"></i>Customer Information
+                        </h5>
+                        <div class="mb-3">
+                            <div class="info-label">Customer Name</div>
+                            <div class="info-value">{{ order.customer_name|default:"N/A" }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">{{ order.customer_email|default:"N/A" }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Phone</div>
+                            <div class="info-value">{{ order.phone|default:"N/A" }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="info-label">Address</div>
+
+                        </div>
+                    </div>
+
+                    <!-- Shipping Information -->
+                    <div class="order-info-card">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-truck text-primary me-2"></i>Shipping Information
+                        </h5>
+                        <div class="mb-3">
+                            <div class="info-label">Delivery Address</div>
+
+                        </div>
+                        {% if order.delivery_date %}
+                        <div class="mb-3">
+                            <div class="info-label">Expected Delivery</div>
+                            <div class="info-value">{{ order.delivery_date|date:"d M Y" }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Right Column - Products and Actions -->
+                <div class="col-lg-8">
+                    <!-- Order Items -->
+                    <div class="order-info-card">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-pills text-primary me-2"></i>Order Items
+                        </h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in items %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+                                                     class="product-image me-3">
+                                                {% else %}
+                                                <div class="product-placeholder me-3">
+                                                    <i class="fas fa-capsules fa-2x text-muted"></i>
+                                                </div>
+                                                {% endif %}
+                                                <div>
+                                                    <div class="fw-semibold">{{ item.product.name }}</div>
+                                                    <small class="text-muted">{{ item.product.category|default:"Medicine" }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <td>৳{{ item.price }}</td>
+                                        <td>{{ item.quantity }}</div>
+                                        <td class="fw-semibold">৳{{ item.total_price }}</div>
+                                    </div>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">
+                                            <i class="fas fa-box-open fa-2x mb-2 d-block"></i>
+                                            No items found
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                        <td class="fw-bold">৳{{ order.subtotal }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end">Delivery Charge:</td>
+                                        <td>৳{{ order.delivery_charge|default:"0" }}</td>
+                                    </tr>
+                                    {% if order.discount %}
+                                    <tr>
+                                        <td colspan="3" class="text-end text-success">Discount:</td>
+                                        <td class="text-success">- ৳{{ order.discount }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
+                                        <td class="total-amount">৳{{ order.total_amount }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Update Status Form -->
+                    <div class="status-update-form">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-cog text-primary me-2"></i>Update Order Status
+                        </h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="row align-items-end">
+                                <div class="col-md-8 mb-3 mb-md-0">
+                                    <label class="form-label fw-semibold">Current Status</label>
+                                    <select name="status" class="form-select rounded-3">
+                                        {% for status_value, status_label in status_choices %}
+                                        <option value="{{ status_value }}" {% if order.status == status_value %}selected{% endif %}>
+                                            {{ status_label }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary btn-action w-100">
+                                        <i class="fas fa-save me-2"></i>Update Status
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="order-info-card mt-3">
+                        <div class="action-buttons">
+                            <button onclick="window.print()" class="btn btn-secondary btn-action">
+                                <i class="fas fa-print me-2"></i>Print Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-hide alerts
+    document.addEventListener('DOMContentLoaded', function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                alert.style.display = 'none';
+            }, 3000);
+        });
+    });
+</script>
+
+<style media="print">
+    .sidebar, .btn, .status-update-form, .action-buttons, .back-btn, nav {
+        display: none !important;
+    }
+    .order-header {
+        background: #667eea !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .container-fluid {
+        padding: 0 !important;
+    }
+</style>
+{% endblock %}
+
+{% if messages %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

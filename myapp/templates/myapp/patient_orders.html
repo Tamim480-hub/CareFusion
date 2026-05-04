@@ -1,14 +1,14 @@
 {% extends 'myapp/base.html' %}
 {% load static %}
 
-{% block title %}My Orders - Pharmacy{% endblock %}
+{% block title %}My Orders - CareFusion{% endblock %}
 
 {% block extra_css %}
 <style>
     .order-card {
         background: white;
         border-radius: 20px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid #e5e7eb;
         transition: all 0.3s ease;
         margin-bottom: 20px;
         overflow: hidden;
@@ -59,21 +59,94 @@
         border-radius: 30px;
         padding: 8px 20px;
         margin: 0 5px 10px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+        text-decoration: none;
+        display: inline-block;
     }
     .filter-btn:hover, .filter-btn.active {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
+        border-color: transparent;
     }
 </style>
 {% endblock %}
 
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Patient Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_my_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Find Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_products' %}">
+                    <i class="fas fa-capsules me-3"></i> Products
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'patient_orders' %}">
+                    <i class="fas fa-truck me-3"></i> My Orders
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'pharmacy_cart' %}">
+                    <i class="fas fa-shopping-cart me-3"></i> Cart
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_icu_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_test_reports' %}">
+                    <i class="fas fa-flask me-3"></i> Test Reports
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'patient_profile' %}">
+                    <i class="fas fa-user-circle me-3"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
+<div class="container-fluid py-4">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2 class="fw-bold">
-                <i class="fas fa-shopping-cart text-primary me-2"></i>My Orders
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-truck text-primary me-2"></i>My Orders
             </h2>
             <p class="text-muted">Track and manage your pharmacy orders</p>
         </div>
@@ -83,25 +156,25 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="d-flex flex-wrap">
-                <a href="?status=" class="btn filter-btn {% if not current_status %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}" class="filter-btn {% if not current_status %}active{% endif %}">
                     All Orders
                 </a>
-                <a href="?status=pending" class="btn filter-btn {% if current_status == 'pending' %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}?status=pending" class="filter-btn {% if current_status == 'pending' %}active{% endif %}">
                     Pending
                 </a>
-                <a href="?status=confirmed" class="btn filter-btn {% if current_status == 'confirmed' %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}?status=confirmed" class="filter-btn {% if current_status == 'confirmed' %}active{% endif %}">
                     Confirmed
                 </a>
-                <a href="?status=processing" class="btn filter-btn {% if current_status == 'processing' %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}?status=processing" class="filter-btn {% if current_status == 'processing' %}active{% endif %}">
                     Processing
                 </a>
-                <a href="?status=shipped" class="btn filter-btn {% if current_status == 'shipped' %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}?status=shipped" class="filter-btn {% if current_status == 'shipped' %}active{% endif %}">
                     Shipped
                 </a>
-                <a href="?status=delivered" class="btn filter-btn {% if current_status == 'delivered' %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}?status=delivered" class="filter-btn {% if current_status == 'delivered' %}active{% endif %}">
                     Delivered
                 </a>
-                <a href="?status=cancelled" class="btn filter-btn {% if current_status == 'cancelled' %}active{% endif %}">
+                <a href="{% url 'patient_orders' %}?status=cancelled" class="filter-btn {% if current_status == 'cancelled' %}active{% endif %}">
                     Cancelled
                 </a>
             </div>
@@ -151,7 +224,7 @@
                         <small class="text-muted">Qty: {{ item.quantity }}</small>
                     </div>
                     <div class="text-end">
-                        <strong>৳{{ item.subtotal|floatformat:2 }}</strong>
+                        <strong>৳{{ item.price|floatformat:2 }}</strong>
                         <br>
                         <small class="text-muted">@ ৳{{ item.price|floatformat:2 }} each</small>
                     </div>
@@ -163,20 +236,20 @@
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <div>
                         <span class="text-muted">Delivery Address:</span>
-                        <small>{{ order.shipping_address }}</small>
+                        <small>{{ order.shipping_address|default:"Not provided" }}</small>
                         <br>
                         <span class="text-muted">Phone:</span>
-                        <small>{{ order.phone }}</small>
+                        <small>{{ order.phone|default:"N/A" }}</small>
                     </div>
                     <div class="text-end">
                         <div><strong>Total Amount:</strong> <span class="text-primary fs-5">৳{{ order.total_amount|floatformat:2 }}</span></div>
-                        <div><small>Payment: {{ order.get_payment_method_display }}</small></div>
+                        <div><small>Payment: {{ order.get_payment_method_display|default:"Cash on Delivery" }}</small></div>
                         {% if order.status == 'pending' %}
-                        <button onclick="cancelOrder({{ order.id }})" class="btn btn-sm btn-danger mt-2">
+                        <button onclick="cancelOrder({{ order.id }})" class="btn btn-sm btn-danger mt-2 rounded-pill">
                             <i class="fas fa-times me-1"></i>Cancel Order
                         </button>
                         {% endif %}
-                        <a href="{% url 'patient_order_detail' order.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                        <a href="{% url 'patient_order_detail' order.id %}" class="btn btn-sm btn-outline-primary mt-2 rounded-pill">
                             <i class="fas fa-eye me-1"></i>View Details
                         </a>
                     </div>
@@ -186,12 +259,14 @@
         {% endfor %}
     {% else %}
         <div class="text-center py-5">
-            <i class="fas fa-shopping-cart fa-5x text-muted mb-3 opacity-25"></i>
-            <h4 class="text-muted">No Orders Found</h4>
-            <p class="text-muted">You haven't placed any orders yet.</p>
-            <a href="{% url 'pharmacy_products_list' %}" class="btn btn-primary rounded-pill mt-3">
-                <i class="fas fa-store me-2"></i>Start Shopping
-            </a>
+            <div class="bg-white rounded-4 p-5 shadow-sm">
+                <i class="fas fa-shopping-cart fa-5x text-muted mb-3 opacity-25"></i>
+                <h4 class="text-muted mb-2">No Orders Found</h4>
+                <p class="text-muted">You haven't placed any orders yet.</p>
+                <a href="{% url 'patient_products' %}" class="btn btn-primary rounded-pill mt-3 px-4">
+                    <i class="fas fa-store me-2"></i>Start Shopping
+                </a>
+            </div>
         </div>
     {% endif %}
 </div>

@@ -18,12 +18,13 @@
         background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
     }
     .stat-number {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
         line-height: 1.2;
     }
     .card-hover {
         transition: all 0.3s ease;
+        cursor: pointer;
     }
     .card-hover:hover {
         transform: translateY(-5px);
@@ -39,13 +40,79 @@
     .badge-warning { background: #fff3cd; color: #856404; }
     .badge-info { background: #d1ecf1; color: #0c5460; }
     .badge-danger { background: #f8d7da; color: #721c24; }
-    
+
     .quick-action-btn {
         transition: all 0.3s ease;
     }
     .quick-action-btn:hover {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .notification-bell {
+        position: relative;
+        cursor: pointer;
+    }
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .notification-dropdown {
+        width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .notification-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #e5e7eb;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .notification-item:hover {
+        background: #f9fafb;
+    }
+    .notification-item.unread {
+        background: #eef2ff;
+    }
+    .notification-title {
+        font-weight: 600;
+        font-size: 14px;
+    }
+    .notification-message {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .notification-time {
+        font-size: 10px;
+        color: #9ca3af;
+    }
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        transition: all 0.3s;
+        border: 1px solid #e5e7eb;
+    }
+    .table td, .table th {
+        padding: 12px;
+        vertical-align: middle;
     }
 </style>
 {% endblock %}
@@ -54,7 +121,9 @@
 <div class="sidebar">
     <div class="p-3">
         <div class="text-center mb-4">
-            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
             <h5 class="text-white mt-2 mb-1">CareFusion</h5>
             <small class="text-white-50">Doctor Portal</small>
         </div>
@@ -76,6 +145,14 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_notifications' %}">
+                    <i class="fas fa-bell me-3"></i> Notifications
+                    {% if unread_notification_count > 0 %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li class="nav-item mb-2">
                 <a class="nav-link" href="{% url 'doctor_profile' %}">
                     <i class="fas fa-user-md me-3"></i> My Profile
                 </a>
@@ -91,34 +168,76 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <!-- Top Bar -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
-            <h2 class="fw-bold text-dark mb-1">Doctor Dashboard</h2>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-stethoscope text-primary me-2"></i>Doctor Dashboard
+            </h2>
             <p class="text-muted">Welcome back, Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}!</p>
         </div>
         <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
-            <div class="avatar-circle gradient-primary text-white fw-bold shadow-sm" style="width: 50px; height: 50px; font-size: 1.2rem;">
+            <!-- Notification Bell -->
+            <div class="dropdown notification-bell">
+                <a href="#" class="btn btn-light rounded-circle position-relative" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell fa-lg"></i>
+                    {% if unread_notification_count > 0 %}
+                    <span class="notification-badge">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <div class="dropdown-menu dropdown-menu-end notification-dropdown p-0">
+                    <div class="p-2 bg-light border-bottom">
+                        <strong>Notifications</strong>
+                        <a href="{% url 'doctor_notifications' %}" class="float-end small">View All</a>
+                    </div>
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                        <div class="notification-item {% if not notification.is_read %}unread{% endif %}"
+                             onclick="markAsRead({{ notification.id }})">
+                            <div class="notification-title">
+                                {% if notification.notification_type == 'appointment' %}
+                                    <i class="fas fa-calendar-check text-primary me-1"></i>
+                                {% elif notification.notification_type == 'doctor_created' %}
+                                    <i class="fas fa-user-md text-success me-1"></i>
+                                {% else %}
+                                    <i class="fas fa-bell text-info me-1"></i>
+                                {% endif %}
+                                {{ notification.title }}
+                            </div>
+                            <div class="notification-message">{{ notification.message|truncatechars:80 }}</div>
+                            <div class="notification-time">{{ notification.created_at|timesince }} ago</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No notifications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="avatar-circle gradient-primary text-white fw-bold shadow-sm">
                 D
             </div>
             <div>
                 <p class="fw-semibold text-dark mb-0">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</p>
-                <p class="small text-muted">{{ doctor.get_specialization_display }}</p>
+                <p class="small text-muted mb-0">{{ doctor.get_specialization_display }}</p>
             </div>
         </div>
     </div>
 
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-md-4 col-sm-6">
-            <div class="stat-card p-3 card-hover">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-3 card-hover" onclick="location.href='{% url 'doctor_appointments' %}?status=today'">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small mb-1">Today's Appointments</p>
-                        <h2 class="stat-number text-primary mb-0">{{ today_appointments|default:"0" }}</h2>
+                        <h2 class="stat-number text-primary mb-0">{{ today_appointments_count|default:"0" }}</h2>
                         <p class="small text-success mt-2 mb-0">
-                            <i class="fas fa-calendar-day me-1"></i> Scheduled for today
+                            <i class="fas fa-calendar-day me-1"></i> Scheduled
                         </p>
                     </div>
                     <div class="gradient-primary rounded-3 p-3">
@@ -128,8 +247,8 @@
             </div>
         </div>
 
-        <div class="col-md-4 col-sm-6">
-            <div class="stat-card p-3 card-hover">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-3 card-hover" onclick="location.href='{% url 'doctor_appointments' %}'">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small mb-1">Total Appointments</p>
@@ -145,18 +264,35 @@
             </div>
         </div>
 
-        <div class="col-md-4 col-sm-6">
-            <div class="stat-card p-3 card-hover">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-3 card-hover" onclick="location.href='{% url 'doctor_patients' %}'">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted small mb-1">Total Patients</p>
                         <h2 class="stat-number text-info mb-0">{{ total_patients|default:"0" }}</h2>
                         <p class="small text-warning mt-2 mb-0">
-                            <i class="fas fa-users me-1"></i> Under my care
+                            <i class="fas fa-users me-1"></i> Under care
                         </p>
                     </div>
                     <div class="gradient-info rounded-3 p-3">
                         <i class="fas fa-users text-white fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-3 card-hover" onclick="location.href='{% url 'doctor_appointments' %}?status=completed'">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted small mb-1">Completed</p>
+                        <h2 class="stat-number text-warning mb-0">{{ completed_appointments|default:"0" }}</h2>
+                        <p class="small text-success mt-2 mb-0">
+                            <i class="fas fa-check-circle me-1"></i> Done
+                        </p>
+                    </div>
+                    <div class="gradient-warning rounded-3 p-3">
+                        <i class="fas fa-check-circle text-white fs-3"></i>
                     </div>
                 </div>
             </div>
@@ -166,23 +302,31 @@
     <!-- Quick Actions -->
     <div class="row g-4 mb-4">
         <div class="col-md-12">
-            <div class="stat-card p-3">
+            <div class="bg-white rounded-3 p-3 shadow-sm">
                 <h5 class="mb-3 fw-bold">
                     <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
                 </h5>
                 <div class="row g-2">
-                    <div class="col-md-4 col-sm-6">
-                        <a href="{% url 'doctor_appointments' %}" class="btn btn-primary w-100 quick-action-btn">
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{% url 'doctor_appointments' %}" class="btn btn-primary w-100 quick-action-btn rounded-pill">
                             <i class="fas fa-calendar-plus me-2"></i>View Appointments
                         </a>
                     </div>
-                    <div class="col-md-4 col-sm-6">
-                        <a href="{% url 'doctor_patients' %}" class="btn btn-outline-success w-100 quick-action-btn">
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{% url 'doctor_patients' %}" class="btn btn-outline-success w-100 quick-action-btn rounded-pill">
                             <i class="fas fa-user-plus me-2"></i>View Patients
                         </a>
                     </div>
-                    <div class="col-md-4 col-sm-6">
-                        <a href="{% url 'doctor_profile' %}" class="btn btn-outline-secondary w-100 quick-action-btn">
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{% url 'doctor_notifications' %}" class="btn btn-outline-info w-100 quick-action-btn rounded-pill">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                            {% if unread_notification_count > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_notification_count }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{% url 'doctor_profile' %}" class="btn btn-outline-secondary w-100 quick-action-btn rounded-pill">
                             <i class="fas fa-user-edit me-2"></i>Update Profile
                         </a>
                     </div>
@@ -192,14 +336,14 @@
     </div>
 
     <!-- Today's Appointments Table -->
-    <div class="bg-white rounded-3 shadow-sm mb-4">
+    <div class="bg-white rounded-3 shadow-sm mb-4 overflow-hidden">
         <div class="p-4 border-bottom">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="fw-semibold text-dark mb-0">
                     <i class="fas fa-calendar-day text-primary me-2"></i>
                     Today's Appointments
                 </h5>
-                <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-link text-primary">
+                <a href="{% url 'doctor_appointments' %}?status=today" class="btn btn-sm btn-link text-primary">
                     View All <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -208,29 +352,27 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Patient Name</th>
+                        <th class="ps-4">Patient Name</th>
                         <th>Time</th>
                         <th>Phone</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th class="pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for apt in today_appointments_list %}
+                    {% for apt in today_appointments %}
                     <tr>
-                        <td class="align-middle">
+                        <td class="ps-4">
                             <div class="d-flex align-items-center">
-                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 35px; height: 35px;">
-                                    <i class="fas fa-user"></i>
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user text-primary"></i>
                                 </div>
                                 <strong>{{ apt.patient.full_name }}</strong>
                             </div>
-                        </td>
-                        <td class="align-middle">
-                            {{ apt.appointment_date|date:"h:i A" }}
-                        </td>
-                        <td class="align-middle">{{ apt.patient.phone|default:"N/A" }}</td>
-                        <td class="align-middle">
+                        </div>
+                        <td>{{ apt.appointment_date|date:"h:i A" }}</td>
+                        <td>{{ apt.patient.phone|default:"N/A" }}</td>
+                        <td>
                             {% if apt.status == 'confirmed' %}
                                 <span class="badge-custom badge-success">Confirmed</span>
                             {% elif apt.status == 'pending' %}
@@ -241,9 +383,9 @@
                                 <span class="badge-custom badge-danger">Cancelled</span>
                             {% endif %}
                         </td>
-                        <td class="align-middle">
-                            <a href="{% url 'doctor_update_appointment' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                <i class="fas fa-edit me-1"></i> Update
+                        <td class="pe-4">
+                            <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-eye me-1"></i> View
                             </a>
                         </td>
                     </tr>
@@ -261,7 +403,7 @@
     </div>
 
     <!-- Recent Appointments -->
-    <div class="bg-white rounded-3 shadow-sm">
+    <div class="bg-white rounded-3 shadow-sm overflow-hidden">
         <div class="p-4 border-bottom">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="fw-semibold text-dark mb-0">
@@ -277,30 +419,30 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Patient Name</th>
+                        <th class="ps-4">Patient Name</th>
                         <th>Date & Time</th>
                         <th>Phone</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th class="pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for apt in recent_appointments %}
                     <tr>
-                        <td class="align-middle">
+                        <td class="ps-4">
                             <div class="d-flex align-items-center">
-                                <div class="avatar-circle bg-info bg-opacity-10 text-info me-2" style="width: 35px; height: 35px;">
-                                    <i class="fas fa-user"></i>
+                                <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user text-info"></i>
                                 </div>
                                 <strong>{{ apt.patient.full_name }}</strong>
                             </div>
                         </td>
-                        <td class="align-middle">
+                        <td>
                             {{ apt.appointment_date|date:"M d, Y" }}<br>
                             <small class="text-muted">{{ apt.appointment_date|date:"h:i A" }}</small>
                         </td>
-                        <td class="align-middle">{{ apt.patient.phone|default:"N/A" }}</td>
-                        <td class="align-middle">
+                        <td>{{ apt.patient.phone|default:"N/A" }}</td>
+                        <td>
                             {% if apt.status == 'confirmed' %}
                                 <span class="badge-custom badge-success">Confirmed</span>
                             {% elif apt.status == 'pending' %}
@@ -311,8 +453,8 @@
                                 <span class="badge-custom badge-danger">Cancelled</span>
                             {% endif %}
                         </td>
-                        <td class="align-middle">
-                          <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        <td class="pe-4">
+                            <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
                                 <i class="fas fa-eye me-1"></i> View
                             </a>
                         </td>
@@ -333,7 +475,7 @@
     <!-- Doctor Info Footer -->
     <div class="row mt-4">
         <div class="col-md-12">
-            <div class="stat-card p-4">
+            <div class="bg-white rounded-3 p-4 shadow-sm">
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <h5 class="fw-semibold mb-2">
@@ -342,15 +484,15 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <small class="text-muted"><i class="fas fa-graduation-cap me-1"></i> Qualification</small>
-                                <p class="mb-0">{{ doctor.qualification|default:"MBBS" }}</p>
+                                <p class="mb-0 fw-semibold">{{ doctor.qualification|default:"MBBS" }}</p>
                             </div>
                             <div class="col-md-4">
                                 <small class="text-muted"><i class="fas fa-briefcase me-1"></i> Experience</small>
-                                <p class="mb-0">{{ doctor.experience_years }} years</p>
+                                <p class="mb-0 fw-semibold">{{ doctor.experience_years }} years</p>
                             </div>
                             <div class="col-md-4">
                                 <small class="text-muted"><i class="fas fa-money-bill me-1"></i> Consultation Fee</small>
-                                <p class="mb-0">৳{{ doctor.consultation_fee }}</p>
+                                <p class="mb-0 fw-semibold text-success">৳{{ doctor.consultation_fee }}</p>
                             </div>
                         </div>
                     </div>
@@ -365,4 +507,23 @@
         </div>
     </div>
 </div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/doctor/notification/read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 {% endblock %}
