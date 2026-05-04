@@ -1,0 +1,16 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Database (don't push your local data)
+db.sqlite3
+db.sqlite3-journal
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
