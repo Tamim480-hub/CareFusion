@@ -11,4 +11,9 @@ admin, created = User.objects.get_or_create(
         'is_superuser': True,
     }
 )
+admin.set_password('admin123')
+admin.is_staff = True
+admin.is_superuser = True
+admin.save()
 
+print("✅ Admin ready (password: admin123)")
