@@ -1,207 +1,168 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Patient
 
 
-# ==========================================
-# Patient Model (Advanced Version)
-# ==========================================
+@login_required
+def patient_profile(request):
 
-class Patient(models.Model):
+    # =====================================================
+    # STEP 1: GET LOGGED-IN USER PATIENT DATA
+    # =====================================================
 
-    # -------------------------
-    # BASIC RELATION
-    # -------------------------
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='patient_profile'
+    patient = get_object_or_404(
+        Patient,
+        user=request.user
     )
 
-    # -------------------------
-    # PERSONAL INFORMATION
-    # -------------------------
-    age = models.IntegerField(
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(120)
-        ]
+    # =====================================================
+    # STEP 2: BASIC INFORMATION
+    # =====================================================
+
+    full_name = patient.user.get_full_name()
+    username = patient.user.username
+    email = patient.user.email
+
+    age = patient.age
+    gender = patient.gender
+    phone = patient.phone
+    address = patient.address
+
+    blood_group = patient.blood_group
+
+    # =====================================================
+    # STEP 3: AGE CHECK
+    # =====================================================
+
+    if age >= 18:
+        is_adult = True
+        age_status = "Adult"
+    else:
+        is_adult = False
+        age_status = "Minor"
+
+    # =====================================================
+    # STEP 4: BLOOD GROUP CHECK
+    # =====================================================
+
+    if blood_group:
+        has_blood_group = True
+        blood_status = "Available"
+    else:
+        has_blood_group = False
+        blood_status = "Not Provided"
+
+    # =====================================================
+    # STEP 5: PHONE CHECK
+    # =====================================================
+
+    if phone:
+        phone_status = "Available"
+    else:
+        phone_status = "Not Available"
+
+    # =====================================================
+    # STEP 6: ADDRESS CHECK
+    # =====================================================
+
+    if address:
+        address_status = "Available"
+    else:
+        address_status = "Not Available"
+
+    # =====================================================
+    # STEP 7: PROFILE COMPLETION SCORE (SIMPLE)
+    # =====================================================
+
+    score = 0
+
+    if phone:
+        score = score + 25
+
+    if address:
+        score = score + 25
+
+    if blood_group:
+        score = score + 25
+
+    if age:
+        score = score + 25
+
+    # =====================================================
+    # STEP 8: PROFILE STATUS
+    # =====================================================
+
+    if score == 100:
+        profile_status = "Complete"
+    elif score >= 50:
+        profile_status = "Half Complete"
+    else:
+        profile_status = "Incomplete"
+
+    # =====================================================
+    # STEP 9: PROFILE PICTURE CHECK
+    # =====================================================
+
+    if patient.profile_picture:
+        has_image = True
+    else:
+        has_image = False
+
+    # =====================================================
+    # STEP 10: LAST VISIT (OPTIONAL SIMPLE)
+    # =====================================================
+
+    last_visit = patient.last_visit
+
+    # =====================================================
+    # STEP 11: CONTEXT DATA FOR TEMPLATE
+    # =====================================================
+
+    context = {
+
+        # user info
+        'patient': patient,
+        'full_name': full_name,
+        'username': username,
+        'email': email,
+
+        # personal info
+        'age': age,
+        'gender': gender,
+        'phone': phone,
+        'address': address,
+
+        # status info
+        'is_adult': is_adult,
+        'age_status': age_status,
+
+        # medical info
+        'blood_group': blood_group,
+        'has_blood_group': has_blood_group,
+        'blood_status': blood_status,
+
+        # contact status
+        'phone_status': phone_status,
+        'address_status': address_status,
+
+        # profile score
+        'profile_score': score,
+        'profile_status': profile_status,
+
+        # image
+        'has_image': has_image,
+
+        # system info
+        'last_visit': last_visit,
+
+    }
+
+    # =====================================================
+    # STEP 12: RETURN RESPONSE
+    # =====================================================
+
+    return render(
+        request,
+        'patient_profile.html',
+        context
     )
-
-    gender = models.CharField(
-        max_length=10,
-        choices=[
-            ('Male', 'Male'),
-            ('Female', 'Female'),
-            ('Other', 'Other')
-        ]
-    )
-
-    phone = models.CharField(
-        max_length=20,
-        unique=True
-    )
-
-    emergency_contact = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True
-    )
-
-    address = models.TextField()
-
-    city = models.CharField(
-        max_length=50,
-        blank=True,
-        null=True
-    )
-
-    country = models.CharField(
-        max_length=50,
-        default="Bangladesh"
-    )
-
-    postal_code = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True
-    )
-
-    # -------------------------
-    # MEDICAL INFORMATION
-    # -------------------------
-    blood_group = models.CharField(
-        max_length=5,
-        blank=True,
-        null=True,
-        choices=[
-            ('A+', 'A+'),
-            ('A-', 'A-'),
-            ('B+', 'B+'),
-            ('B-', 'B-'),
-            ('O+', 'O+'),
-            ('O-', 'O-'),
-            ('AB+', 'AB+'),
-            ('AB-', 'AB-'),
-        ]
-    )
-
-    allergies = models.TextField(
-        blank=True,
-        null=True
-    )
-
-    chronic_diseases = models.TextField(
-        blank=True,
-        null=True
-    )
-
-    current_medications = models.TextField(
-        blank=True,
-        null=True
-    )
-
-    # -------------------------
-    # PROFILE DATA
-    # -------------------------
-    profile_picture = models.ImageField(
-        upload_to='patients/',
-        blank=True,
-        null=True
-    )
-
-    date_of_birth = models.DateField(
-        blank=True,
-        null=True
-    )
-
-    # -------------------------
-    # SYSTEM FIELDS
-    # -------------------------
-    is_active = models.BooleanField(
-        default=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
-
-    last_visit = models.DateTimeField(
-        blank=True,
-        null=True
-    )
-
-    # -------------------------
-    # META OPTIONS
-    # -------------------------
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Patient"
-        verbose_name_plural = "Patients"
-
-    # -------------------------
-    # STRING REPRESENTATION
-    # -------------------------
-    def __str__(self):
-        return f"{self.user.get_full_name()} ({self.phone})"
-
-    # -------------------------
-    # FULL NAME METHOD
-    # -------------------------
-    def full_name(self):
-        return self.user.get_full_name()
-
-    # -------------------------
-    # AGE CHECKER
-    # -------------------------
-    def is_adult(self):
-        return self.age >= 18
-
-    # -------------------------
-    # UPDATE LAST VISIT
-    # -------------------------
-    def update_last_visit(self):
-        self.last_visit = timezone.now()
-        self.save()
-
-    # -------------------------
-    # BLOOD GROUP CHECK
-    # -------------------------
-    def has_blood_group(self):
-        return self.blood_group is not None
-
-    # -------------------------
-    # PROFILE COMPLETENESS SCORE
-    # -------------------------
-    def profile_completion_score(self):
-
-        score = 0
-
-        if self.phone:
-            score += 20
-        if self.address:
-            score += 20
-        if self.blood_group:
-            score += 20
-        if self.profile_picture:
-            score += 20
-        if self.emergency_contact:
-            score += 20
-
-        return score
-
-    # -------------------------
-    # SAVE OVERRIDE
-    # -------------------------
-    def save(self, *args, **kwargs):
-
-        # Auto-capitalize gender
-        if self.gender:
-            self.gender = self.gender.capitalize()
-
-        super().save(*args, **kwargs)
