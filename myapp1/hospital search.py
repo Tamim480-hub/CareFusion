@@ -143,58 +143,5 @@ urlpatterns = [
         search_hospital,
         name='search_hospital'
     ),
-
 ]
-
-
-# =========================================================
-# 📝 OPTIONAL TEMPLATE (for understanding)
-# =========================================================
-
-"""
-search_hospital.html
-
-------------------------------------------
-
-<form method="GET">
-
-    <input type="text"
-           name="q"
-           placeholder="Search hospital..."
-           value="{{ query }}">
-
-    <button type="submit">
-        Search
-    </button>
-
-</form>
-
-------------------------------------------
-
-{% if message %}
-    <p style="color:red;">
-        {{ message }}
-    </p>
-{% endif %}
-
-------------------------------------------
-
-{% for hospital in hospitals %}
-
-    <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-
-        <h3>{{ hospital.name }}</h3>
-
-        <p>Location: {{ hospital.location }}</p>
-
-        <p>Phone: {{ hospital.phone }}</p>
-
-        <p>{{ hospital.description }}</p>
-
-    </div>
-
-{% endfor %}
-
-------------------------------------------
-"""
 
