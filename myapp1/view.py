@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Patient
 
+
 def search_doctor(request):
 
     # Get search text
@@ -32,7 +33,6 @@ def search_doctor(request):
         'search_doctor.html',
         context
     )
-
 @login_required
 def patient_profile(request):
 
