@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Login</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container{
+            width: 400px;
+            margin: auto;
+            margin-top: 100px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px #ccc;
+        }
+
+        h2{
+            text-align: center;
+            color: darkblue;
+        }
+
+        input{
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        button{
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background: darkblue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover{
+            background: navy;
+        }
+
+        .error{
+            color: red;
+            text-align: center;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Login</h2>
+
+        <!-- Error Message -->
+        {% if form.errors %}
+
+            <p class="error">
+                Invalid username or password
+            </p>
+
+        {% endif %}
+
+        <!-- Login Form -->
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <!-- Username -->
+            <input
+                type="text"
+                name="username"
+                placeholder="Username"
+                required
+            >
+
+            <!-- Password -->
+            <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                required
+            >
+
+            <!-- Submit -->
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>
