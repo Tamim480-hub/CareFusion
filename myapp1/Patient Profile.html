@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>
+        Patient Profile
+    </title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container{
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .profile-box{
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        h1{
+            text-align: center;
+            color: darkblue;
+        }
+
+        .profile-image{
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-image img{
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+        }
+
+        .info{
+            margin-top: 15px;
+        }
+
+        .info p{
+            font-size: 18px;
+            padding: 5px;
+        }
+
+        .footer{
+            text-align: center;
+            margin-top: 30px;
+            color: gray;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- ================================= -->
+    <!-- MAIN CONTAINER -->
+    <!-- ================================= -->
+
+    <div class="container">
+
+        <!-- ================================= -->
+        <!-- PAGE TITLE -->
+        <!-- ================================= -->
+
+        <h1>
+
+            Patient Profile
+
+        </h1>
+
+        <!-- ================================= -->
+        <!-- PROFILE BOX -->
+        <!-- ================================= -->
+
+        <div class="profile-box">
+
+            <!-- ================================= -->
+            <!-- PROFILE IMAGE -->
+            <!-- ================================= -->
+
+            <div class="profile-image">
+
+                {% if patient.profile_picture %}
+
+                    <img
+                        src="{{ patient.profile_picture.url }}"
+                        alt="Patient Image"
+                    >
+
+                {% else %}
+
+                    <img
+                        src="https://via.placeholder.com/150"
+                        alt="Default Image"
+                    >
+
+                {% endif %}
+
+            </div>
+
+            <!-- ================================= -->
+            <!-- PATIENT INFORMATION -->
+            <!-- ================================= -->
+
+            <div class="info">
+
+                <!-- Full Name -->
+
+                <p>
+
+                    <b>
+                        Name:
+                    </b>
+
+                    {{ full_name }}
+
+                </p>
+
+                <!-- Email -->
+
+                <p>
+
+                    <b>
+                        Email:
+                    </b>
+
+                    {{ email }}
+
+                </p>
+
+                <!-- Phone -->
+
+                <p>
+
+                    <b>
+                        Phone:
+                    </b>
+
+                    {{ phone }}
+
+                </p>
+
+                <!-- Address -->
+
+                <p>
+
+                    <b>
+                        Address:
+                    </b>
+
+                    {{ address }}
+
+                </p>
+
+                <!-- Blood Group -->
+
+                <p>
+
+                    <b>
+                        Blood Group:
+                    </b>
+
+                    {{ blood_group }}
+
+                </p>
+
+                <!-- Age Status -->
+
+                <p>
+
+                    <b>
+                        Status:
+                    </b>
+
+                    {{ age_status }}
+
+                </p>
+
+                <!-- Username -->
+
+                <p>
+
+                    <b>
+                        Username:
+                    </b>
+
+                    {{ patient.user.username }}
+
+                </p>
+
+                <!-- Gender -->
+
+                <p>
+
+                    <b>
+                        Gender:
+                    </b>
+
+                    {{ patient.gender }}
+
+                </p>
+
+                <!-- Age -->
+
+                <p>
+
+                    <b>
+                        Age:
+                    </b>
+
+                    {{ patient.age }}
+
+                </p>
+
+                <!-- Extra Information -->
+
+                <p>
+
+                    This patient profile contains
+                    personal and medical information.
+
+                </p>
+
+                <p>
+
+                    The patient can update profile
+                    information anytime.
+
+                </p>
+
+                <p>
+
+                    Patients can also search doctors,
+                    book appointments and view reports.
+
+                </p>
+
+                <p>
+
+                    Hospital management systems help
+                    manage patient information easily.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- ================================= -->
+        <!-- FOOTER -->
+        <!-- ================================= -->
+
+        <div class="footer">
+
+            <hr>
+
+            <p>
+
+                Hospital Management System
+
+            </p>
+
+            <p>
+
+                Patient Profile Page
+
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

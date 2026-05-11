@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Search Doctor</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container{
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1{
+            text-align: center;
+            color: darkblue;
+        }
+
+        .search-box{
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        input{
+            width: 70%;
+            padding: 10px;
+        }
+
+        button{
+            padding: 10px 20px;
+        }
+
+        .doctor-card{
+            background-color: white;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Main Container -->
+
+    <div class="container">
+
+        <!-- Page Heading -->
+
+        <h1>
+            Search Doctor
+        </h1>
+
+        <!-- Search Form -->
+
+        <div class="search-box">
+
+            <form method="GET">
+
+                <!-- Search Input -->
+
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Search doctor"
+                    value="{{ query }}"
+                >
+
+                <!-- Search Button -->
+
+                <button type="submit">
+
+                    Search
+
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- Result Section -->
+
+        <h2>
+            Doctor List
+        </h2>
+
+        <hr>
+
+        <!-- Doctor Loop -->
+
+        {% for doctor in doctors %}
+
+            <div class="doctor-card">
+
+                <!-- Doctor Name -->
+
+                <h2>
+
+                    Dr.
+                    {{ doctor.user.first_name }}
+                    {{ doctor.user.last_name }}
+
+                </h2>
+
+                <!-- Specialization -->
+
+                <p>
+
+                    <strong>
+                        Specialization:
+                    </strong>
+
+                    {{ doctor.specialization }}
+
+                </p>
+
+                <!-- Username -->
+
+                <p>
+
+                    <strong>
+                        Username:
+                    </strong>
+
+                    {{ doctor.user.username }}
+
+                </p>
+
+                <!-- Email -->
+
+                <p>
+
+                    <strong>
+                        Email:
+                    </strong>
+
+                    {{ doctor.user.email }}
+
+                </p>
+
+                <!-- Phone -->
+
+                <p>
+
+                    <strong>
+                        Phone:
+                    </strong>
+
+                    {{ doctor.phone }}
+
+                </p>
+
+                <!-- Extra Information -->
+
+                <p>
+                    This doctor is available for patient appointments.
+                </p>
+
+                <p>
+                    Patients can contact this doctor for treatment.
+                </p>
+
+            </div>
+
+        {% empty %}
+
+            <!-- No Result Message -->
+
+            <p>
+
+                No doctors found.
+
+            </p>
+
+        {% endfor %}
+
+        <!-- Footer -->
+
+        <hr>
+
+        <p style="text-align:center;">
+
+            Hospital Management System
+
+        </p>
+
+    </div>
+
+</body>
+
+</html>
