@@ -723,3 +723,7 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.recipient.username}"
+
+
+        def __str__(self):
+            return self.name
