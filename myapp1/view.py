@@ -1,78 +1,66 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator
+from django.db.models import Q
+import logging
+
 from .models import Doctor
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Patient
+
+# Create logger
+logger = logging.getLogger(__name__)
 
 
-def search_doctor(request):
+def doctor_search(request):
+    """
+    Advanced Doctor Search View
+    Supports:
+    - Search by name or specialization
+    - Pagination
+    - Safe query handling
+    - Logging
+    """
 
-    # Get search text
-    query = request.GET.get('q')
+    try:
+        # Get search query from URL (?q=...)
+        query = request.GET.get('q', '').strip()
 
-    # Get all doctors
-    doctors = Doctor.objects.all()
+        # Base queryset (all doctors)
+        doctors = Doctor.objects.all()
 
-    # Search doctor by name or specialization
-    if query:
+        # Apply search filter if query exists
+        if query:
+            doctors = doctors.filter(
+                Q(name__icontains=query) |
+                Q(specialization__icontains=query)
+            )
 
-        doctors = doctors.filter(
-            user__first_name__icontains=query
-        ) | doctors.filter(
-            specialization__icontains=query
-        )
+        # -----------------------------
+        # Pagination Section
+        # -----------------------------
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(doctors, 5)  # 5 doctors per page
 
-    # Send data to HTML
-    context = {
-        'doctors': doctors,
-        'query': query
-    }
+        try:
+            page_obj = paginator.get_page(page_number)
+        except Exception as e:
+            logger.error(f"Pagination error: {e}")
+            page_obj = paginator.get_page(1)
 
-    return render(
-        request,
-        'search_doctor.html',
-        context
-    )
-@login_required
-def patient_profile(request):
+        # -----------------------------
+        # Context Data
+        # -----------------------------
+        context = {
+            'doctors': page_obj,
+            'query': query,
+            'total_doctors': doctors.count(),
+        }
 
-    # Get patient of logged-in user
-    patient = get_object_or_404(
-        Patient,
-        user=request.user
-    )
+        return render(request, 'doctor_search.html', context)
 
-    # Check adult or not
-    if patient.age >= 18:
-        is_adult = True
-        age_status = "Adult"
-    else:
-        is_adult = False
-        age_status = "Minor"
+    except Exception as e:
+        # Log unexpected errors
+        logger.error(f"Doctor search error: {e}")
 
-    # Context data
-    context = {
-
-        'patient': patient,
-
-        'is_adult': is_adult,
-
-        'age_status': age_status,
-
-        'full_name': patient.user.get_full_name(),
-
-        'email': patient.user.email,
-
-        'phone': patient.phone,
-
-        'address': patient.address,
-
-        'blood_group': patient.blood_group,
-
-    }
-
-    return render(
-        request,
-        'patient_profile.html',
-        context
-    )
+        return render(request, 'doctor_search.html', {
+            'doctors': [],
+            'error': 'Something went wrong. Please try again later.'
+        })
