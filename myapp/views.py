@@ -3158,9 +3158,7 @@ def pharmacy_remove_from_cart(request, item_id):
     return redirect('pharmacy_cart')
 
 
-# views.py - চেকআউট ভিউ আপডেট করুন
 
-# views.py - চেকআউট ভিউ
 
 # views.py - চেকআউট ভিউ সম্পূর্ণ আপডেট
 
@@ -3171,7 +3169,7 @@ class Decimal:
 @login_required
 def pharmacy_checkout(request):
     """Checkout page - Order summary and payment"""
-    from decimal import Decimal  # ফাংশনের ভিতরেও ইম্পোর্ট করতে পারেন
+    from decimal import Decimal  
 
     cart = Cart.objects.filter(user=request.user).first()
 
@@ -3220,7 +3218,7 @@ def pharmacy_checkout(request):
             # Generate order number
             order_number = f"ORD-{datetime.now().strftime('%Y%m%d%H%M%S')}-{random.randint(1000, 9999)}"
 
-            # Decimal কে float এ কনভার্ট না করে সরাসরি ব্যবহার করুন
+            
             subtotal_decimal = subtotal if isinstance(subtotal, Decimal) else Decimal(str(subtotal))
             delivery_charge_decimal = delivery_charge if isinstance(delivery_charge, Decimal) else Decimal(
                 str(delivery_charge))
