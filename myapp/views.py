@@ -2794,10 +2794,10 @@ def pharmacy_admin_products(request):
 
     pharmacy = request.user.pharmacy_admin_profile.pharmacy
 
-    # ✅ সাবধানে প্রোডাক্ট আনুন
+   
     products = PharmacyProduct.objects.filter(pharmacy=pharmacy).order_by('-created_at')
 
-    # ✅ ডাটা ক্লিনিং - নিশ্চিত করুন সব প্রাইস ভ্যালিড
+   
     for product in products:
         if product.price is None:
             product.price = 0
