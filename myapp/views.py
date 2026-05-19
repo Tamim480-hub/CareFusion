@@ -170,7 +170,7 @@ def signup_view(request):
             current_year = datetime.now().year
             date_of_birth = datetime(current_year - int(age), 1, 1).date()
 
-            # Create user
+          
             user = User.objects.create_user(
                 username=email,
                 email=email,
@@ -192,7 +192,7 @@ def signup_view(request):
                 date_of_birth=date_of_birth,
                 gender=gender,
                 blood_group=blood_group,
-                hospital=None,  # ← None রাখলে সব হাসপাতাল দেখাবে
+                hospital=None, 
                 address='',
                 is_active=True
             )
