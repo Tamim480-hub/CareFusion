@@ -15,7 +15,7 @@ from .models import (
     Patient, Appointment, ICUBed, ICUBooking, EmergencyRequest,
     Product, Cart, CartItem, Order, MedicalReport, TestReport,
     Bill, Pharmacy, PharmacyAdmin,
-    PharmacyProduct, PharmacyCustomer,  # ← Prescription পরিবর্তে PharmacyPrescription
+    PharmacyProduct, PharmacyCustomer,  
     PharmacyCart, PharmacyCartItem, PharmacyOrder, Notification, PharmacyOrderItem, MedicalPrescription
 )
 from .utils import send_doctor_welcome_email_and_notification, send_notification_to_user
