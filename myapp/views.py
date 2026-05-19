@@ -70,7 +70,7 @@ def login_view(request):
         # First try to authenticate with username
         user = authenticate(request, username=email_or_username, password=password)
 
-        # If that fails and input contains @, try to find user by email
+        
         if user is None and '@' in email_or_username:
             try:
                 user_obj = User.objects.get(email=email_or_username)
