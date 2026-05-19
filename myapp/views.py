@@ -252,7 +252,7 @@ def admin_dashboard(request):
         messages.error(request, 'Super Admin access required!')
         return redirect('login')
 
-    # ফার্মেসি অ্যাডমিন কাউন্ট
+   ট
     total_pharmacy_admins = PharmacyAdmin.objects.count()
     active_pharmacy_admins = PharmacyAdmin.objects.filter(is_active=True).count()
 
@@ -287,7 +287,7 @@ def admin_manage_hospitals(request):
 
     hospitals = Hospital.objects.all().order_by('-created_at')
 
-    # Search
+   
     search = request.GET.get('search')
     if search:
         hospitals = hospitals.filter(
@@ -378,7 +378,7 @@ def admin_manage_hospital_admins(request):
 
     admins = HospitalAdminProfile.objects.select_related('user', 'hospital').all().order_by('-created_at')
 
-    # Search
+  
     search = request.GET.get('search')
     if search:
         admins = admins.filter(
@@ -393,7 +393,7 @@ def admin_manage_hospital_admins(request):
         action = request.POST.get('action')
 
         if action == 'add':
-            # Create new hospital admin
+            
             username = request.POST.get('username')
             email = request.POST.get('email')
             password = request.POST.get('password')
