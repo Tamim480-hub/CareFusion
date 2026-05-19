@@ -240,7 +240,7 @@
                                     </td>
                                     <td class="text-center pe-4">
                                         {% if apt.status == 'pending' or apt.status == 'confirmed' %}
-                                            <a href="{% url 'cancel_appointment' apt.id %}" 
+                                            <a href="{% url 'cancel_appointment' apt.id %}"
                                                class="btn btn-sm btn-outline-danger rounded-pill px-3"
                                                onclick="return confirm('Cancel this appointment?')">
                                                 Cancel

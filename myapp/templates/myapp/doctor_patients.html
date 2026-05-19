@@ -174,6 +174,12 @@
                             <div>
                                 <h5 class="fw-bold mb-0">{{ patient.full_name }}</h5>
                                 <p class="text-muted small mb-0">Patient ID: #{{ patient.id }}</p>
+                                <!-- ✅ রেফারেল ব্যাজ (যদি থাকে) -->
+                                {% if patient.referred_by_name %}
+                                    <span class="badge bg-info text-white mt-1">
+                                        <i class="fas fa-share-alt"></i> Referred by Dr. {{ patient.referred_by_name }}
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -237,13 +243,10 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-muted small">First Name</label>
-                                    <p class="fw-semibold mb-0">{{ patient.first_name }}</p>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-muted small">Last Name</label>
-                                    <p class="fw-semibold mb-0">{{ patient.last_name }}</p>
+                                <!-- ✅ পুরো নাম (এক লাইনে) -->
+                                <div class="col-12 mb-3">
+                                    <label class="text-muted small">Full Name</label>
+                                    <p class="fw-semibold mb-0">{{ patient.full_name }}</p>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Date of Birth</label>
@@ -273,6 +276,17 @@
                                     <label class="text-muted small">Address</label>
                                     <p class="fw-semibold mb-0">{{ patient.address|default:"Not provided" }}</p>
                                 </div>
+                                <!-- ✅ রেফারেল তথ্য দেখানো -->
+                                <div class="col-12 mb-3">
+                                    <label class="text-muted small">Referred By</label>
+                                    <p class="fw-semibold mb-0">
+                                        {% if patient.referred_by_name %}
+                                            Dr. {{ patient.referred_by_name }}
+                                        {% else %}
+                                            <span class="text-muted">Direct (self registered)</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
                                 <div class="col-12">
                                     <label class="text-muted small">Registered On</label>
                                     <p class="fw-semibold mb-0">{{ patient.created_at|date:"M d, Y h:i A" }}</p>
@@ -281,7 +295,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
-                            <a href="#" class="btn btn-primary rounded-pill">
+                            <a href="{% url 'doctor_add_prescription' patient.id %}" class="btn btn-primary rounded-pill">
                                 <i class="fas fa-prescription me-1"></i> Add Prescription
                             </a>
                         </div>

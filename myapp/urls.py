@@ -129,4 +129,7 @@ path('remove-from-cart/<int:item_id>/', views.remove_from_cart, name='remove_fro
 
     # ==================== Checkout ====================
     path('checkout/', views.pharmacy_checkout, name='pharmacy_checkout'),
+path('doctor/add-prescription/<int:appointment_id>/', views.doctor_add_prescription, name='doctor_add_prescription'),
+path('doctor/add-test-report/<int:appointment_id>/', views.doctor_add_test_report, name='doctor_add_test_report'),
+path('doctor/refer-patient/<int:appointment_id>/', views.doctor_refer_patient, name='doctor_refer_patient'),
 ]

@@ -409,7 +409,7 @@
                     <span class="text-white-80 small">UPCOMING APPOINTMENT</span>
                 </div>
                 <h4 class="mb-1 fw-bold">
-                    <i class="fas fa-calendar-alt me-2"></i>{{ next_appointment.appointment_date|date:"l, d M Y" }} at {{ next_appointment.appointment_time|time:"h:i A" }}
+                    <i class="fas fa-calendar-alt me-2"></i>{{ next_appointment.appointment_date|date:"l, d M Y" }} at {{ next_appointment.appointment_date|date:"h:i A" }}
                 </h4>
                 <p class="mb-0 opacity-75">Dr. {{ next_appointment.doctor.user.get_full_name }} • {{ next_appointment.doctor.get_specialization_display }}</p>
             </div>
@@ -507,7 +507,7 @@
                                     </div>
                                     <div class="text-muted small">
                                         <i class="far fa-calendar-alt me-1"></i>{{ apt.appointment_date|date:"d M Y" }}
-                                        <i class="far fa-clock ms-3 me-1"></i>{{ apt.appointment_time|time:"h:i A" }}
+                                        <i class="far fa-clock ms-3 me-1"></i>{{ apt.appointment_date|date:"h:i A" }}
                                     </div>
                                     <div class="text-muted small mt-1">
                                         <i class="fas fa-stethoscope me-1"></i>{{ apt.doctor.get_specialization_display }}
