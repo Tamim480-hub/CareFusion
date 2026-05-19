@@ -1994,7 +1994,7 @@ def doctor_update_appointment(request, appointment_id):
             appointment.notes = notes
             appointment.save()
 
-            # পেশন্টকে নোটিফিকেশন পাঠান
+            
             from .utils import send_notification_to_user
             send_notification_to_user(
                 user=appointment.patient.user,
@@ -2063,7 +2063,7 @@ def doctor_patients(request):
             models.Q(phone__icontains=search_query)
         )
 
-    # Blood group filter
+
     blood_group = request.GET.get('blood_group', '')
     if blood_group:
         patients = patients.filter(blood_group=blood_group)
