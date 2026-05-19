@@ -3831,12 +3831,11 @@ def doctor_refer_patient(request, appointment_id):
             patient=original_appointment.patient,
             appointment_date=original_appointment.appointment_date,  # একই তারিখ
             symptoms=original_appointment.symptoms,
-            status='pending',   # নতুন ডাক্তার নিশ্চিত করবেন
-            # যদি আপনার মডেলে referred_by ফিল্ড থাকে:
-            # referred_by=doctor,
+            status='pending',   
+            
         )
 
-        # ৩. নোটিফিকেশন
+       
         from .utils import send_notification_to_user
         send_notification_to_user(
             user=referred_to.user,
