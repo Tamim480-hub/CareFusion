@@ -2569,7 +2569,7 @@ def super_admin_pharmacy_admins(request):
 @login_required
 def create_pharmacy_admin(request):
     """Super admin - Create pharmacy admin"""
-    # Check if user is super admin
+    
     if request.user.user_type != 'super_admin':
         messages.error(request, 'Access denied! Only super admin can access this page.')
         return redirect('dashboard')
