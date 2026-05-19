@@ -1709,10 +1709,10 @@ def doctor_dashboard(request):
     total_patients = Appointment.objects.filter(doctor=doctor).values('patient').distinct().count()
 
     context = {
-        # Doctor Info
+    
         'doctor': doctor,
 
-        # Notifications
+      
         'notifications': notifications,
         'unread_notification_count': unread_notification_count,
         'all_notifications': all_notifications,
@@ -1744,7 +1744,7 @@ def doctor_dashboard(request):
 # ==================== ইউনিভার্সাল ড্যাশবোর্ড ====================
 
 
-# views.py
+
 
 # views.py - dashboard ভিউ
 
@@ -1919,7 +1919,6 @@ def doctor_appointments(request):
     # Base query - appointment_time নেই, তাই শুধু appointment_date দিয়ে order
     all_appointments = Appointment.objects.filter(doctor=doctor).select_related('patient').order_by('-appointment_date')
 
-    # Total count (before filter)
     total_count = all_appointments.count()
 
     # Status counts (before filter)
