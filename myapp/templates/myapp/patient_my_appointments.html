@@ -21,7 +21,6 @@
     .status-confirmed { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
     .status-pending { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
     .status-completed { background: #d1ecf1; color: #0c5460; border-left: 3px solid #17a2b8; }
-    .status-cancelled { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
 
     .filter-card {
         cursor: pointer;
@@ -180,7 +179,6 @@
                     <i class="fas fa-capsules me-3"></i> Products
                 </a>
             </li>
-
             <li class="nav-item mb-2">
                 <a class="nav-link" href="{% url 'patient_icu_beds' %}">
                     <i class="fas fa-bed me-3"></i> ICU Beds
@@ -224,18 +222,18 @@
         </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Statistics Cards (Only Active Statuses) -->
     <div class="row g-4 mb-4">
-        <div class="col-md-3 col-sm-6">
+        <div class="col-md-4 col-sm-6">
             <div class="filter-card p-3 text-center {% if not current_status %}active{% endif %}" onclick="filterStatus('')">
                 <div class="d-flex flex-column">
                     <h3 class="fw-bold mb-0 display-6">{{ total }}</h3>
-                    <small class="text-uppercase mt-1">Total</small>
+                    <small class="text-uppercase mt-1">Total Active</small>
                     <small class="opacity-75">All Appointments</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-md-4 col-sm-6">
             <div class="filter-card p-3 text-center {% if current_status == 'pending' %}active{% endif %}" onclick="filterStatus('pending')">
                 <div class="d-flex flex-column">
                     <h3 class="fw-bold mb-0 display-6">{{ pending }}</h3>
@@ -244,7 +242,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
+        <div class="col-md-4 col-sm-6">
             <div class="filter-card p-3 text-center {% if current_status == 'confirmed' %}active{% endif %}" onclick="filterStatus('confirmed')">
                 <div class="d-flex flex-column">
                     <h3 class="fw-bold mb-0 display-6">{{ confirmed }}</h3>
@@ -253,18 +251,9 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="filter-card p-3 text-center {% if current_status == 'completed' %}active{% endif %}" onclick="filterStatus('completed')">
-                <div class="d-flex flex-column">
-                    <h3 class="fw-bold mb-0 display-6">{{ completed }}</h3>
-                    <small class="text-uppercase mt-1">Completed</small>
-                    <small class="opacity-75">Past Visits</small>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Filter Bar -->
+    <!-- Filter Bar (No Cancelled Button) -->
     <div class="bg-white rounded-4 shadow-sm p-3 mb-4">
         <div class="row align-items-center">
             <div class="col-md-12">
@@ -280,9 +269,6 @@
                     </a>
                     <a href="?status=completed" class="btn btn-sm rounded-pill px-3 {% if current_status == 'completed' %}btn-info{% else %}btn-outline-info{% endif %}">
                         <i class="fas fa-check-double me-1"></i> Completed
-                    </a>
-                    <a href="?status=cancelled" class="btn btn-sm rounded-pill px-3 {% if current_status == 'cancelled' %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                        <i class="fas fa-times-circle me-1"></i> Cancelled
                     </a>
                 </div>
             </div>
@@ -366,10 +352,6 @@
                                 <span class="status-badge status-completed">
                                     <i class="fas fa-check-double me-1"></i>Completed
                                 </span>
-                            {% else %}
-                                <span class="status-badge status-cancelled">
-                                    <i class="fas fa-times-circle me-1"></i>Cancelled
-                                </span>
                             {% endif %}
                         </div>
                     </div>
@@ -412,7 +394,6 @@
                     </div>
                     <div class="modal-body p-4">
                         <div class="row">
-                            <!-- Doctor Info -->
                             <div class="col-md-6">
                                 <div class="text-center p-3 bg-light rounded-4">
                                     <div class="avatar-lg mx-auto mb-2" style="width: 80px; height: 80px; background: var(--primary-gradient);">
@@ -428,7 +409,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Appointment Info -->
                             <div class="col-md-6">
                                 <div class="p-3 bg-light rounded-4 h-100">
                                     <h6 class="fw-bold mb-3">
@@ -450,8 +430,6 @@
                                             <span class="badge bg-warning">Pending</span>
                                         {% elif apt.status == 'completed' %}
                                             <span class="badge bg-info">Completed</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Cancelled</span>
                                         {% endif %}
                                     </div>
                                     <div class="mb-2">

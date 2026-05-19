@@ -195,7 +195,7 @@ class Appointment(models.Model):
     symptoms = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
-
+    original_appointment = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     def __str__(self):
         return f"{self.patient.full_name} - {self.doctor.full_name}"
 
@@ -725,5 +725,10 @@ class Notification(models.Model):
         return f"{self.title} - {self.recipient.username}"
 
 
+<<<<<<< HEAD
         def __str__(self):
             return self.name
+=======
+def Q(first_name__icontains):
+    return None
+>>>>>>> 138d7f208eb7c92d7c2d571841c727ff8ef8391b

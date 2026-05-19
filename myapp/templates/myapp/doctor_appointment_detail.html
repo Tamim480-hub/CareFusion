@@ -68,19 +68,16 @@
     .action-btn:hover {
         transform: translateY(-2px);
     }
-    .doctor-avatar {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .modal-content {
+        border-radius: 20px;
     }
-    .divider {
-        height: 1px;
-        background: #e5e7eb;
-        margin: 15px 0;
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 10px 15px;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
     }
 </style>
 {% endblock %}
@@ -212,14 +209,14 @@
                     <div class="col-md-6 mb-3">
                         <div class="info-label">Appointment Date</div>
                         <div class="info-value">
-                            <i class="far fa-calendar-alt me-2 text-muted"></i>
+                            <i class="far fa-calendar-alt me-2"></i>
                             {{ appointment.appointment_date|date:"l, d M Y" }}
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <div class="info-label">Appointment Time</div>
                         <div class="info-value">
-                            <i class="far fa-clock me-2 text-muted"></i>
+                            <i class="far fa-clock me-2"></i>
                             {{ appointment.appointment_date|date:"h:i A" }}
                         </div>
                     </div>
@@ -232,13 +229,47 @@
                 </div>
             </div>
 
-            <!-- Symptoms -->
-            {% if appointment.symptoms %}
+            <!-- Prescription Section (if exists) -->
+            {% if prescriptions %}
             <div class="info-card">
                 <h5 class="fw-semibold mb-3">
-                    <i class="fas fa-stethoscope me-2" style="color: #667eea;"></i>Symptoms & Reason
+                    <i class="fas fa-prescription-bottle me-2" style="color: #28a745;"></i>Prescriptions
                 </h5>
-                <p class="mb-0">{{ appointment.symptoms }}</p>
+                {% for pres in prescriptions %}
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="d-flex justify-content-between">
+                        <strong class="text-success">Prescription #{{ pres.id }}</strong>
+                        <small class="text-muted">{{ pres.created_at|date:"d M Y" }}</small>
+                    </div>
+                    <div class="mt-1"><strong>Diagnosis:</strong> {{ pres.diagnosis }}</div>
+                    <div><strong>Medicines:</strong> {{ pres.medicines }}</div>
+                    {% if pres.instructions %}
+                    <div><strong>Instructions:</strong> {{ pres.instructions }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Test Reports Section (if exists) -->
+            {% if test_reports %}
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-flask me-2" style="color: #f59e0b;"></i>Test Reports
+                </h5>
+                {% for report in test_reports %}
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ report.get_report_type_display }}</strong>
+                        <small class="text-muted">{{ report.test_date|date:"d M Y" }}</small>
+                    </div>
+                    <div><strong>Findings:</strong> {{ report.findings|default:"N/A" }}</div>
+                    <div><strong>Interpretation:</strong> {{ report.interpretation|default:"N/A" }}</div>
+                    <div><span class="badge bg-{% if report.status == 'completed' %}success{% else %}warning{% endif %}">
+                        {{ report.get_status_display }}
+                    </span></div>
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
         </div>
@@ -253,12 +284,18 @@
                     <a href="{% url 'doctor_update_appointment' appointment.id %}" class="btn btn-primary action-btn">
                         <i class="fas fa-edit me-2"></i>Update Status
                     </a>
+                    <button class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#prescriptionModal">
+                        <i class="fas fa-prescription me-2"></i>Write Prescription
+                    </button>
+                    <button class="btn btn-warning action-btn text-white" data-bs-toggle="modal" data-bs-target="#testModal">
+                        <i class="fas fa-flask me-2"></i>Add Test Report
+                    </button>
+                    <button class="btn btn-info action-btn text-white" data-bs-toggle="modal" data-bs-target="#referralModal">
+                        <i class="fas fa-share-alt me-2"></i>Refer to Another Doctor
+                    </button>
                     <button class="btn btn-secondary action-btn" onclick="window.print()">
                         <i class="fas fa-print me-2"></i>Print Details
                     </button>
-                    <a href="{% url 'doctor_appointments' %}" class="btn btn-outline-primary action-btn">
-                        <i class="fas fa-calendar-alt me-2"></i>View All Appointments
-                    </a>
                 </div>
             </div>
 
@@ -287,6 +324,138 @@
                     <i class="fas fa-envelope me-2"></i>Email: support@carefusion.com
                 </p>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prescription Modal -->
+<div class="modal fade" id="prescriptionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-prescription me-2"></i>Write Prescription</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'doctor_add_prescription' appointment.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Diagnosis</label>
+                        <textarea name="diagnosis" class="form-control" rows="2" required placeholder="e.g., Viral fever, Hypertension, Diabetes"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Medicines & Dosage</label>
+                        <textarea name="medicines" class="form-control" rows="3" required placeholder="e.g., Paracetamol 500mg - twice daily for 5 days&#10;Omeprazole 20mg - once daily before meal"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Instructions (Optional)</label>
+                        <textarea name="instructions" class="form-control" rows="2" placeholder="Take with food, avoid alcohol, etc."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Next Visit Date (Optional)</label>
+                        <input type="date" name="next_visit_date" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill">Save Prescription</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Test Report Modal -->
+<div class="modal fade" id="testModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-flask me-2"></i>Add Test Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'doctor_add_test_report' appointment.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Report Type</label>
+                        <select name="report_type" class="form-select" required>
+                            <option value="blood_test">Blood Test</option>
+                            <option value="x_ray">X-Ray</option>
+                            <option value="mri">MRI</option>
+                            <option value="ct_scan">CT Scan</option>
+                            <option value="ultrasound">Ultrasound</option>
+                            <option value="urine_test">Urine Test</option>
+                            <option value="ecg">ECG</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Report Title</label>
+                        <input type="text" name="report_title" class="form-control" placeholder="e.g., Complete Blood Count, Chest X-Ray">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Test Date</label>
+                        <input type="date" name="test_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Findings / Results</label>
+                        <textarea name="findings" class="form-control" rows="3" placeholder="Describe the findings..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Interpretation</label>
+                        <textarea name="interpretation" class="form-control" rows="2" placeholder="Clinical interpretation of results..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Upload Report File (Optional)</label>
+                        <input type="file" name="report_file" class="form-control" accept=".pdf,.jpg,.png">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_urgent" class="form-check-input" id="urgentCheck">
+                        <label class="form-check-label" for="urgentCheck">Mark as Urgent</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning rounded-pill text-white">Add Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Referral Modal -->
+<div class="modal fade" id="referralModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-share-alt me-2"></i>Refer to Another Doctor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'doctor_refer_patient' appointment.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Doctor</label>
+                        <select name="referred_to_id" class="form-select" required>
+                            <option value="">-- Choose Doctor --</option>
+                            {% for dr in available_doctors %}
+                            <option value="{{ dr.id }}">Dr. {{ dr.full_name }} - {{ dr.get_specialization_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Referral Reason</label>
+                        <textarea name="referral_notes" class="form-control" rows="3" required placeholder="Why are you referring this patient?"></textarea>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="fas fa-info-circle me-1"></i> The referred doctor will receive a notification.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info rounded-pill text-white">Send Referral</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

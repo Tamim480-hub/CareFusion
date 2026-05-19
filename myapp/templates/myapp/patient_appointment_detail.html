@@ -42,36 +42,17 @@
         font-weight: 600;
         display: inline-block;
     }
-    .status-confirmed {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    .status-pending {
-        background: #fed7aa;
-        color: #9a3412;
-    }
-    .status-completed {
-        background: #e5e7eb;
-        color: #4b5563;
-    }
-    .status-cancelled {
-        background: #fee2e2;
-        color: #991b1b;
-    }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-pending { background: #fed7aa; color: #9a3412; }
+    .status-completed { background: #e5e7eb; color: #4b5563; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
     .action-btn {
         border-radius: 30px;
         padding: 10px 24px;
         font-weight: 500;
         transition: all 0.3s;
     }
-    .action-btn:hover {
-        transform: translateY(-2px);
-    }
-    .divider {
-        height: 1px;
-        background: #e5e7eb;
-        margin: 20px 0;
-    }
+    .action-btn:hover { transform: translateY(-2px); }
     .doctor-avatar {
         width: 80px;
         height: 80px;
@@ -80,6 +61,37 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    .prescription-card {
+        background: #f0fdf4;
+        border-left: 4px solid #22c55e;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .test-card {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .badge-medicine {
+        background: #e0e7ff;
+        color: #4338ca;
+        padding: 2px 8px;
+        border-radius: 15px;
+        font-size: 11px;
+        display: inline-block;
+        margin-right: 6px;
+        margin-bottom: 6px;
+    }
+    .referral-card {
+        background: #e0f2fe;
+        border-left: 4px solid #0284c7;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
     }
 </style>
 {% endblock %}
@@ -166,21 +178,13 @@
             </div>
             <div>
                 {% if appointment.status == 'confirmed' %}
-                    <span class="status-badge status-confirmed">
-                        <i class="fas fa-check-circle me-1"></i>Confirmed
-                    </span>
+                    <span class="status-badge status-confirmed"><i class="fas fa-check-circle me-1"></i>Confirmed</span>
                 {% elif appointment.status == 'pending' %}
-                    <span class="status-badge status-pending">
-                        <i class="fas fa-clock me-1"></i>Pending
-                    </span>
+                    <span class="status-badge status-pending"><i class="fas fa-clock me-1"></i>Pending</span>
                 {% elif appointment.status == 'completed' %}
-                    <span class="status-badge status-completed">
-                        <i class="fas fa-check-double me-1"></i>Completed
-                    </span>
+                    <span class="status-badge status-completed"><i class="fas fa-check-double me-1"></i>Completed</span>
                 {% else %}
-                    <span class="status-badge status-cancelled">
-                        <i class="fas fa-times-circle me-1"></i>Cancelled
-                    </span>
+                    <span class="status-badge status-cancelled"><i class="fas fa-times-circle me-1"></i>Cancelled</span>
                 {% endif %}
             </div>
         </div>
@@ -195,84 +199,44 @@
                         <i class="fas fa-user-md fa-3x text-white"></i>
                     </div>
                     <div class="flex-grow-1">
-                        <h4 class="fw-bold mb-1">Dr. {{ appointment.doctor.user.get_full_name }}</h4>
+                        <h4 class="fw-bold mb-1">Dr. {{ appointment.doctor.full_name|default:appointment.doctor.user.get_full_name }}</h4>
                         <p class="text-muted mb-2">{{ appointment.doctor.get_specialization_display }}</p>
                         <div class="d-flex flex-wrap gap-3 mt-3">
-                            <div>
-                                <small class="text-muted d-block">Experience</small>
-                                <span class="fw-semibold">{{ appointment.doctor.experience_years }}+ years</span>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Qualification</small>
-                                <span class="fw-semibold">{{ appointment.doctor.qualification|default:"MBBS" }}</span>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Consultation Fee</small>
-                                <span class="fw-semibold text-success">৳{{ appointment.doctor.consultation_fee }}</span>
-                            </div>
+                            <div><small class="text-muted d-block">Experience</small><span class="fw-semibold">{{ appointment.doctor.experience_years }}+ years</span></div>
+                            <div><small class="text-muted d-block">Qualification</small><span class="fw-semibold">{{ appointment.doctor.qualification|default:"MBBS" }}</span></div>
+                            <div><small class="text-muted d-block">Consultation Fee</small><span class="fw-semibold text-success">৳{{ appointment.doctor.consultation_fee }}</span></div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Referral Information (if any) -->
+            {% if appointment.referred_by %}
+            <div class="referral-card">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="fas fa-share-alt text-primary"></i>
+                    <strong class="text-primary">Referred to you by</strong>
+                </div>
+                <p class="mb-1">Dr. {{ appointment.referred_by.full_name }} ({{ appointment.referred_by.get_specialization_display }})</p>
+                {% if appointment.referral_notes %}
+                <p class="mb-0 small text-muted mt-1"><i class="fas fa-comment me-1"></i> Note: {{ appointment.referral_notes }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
 
             <!-- Appointment Information -->
             <div class="info-card">
-                <h5 class="fw-semibold mb-3">
-                    <i class="fas fa-info-circle me-2" style="color: #667eea;"></i>Appointment Information
-                </h5>
+                <h5 class="fw-semibold mb-3"><i class="fas fa-info-circle me-2" style="color: #667eea;"></i>Appointment Information</h5>
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="info-label">Appointment Date</div>
-                        <div class="info-value">
-                            <i class="far fa-calendar-alt me-2 text-muted"></i>
-                            {{ appointment.appointment_date|date:"l, d M Y" }}
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="info-label">Appointment Time</div>
-                        <div class="info-value">
-                            <i class="far fa-clock me-2 text-muted"></i>
-                            {{ appointment.appointment_time|time:"h:i A" }}
-                        </div>
-                    </div>
+                    <div class="col-md-6 mb-3"><div class="info-label">Appointment Date</div><div class="info-value">{{ appointment.appointment_date|date:"l, d M Y" }}</div></div>
+                    <div class="col-md-6 mb-3"><div class="info-label">Appointment Time</div><div class="info-value">{{ appointment.appointment_date|date:"h:i A" }}</div></div>
                     <div class="col-md-6 mb-3">
                         <div class="info-label">Hospital</div>
-                        <div class="info-value">
-                            <i class="fas fa-building me-2 text-muted"></i>
-                            {{ appointment.hospital.name|default:appointment.doctor.hospital.name }}
-                        </div>
+                        <div class="info-value">{{ appointment.doctor.hospital.name|default:"N/A" }}</div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <div class="info-label">Hospital Address</div>
-                        <div class="info-value">
-                            <i class="fas fa-map-marker-alt me-2 text-muted"></i>
-                            {{ appointment.hospital.address|default:appointment.doctor.hospital.address }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Patient Information -->
-            <div class="info-card">
-                <h5 class="fw-semibold mb-3">
-                    <i class="fas fa-user me-2" style="color: #667eea;"></i>Patient Information
-                </h5>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="info-label">Patient Name</div>
-                        <div class="info-value">{{ appointment.patient.full_name }}</div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="info-label">Age</div>
-                        <div class="info-value">{{ appointment.patient.age }} years</div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="info-label">Phone</div>
-                        <div class="info-value">{{ appointment.patient.phone|default:"N/A" }}</div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="info-label">Blood Group</div>
-                        <div class="info-value">{{ appointment.patient.blood_group|default:"N/A" }}</div>
+                        <div class="info-value">{{ appointment.doctor.hospital.address|default:"N/A" }}</div>
                     </div>
                 </div>
             </div>
@@ -280,10 +244,64 @@
             <!-- Symptoms -->
             {% if appointment.symptoms %}
             <div class="info-card">
-                <h5 class="fw-semibold mb-3">
-                    <i class="fas fa-stethoscope me-2" style="color: #667eea;"></i>Symptoms & Reason
-                </h5>
+                <h5 class="fw-semibold mb-3"><i class="fas fa-stethoscope me-2" style="color: #667eea;"></i>Symptoms & Reason</h5>
                 <p class="mb-0">{{ appointment.symptoms }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Prescriptions Section -->
+            {% if prescriptions %}
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-prescription-bottle me-2" style="color: #22c55e;"></i>Prescriptions
+                </h5>
+                {% for pres in prescriptions %}
+                <div class="prescription-card">
+                    <div class="d-flex justify-content-between">
+                        <strong class="text-success">Prescription #{{ pres.id }}</strong>
+                        <small class="text-muted">{{ pres.created_at|date:"d M Y" }}</small>
+                    </div>
+                    <div class="mt-2"><strong>Diagnosis:</strong> {{ pres.diagnosis }}</div>
+                    <div class="mt-1"><strong>Medicines:</strong>
+                        {% for medicine in pres.medicines.splitlines %}
+                            <span class="badge-medicine">{{ medicine }}</span>
+                        {% endfor %}
+                    </div>
+                    {% if pres.instructions %}
+                    <div class="mt-1"><strong>Instructions:</strong> {{ pres.instructions }}</div>
+                    {% endif %}
+                    {% if pres.next_visit_date %}
+                    <div class="mt-2 text-warning"><i class="fas fa-calendar-alt me-1"></i>Next Visit: {{ pres.next_visit_date|date:"d M Y" }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Test Reports Section -->
+            {% if test_reports %}
+            <div class="info-card">
+                <h5 class="fw-semibold mb-3">
+                    <i class="fas fa-flask me-2" style="color: #f59e0b;"></i>Test Reports
+                </h5>
+                {% for report in test_reports %}
+                <div class="test-card">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ report.get_report_type_display }}</strong>
+                        <small class="text-muted">{{ report.test_date|date:"d M Y" }}</small>
+                    </div>
+                    <div class="mt-1"><strong>Report Title:</strong> {{ report.report_title|default:"N/A" }}</div>
+                    <div><strong>Findings:</strong> {{ report.findings|default:"N/A" }}</div>
+                    <div><strong>Interpretation:</strong> {{ report.interpretation|default:"N/A" }}</div>
+                    <div class="mt-2">
+                        <span class="badge bg-{% if report.status == 'completed' %}success{% else %}warning{% endif %}">{{ report.get_status_display }}</span>
+                        {% if report.is_urgent %}<span class="badge bg-danger ms-1">Urgent</span>{% endif %}
+                    </div>
+                    {% if report.report_file %}
+                    <div class="mt-2"><a href="{{ report.report_file.url }}" class="btn btn-sm btn-outline-primary rounded-pill" target="_blank"><i class="fas fa-download me-1"></i>Download Report</a></div>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
         </div>
@@ -291,29 +309,21 @@
         <div class="col-lg-4">
             <!-- Action Buttons -->
             <div class="info-card">
-                <h5 class="fw-semibold mb-3">
-                    <i class="fas fa-cog me-2" style="color: #667eea;"></i>Actions
-                </h5>
+                <h5 class="fw-semibold mb-3"><i class="fas fa-cog me-2" style="color: #667eea;"></i>Actions</h5>
                 <div class="d-grid gap-3">
                     {% if appointment.status == 'confirmed' or appointment.status == 'pending' %}
                     <button class="btn btn-danger action-btn" onclick="cancelAppointment({{ appointment.id }})">
                         <i class="fas fa-times-circle me-2"></i>Cancel Appointment
                     </button>
                     {% endif %}
-                    <button class="btn btn-secondary action-btn" onclick="window.print()">
-                        <i class="fas fa-print me-2"></i>Print Details
-                    </button>
-                    <a href="{% url 'patient_my_appointments' %}" class="btn btn-outline-primary action-btn">
-                        <i class="fas fa-calendar-alt me-2"></i>View All Appointments
-                    </a>
+                    <button class="btn btn-secondary action-btn" onclick="window.print()"><i class="fas fa-print me-2"></i>Print Details</button>
+                    <a href="{% url 'patient_my_appointments' %}" class="btn btn-outline-primary action-btn"><i class="fas fa-calendar-alt me-2"></i>View All Appointments</a>
                 </div>
             </div>
 
             <!-- Important Notes -->
             <div class="info-card" style="background: #fef3c7;">
-                <h5 class="fw-semibold mb-3" style="color: #92400e;">
-                    <i class="fas fa-lightbulb me-2"></i>Important Notes
-                </h5>
+                <h5 class="fw-semibold mb-3" style="color: #92400e;"><i class="fas fa-lightbulb me-2"></i>Important Notes</h5>
                 <ul class="small mb-0" style="color: #92400e; padding-left: 18px;">
                     <li class="mb-2">Please arrive 15 minutes before your appointment time</li>
                     <li class="mb-2">Bring your previous medical records if any</li>
@@ -324,15 +334,9 @@
 
             <!-- Need Help -->
             <div class="info-card" style="background: #e0f2fe;">
-                <h5 class="fw-semibold mb-3" style="color: #075985;">
-                    <i class="fas fa-headset me-2"></i>Need Help?
-                </h5>
-                <p class="small mb-2" style="color: #075985;">
-                    <i class="fas fa-phone me-2"></i>Call us: +880 1234 567890
-                </p>
-                <p class="small mb-0" style="color: #075985;">
-                    <i class="fas fa-envelope me-2"></i>Email: support@carefusion.com
-                </p>
+                <h5 class="fw-semibold mb-3" style="color: #075985;"><i class="fas fa-headset me-2"></i>Need Help?</h5>
+                <p class="small mb-2" style="color: #075985;"><i class="fas fa-phone me-2"></i>Call us: +880 1234 567890</p>
+                <p class="small mb-0" style="color: #075985;"><i class="fas fa-envelope me-2"></i>Email: support@carefusion.com</p>
             </div>
         </div>
     </div>
