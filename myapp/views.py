@@ -183,7 +183,7 @@ def signup_view(request):
                 blood_group=blood_group
             )
 
-            # ✅ গুরুত্বপূর্ণ: hospital = None রাখুন (সব হাসপাতাল দেখার জন্য)
+          
             patient = Patient.objects.create(
                 user=user,
                 first_name=first_name,
