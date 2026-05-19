@@ -117,8 +117,6 @@ def login_view(request):
 
 # ==================== সাইনআপ ভিউ ====================
 
-# myapp/views.py - সম্পূর্ণ সাইনআপ ভিউ
-# myapp/views.py - সাইনআপ ভিউ
 
 def signup_view(request):
     """User registration page"""
