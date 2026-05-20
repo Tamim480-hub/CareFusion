@@ -29,7 +29,6 @@ class User(AbstractUser):
 
 # ==================== Hospital Models ====================
 class Hospital(models.Model):
-    objects = None
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20, unique=True)
     address = models.TextField()
@@ -188,8 +187,7 @@ class Appointment(models.Model):
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     )
-    doctor_notes = models.TextField(blank=True, null=True, help_text="Clinical notes from doctor")
-    doctor_advice = models.TextField(blank=True, null=True, help_text="Advice given to patient")
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments')
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointments')
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='appointments', null=True, blank=True)
@@ -727,36 +725,10 @@ class Notification(models.Model):
         return f"{self.title} - {self.recipient.username}"
 
 
+<<<<<<< HEAD
+        def __str__(self):
+            return self.name
+=======
 def Q(first_name__icontains):
     return None
-
-
-class DoctorPatientRelation(models.Model):
-    """Track which doctor referred which patient"""
-    doctor = models.ForeignKey('Doctor', on_delete=models.CASCADE, related_name='patient_relations')
-    patient = models.ForeignKey('Patient', on_delete=models.CASCADE, related_name='doctor_relations')
-    referred_by = models.ForeignKey('Doctor', on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='referrals_made')
-    referred_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        unique_together = ('doctor', 'patient')
-        verbose_name = 'Doctor Patient Relation'
-        verbose_name_plural = 'Doctor Patient Relations'
-
-    def __str__(self):
-        return f"Dr. {self.doctor.full_name} - {self.patient.full_name}"
-
-
-class Prescription(models.Model):
-    appointment = models.ForeignKey('Appointment', on_delete=models.CASCADE, related_name='prescriptions')
-    diagnosis = models.TextField()
-    medicines = models.TextField(help_text="Write each medicine on a new line")
-    instructions = models.TextField(blank=True, null=True)
-    next_visit_date = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Prescription for {self.appointment.patient.full_name} - {self.created_at.date()}"
+>>>>>>> 138d7f208eb7c92d7c2d571841c727ff8ef8391b

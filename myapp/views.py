@@ -254,7 +254,10 @@ def admin_dashboard(request):
         messages.error(request, 'Super Admin access required!')
         return redirect('login')
 
+<<<<<<< HEAD
     # ফার্মেসি অ্যাডমিন কাউন্ট
+=======
+>>>>>>> bf67cddd65502226c58886e61913f9f9620ed4c9
     total_pharmacy_admins = PharmacyAdmin.objects.count()
     active_pharmacy_admins = PharmacyAdmin.objects.filter(is_active=True).count()
 
