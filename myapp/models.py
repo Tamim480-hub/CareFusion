@@ -725,10 +725,26 @@ class Notification(models.Model):
         return f"{self.title} - {self.recipient.username}"
 
 
-<<<<<<< HEAD
-        def __str__(self):
-            return self.name
-=======
-def Q(first_name__icontains):
-    return None
->>>>>>> 138d7f208eb7c92d7c2d571841c727ff8ef8391b
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('doctor_created', 'Doctor Account Created'),
+        ('appointment', 'New Appointment'),
+        ('schedule', 'Schedule Update'),
+        ('patient', 'Patient Message'),
+        ('system', 'System Alert'),
+        ('reminder', 'Reminder'),
+    )
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='system')
+    is_read = models.BooleanField(default=False)
+    link = models.CharField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.recipient.username}"
