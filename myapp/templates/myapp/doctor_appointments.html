@@ -5,51 +5,107 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary: #2563eb;
+        --secondary: #7c3aed;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #06b6d4;
+    }
+
     .status-badge {
         padding: 5px 12px;
         border-radius: 20px;
         font-size: 11px;
         font-weight: 600;
     }
-    .status-confirmed { background: #d4edda; color: #155724; }
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-completed { background: #d1ecf1; color: #0c5460; }
-    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-pending { background: #fed7aa; color: #9a3412; }
+    .status-completed { background: #dbeafe; color: #1e40af; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
 
-    .filter-card {
+    .stat-card {
         background: white;
-        border-radius: 15px;
+        border-radius: 16px;
         transition: all 0.3s ease;
         cursor: pointer;
+        border: 1px solid #e5e7eb;
     }
-    .filter-card:hover {
+    .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
-    .btn-outline-primary.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .stat-card.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+    .stat-card.active h4, .stat-card.active small {
+        color: white;
+    }
+
+    .filter-btn {
+        border-radius: 30px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .filter-btn:hover {
+        transform: translateY(-2px);
+    }
+    .filter-btn.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: white;
         border: none;
     }
-    .btn-outline-success.active {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        color: white;
-        border: none;
+
+    .appointment-table {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
     }
-    .btn-outline-warning.active {
-        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
-        color: white;
-        border: none;
+    .appointment-table thead {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
     }
-    .btn-outline-info.active {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-        border: none;
+    .appointment-table thead th {
+        padding: 16px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #4b5563;
     }
-    .btn-outline-danger.active {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    .appointment-table tbody tr {
+        border-bottom: 1px solid #f3f4f6;
+        transition: all 0.2s;
+    }
+    .appointment-table tbody tr:hover {
+        background: #f9fafb;
+    }
+    .appointment-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: white;
-        border: none;
+    }
+
+    .search-input {
+        border-radius: 30px;
+        padding: 10px 18px;
+        border: 1px solid #e5e7eb;
+    }
+    .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
 </style>
 {% endblock %}
@@ -58,7 +114,9 @@
 <div class="sidebar">
     <div class="p-3">
         <div class="text-center mb-4">
-            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
             <h5 class="text-white mt-2 mb-1">CareFusion</h5>
             <small class="text-white-50">Doctor Portal</small>
         </div>
@@ -118,25 +176,25 @@
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card p-3 text-center filter-card" onclick="filterStatus('')">
+            <div class="stat-card p-3 text-center" onclick="filterStatus('')">
                 <h4 class="fw-bold text-primary mb-0">{{ total|default:appointments|length }}</h4>
                 <small class="text-muted">Total Appointments</small>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card p-3 text-center filter-card" onclick="filterStatus('pending')">
+            <div class="stat-card p-3 text-center" onclick="filterStatus('pending')">
                 <h4 class="fw-bold text-warning mb-0">{{ pending_count|default:0 }}</h4>
                 <small class="text-muted">Pending</small>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card p-3 text-center filter-card" onclick="filterStatus('confirmed')">
+            <div class="stat-card p-3 text-center" onclick="filterStatus('confirmed')">
                 <h4 class="fw-bold text-success mb-0">{{ confirmed_count|default:0 }}</h4>
                 <small class="text-muted">Confirmed</small>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card p-3 text-center filter-card" onclick="filterStatus('completed')">
+            <div class="stat-card p-3 text-center" onclick="filterStatus('completed')">
                 <h4 class="fw-bold text-info mb-0">{{ completed_count|default:0 }}</h4>
                 <small class="text-muted">Completed</small>
             </div>
@@ -145,39 +203,44 @@
 
     <!-- Filter Bar -->
     <div class="bg-white rounded-3 shadow-sm mb-4 p-3">
-        <div class="row align-items-center">
-            <div class="col-md-6">
+        <div class="row align-items-center g-3">
+            <div class="col-md-5">
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="?status=" class="btn btn-sm btn-outline-primary rounded-pill {% if not current_status %}active{% endif %}">
+                    <a href="?status=" class="btn filter-btn {% if not current_status %}active{% else %}btn-outline-secondary{% endif %}">
                         All
                     </a>
-                    <a href="?status=pending" class="btn btn-sm btn-outline-warning rounded-pill {% if current_status == 'pending' %}active{% endif %}">
-                        <i class="fas fa-clock me-1"></i>Pending
+                    <a href="?status=pending" class="btn filter-btn {% if current_status == 'pending' %}active bg-warning{% else %}btn-outline-secondary{% endif %}">
+                        <i class="fas fa-clock me-1"></i> Pending
                     </a>
-                    <a href="?status=confirmed" class="btn btn-sm btn-outline-success rounded-pill {% if current_status == 'confirmed' %}active{% endif %}">
-                        <i class="fas fa-check-circle me-1"></i>Confirmed
+                    <a href="?status=confirmed" class="btn filter-btn {% if current_status == 'confirmed' %}active bg-success{% else %}btn-outline-secondary{% endif %}">
+                        <i class="fas fa-check-circle me-1"></i> Confirmed
                     </a>
-                    <a href="?status=completed" class="btn btn-sm btn-outline-info rounded-pill {% if current_status == 'completed' %}active{% endif %}">
-                        <i class="fas fa-check-double me-1"></i>Completed
+                    <a href="?status=completed" class="btn filter-btn {% if current_status == 'completed' %}active bg-info{% else %}btn-outline-secondary{% endif %}">
+                        <i class="fas fa-check-double me-1"></i> Completed
                     </a>
-                    <a href="?status=cancelled" class="btn btn-sm btn-outline-danger rounded-pill {% if current_status == 'cancelled' %}active{% endif %}">
-                        <i class="fas fa-times-circle me-1"></i>Cancelled
+                    <a href="?status=cancelled" class="btn filter-btn {% if current_status == 'cancelled' %}active bg-danger{% else %}btn-outline-secondary{% endif %}">
+                        <i class="fas fa-times-circle me-1"></i> Cancelled
                     </a>
                 </div>
             </div>
-            <div class="col-md-6 mt-3 mt-md-0">
+            <div class="col-md-7">
                 <form method="GET" class="d-flex gap-2">
-                    <input type="text" name="search" class="form-control form-control-sm rounded-pill"
-                           placeholder="Search patient..." value="{{ search|default:'' }}">
-                    <input type="date" name="date" class="form-control form-control-sm rounded-pill"
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 rounded-pill">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control search-input border-start-0 rounded-pill"
+                               placeholder="Search by patient name, phone..." value="{{ search|default:'' }}">
+                    </div>
+                    <input type="date" name="date" class="form-control rounded-pill search-input"
                            value="{{ date_filter|default:'' }}" style="width: auto;">
                     {% if current_status %}
                     <input type="hidden" name="status" value="{{ current_status }}">
                     {% endif %}
-                    <button type="submit" class="btn btn-sm btn-primary rounded-pill">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
                         <i class="fas fa-search me-1"></i> Filter
                     </button>
-                    <a href="{% url 'doctor_appointments' %}" class="btn btn-sm btn-secondary rounded-pill">
+                    <a href="{% url 'doctor_appointments' %}" class="btn btn-secondary rounded-pill px-4">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </a>
                 </form>
@@ -186,139 +249,73 @@
     </div>
 
     <!-- Appointments Table -->
-    <div class="bg-white rounded-3 shadow-sm">
-        <div class="p-4 border-bottom">
-            <h5 class="fw-semibold text-dark mb-0">
-                <i class="fas fa-calendar-alt text-primary me-2"></i>
-                Appointment List
-            </h5>
-        </div>
+    <div class="appointment-table">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
+            <table class="table mb-0">
+                <thead>
                     <tr>
-                        <th>SL</th>
-                        <th>Patient Name</th>
+                        <th style="width: 50px;">#</th>
+                        <th>Patient</th>
                         <th>Date & Time</th>
-                        <th>Phone</th>
+                        <th>Contact</th>
                         <th>Blood Group</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style="width: 100px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for apt in appointments %}
                     <tr>
-                        <td class="align-middle">{{ forloop.counter }}</td>
-                        <td class="align-middle">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2" style="width: 35px; height: 35px;">
-                                    <i class="fas fa-user"></i>
+                        <td class="fw-semibold text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-circle">
+                                    {{ apt.patient.full_name|slice:":1"|upper }}
                                 </div>
                                 <div>
-                                    <strong>{{ apt.patient.full_name }}</strong><br>
-                                    <small class="text-muted">{{ apt.patient.age|default:"N/A" }} years</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="align-middle">
-                            {{ apt.appointment_date|date:"M d, Y" }}<br>
-                            <small class="text-muted">{{ apt.appointment_date|date:"h:i A" }}</small>
-                        </td>
-                        <td class="align-middle">{{ apt.patient.phone|default:"N/A" }}</td>
-                        <td class="align-middle">
-                            <span class="badge bg-light text-dark">{{ apt.patient.blood_group|default:"N/A" }}</span>
-                        </td>
-                        <td class="align-middle">
-                            {% if apt.status == 'confirmed' %}
-                                <span class="status-badge status-confirmed">
-                                    <i class="fas fa-check-circle me-1"></i>Confirmed
-                                </span>
-                            {% elif apt.status == 'pending' %}
-                                <span class="status-badge status-pending">
-                                    <i class="fas fa-clock me-1"></i>Pending
-                                </span>
-                            {% elif apt.status == 'completed' %}
-                                <span class="status-badge status-completed">
-                                    <i class="fas fa-check-double me-1"></i>Completed
-                                </span>
-                            {% elif apt.status == 'cancelled' %}
-                                <span class="status-badge status-cancelled">
-                                    <i class="fas fa-times-circle me-1"></i>Cancelled
-                                </span>
-                            {% else %}
-                                <span class="status-badge bg-secondary text-white">{{ apt.status }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="align-middle">
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                    <i class="fas fa-edit me-1"></i> Update
-                                </a>
-                                <button type="button" class="btn btn-sm btn-outline-info rounded-pill"
-                                        data-bs-toggle="modal" data-bs-target="#viewModal{{ apt.id }}">
-                                    <i class="fas fa-eye me-1"></i> View
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- View Modal -->
-                    <div class="modal fade" id="viewModal{{ apt.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content rounded-4">
-                                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                    <h5 class="modal-title fw-bold">
-                                        <i class="fas fa-user me-2"></i>Appointment Details
-                                    </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="text-muted small">Patient Name</label>
-                                            <p class="fw-semibold mb-0">{{ apt.patient.full_name }}</p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="text-muted small">Age</label>
-                                            <p class="fw-semibold mb-0">{{ apt.patient.age|default:"N/A" }} years</p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="text-muted small">Phone</label>
-                                            <p class="fw-semibold mb-0">{{ apt.patient.phone|default:"N/A" }}</p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="text-muted small">Blood Group</label>
-                                            <p class="fw-semibold mb-0">{{ apt.patient.blood_group|default:"N/A" }}</p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="text-muted small">Appointment Date</label>
-                                            <p class="fw-semibold mb-0">{{ apt.appointment_date|date:"M d, Y" }}</p>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="text-muted small">Time</label>
-                                            <p class="fw-semibold mb-0">{{ apt.appointment_date|date:"h:i A" }}</p>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <label class="text-muted small">Symptoms</label>
-                                            <p class="mb-0">{{ apt.symptoms|default:"Not provided" }}</p>
-                                        </div>
+                                    <div class="fw-semibold text-dark">{{ apt.patient.full_name }}</div>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-calendar-alt me-1"></i> {{ apt.patient.age|default:"N/A" }} yrs
+                                        <span class="mx-1">•</span>
+                                        <i class="fas fa-venus-mars me-1"></i> {{ apt.patient.get_gender_display|default:"N/A" }}
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
-                                    <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-primary rounded-pill">
-                                        <i class="fas fa-edit me-1"></i> Update Status
-                                    </a>
-                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </td>
+                        <td>
+                            <div class="fw-medium">{{ apt.appointment_date|date:"M d, Y" }}</div>
+                            <div class="small text-muted"><i class="far fa-clock me-1"></i> {{ apt.appointment_date|date:"h:i A" }}</div>
+                        </td>
+                        <td>
+                            <div><i class="fas fa-phone-alt me-1 text-muted small"></i> {{ apt.patient.phone|default:"N/A" }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="fas fa-tint me-1 text-danger"></i> {{ apt.patient.blood_group|default:"N/A" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ apt.status }}">
+                                <i class="fas
+                                    {% if apt.status == 'confirmed' %}fa-check-circle
+                                    {% elif apt.status == 'pending' %}fa-clock
+                                    {% elif apt.status == 'completed' %}fa-check-double
+                                    {% else %}fa-times-circle{% endif %} me-1"></i>
+                                {{ apt.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-eye me-1"></i> View
+                            </a>
+                        </td>
+                    </tr>
                     {% empty %}
                     <tr>
                         <td colspan="7" class="text-center py-5">
-                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
-                            <p class="mb-0 text-muted">No appointments found</p>
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-2 d-block"></i>
+                            <h5 class="text-muted mb-2">No Appointments Found</h5>
+                            <p class="text-muted mb-0">No appointments match your filter criteria.</p>
                         </td>
                     </tr>
                     {% endfor %}

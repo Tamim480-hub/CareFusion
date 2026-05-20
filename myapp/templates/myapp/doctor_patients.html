@@ -5,43 +5,349 @@
 
 {% block extra_css %}
 <style>
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
+    :root {
+        --primary: #667eea;
+        --primary-dark: #5a67d8;
+        --secondary: #764ba2;
+        --success: #48bb78;
+        --warning: #ed8936;
+        --danger: #f56565;
+        --info: #4299e1;
     }
-    .status-active { background: #d4edda; color: #155724; }
-    .status-inactive { background: #f8d7da; color: #721c24; }
+
+    /* Modern Gradient Backgrounds */
+    .gradient-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
     
-    .filter-card {
-        background: white;
-        border-radius: 15px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    .filter-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
+    /* Patient Card Styles */
     .patient-card {
-        transition: all 0.3s ease;
+        background: white;
+        border-radius: 24px;
+        border: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
     }
+
+    .patient-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .patient-card:hover::before {
+        transform: scaleX(1);
+    }
+
     .patient-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
     }
+
+    /* Avatar Styles */
     .avatar-circle {
-        width: 60px;
-        height: 60px;
+        width: 65px;
+        height: 65px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.3s ease;
     }
-    .gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    /* Stat Badges */
+    .stat-badge {
+        background: #f3f4f6;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* Visit Count Styles */
+    .visit-count {
+        font-size: 22px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    /* Statistics Cards */
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border: none;
+        border-radius: 28px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        padding: 20px 28px;
+        border: none;
+    }
+
+    .modal-body {
+        padding: 32px;
+        background: #f8fafc;
+    }
+
+    /* Info Cards in Modal */
+    .info-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    /* Timeline Styles */
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .timeline-badge {
+        position: absolute;
+        left: -35px;
+        top: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: white;
+        font-size: 14px;
+        z-index: 1;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .timeline-badge.bg-success { background: linear-gradient(135deg, #48bb78, #38a169); }
+    .timeline-badge.bg-warning { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+    .timeline-badge.bg-info { background: linear-gradient(135deg, #4299e1, #3182ce); }
+    .timeline-badge.bg-danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
+
+    .timeline-content {
+        background: white;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-left: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .timeline-content:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .timeline-date {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 14px;
+    }
+
+    .timeline-time {
+        font-size: 12px;
+        color: #718096;
+        margin-top: 4px;
+    }
+
+    /* Modern Table Styles */
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        width: 100%;
+    }
+
+    .table-modern thead th {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 14px 16px;
+        font-weight: 600;
+        font-size: 13px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .table-modern thead th:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .table-modern tbody tr {
+        background: white;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .table-modern td {
+        padding: 14px 16px;
+        border: none;
+        vertical-align: middle;
+    }
+
+    /* Status Badges */
+    .badge-status {
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge-confirmed { background: linear-gradient(135deg, #48bb78, #38a169); color: white; }
+    .badge-pending { background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; }
+    .badge-completed { background: linear-gradient(135deg, #4299e1, #3182ce); color: white; }
+    .badge-cancelled { background: linear-gradient(135deg, #f56565, #e53e3e); color: white; }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* Search Input */
+    .search-input {
+        border-radius: 30px;
+        padding: 10px 18px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+
+    /* Button Styles */
+    .btn-custom {
+        border-radius: 30px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .detail-label {
+        font-size: 13px;
+        color: #718096;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .patient-card {
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
+    }
+
+    @media (max-width: 768px) {
+        .modal-body {
+            padding: 20px;
+        }
+        .stat-card h4 {
+            font-size: 20px;
+        }
     }
 </style>
 {% endblock %}
@@ -50,7 +356,9 @@
 <div class="sidebar">
     <div class="p-3">
         <div class="text-center mb-4">
-            <i class="fas fa-hospital-user" style="font-size: 45px; color: var(--primary);"></i>
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
             <h5 class="text-white mt-2 mb-1">CareFusion</h5>
             <small class="text-white-50">Doctor Portal</small>
         </div>
@@ -97,13 +405,14 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
             <h2 class="fw-bold text-dark mb-1">
-                <i class="fas fa-users text-primary me-2"></i>My Patients
+                <i class="fas fa-users me-2" style="color: #667eea;"></i>
+                My Patients
             </h2>
-            <p class="text-muted">View and manage all your patients</p>
+            <p class="text-muted">Complete medical records and patient history</p>
         </div>
         <div class="mt-2 mt-md-0">
-            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                <i class="fas fa-users text-primary me-2"></i>
+            <div class="gradient-primary rounded-3 p-3 text-white shadow">
+                <i class="fas fa-users me-2"></i>
                 <span class="fw-semibold">Total Patients: {{ patients|length }}</span>
             </div>
         </div>
@@ -111,292 +420,284 @@
 
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="stat-card p-3 text-center filter-card">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-4 text-center">
+                <i class="fas fa-users fa-2x text-primary opacity-50 mb-2 d-block"></i>
                 <h4 class="fw-bold text-primary mb-0">{{ patients|length }}</h4>
                 <small class="text-muted">Total Patients</small>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="stat-card p-3 text-center filter-card">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-4 text-center">
+                <i class="fas fa-user-check fa-2x text-success opacity-50 mb-2 d-block"></i>
                 <h4 class="fw-bold text-success mb-0">{{ active_patients|default:patients|length }}</h4>
                 <small class="text-muted">Active Patients</small>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="stat-card p-3 text-center filter-card">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-4 text-center">
+                <i class="fas fa-calendar-check fa-2x text-info opacity-50 mb-2 d-block"></i>
                 <h4 class="fw-bold text-info mb-0">{{ total_appointments|default:"0" }}</h4>
-                <small class="text-muted">Total Appointments</small>
+                <small class="text-muted">Total Visits</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card p-4 text-center">
+                <i class="fas fa-clock fa-2x text-warning opacity-50 mb-2 d-block"></i>
+                <h4 class="fw-bold text-warning mb-0">{{ pending_followups|default:0 }}</h4>
+                <small class="text-muted">Follow-ups Due</small>
             </div>
         </div>
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white rounded-3 shadow-sm mb-4 p-3">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <form method="GET" class="d-flex gap-2 flex-wrap">
-                    <input type="text" name="search" class="form-control form-control-sm rounded-pill"
-                           placeholder="Search by name, phone..." value="{{ search }}" style="width: 250px;">
-                    <select name="blood_group" class="form-select form-select-sm rounded-pill" style="width: 150px;">
-                        <option value="">All Blood Groups</option>
-                        <option value="A+" {% if blood_group == 'A+' %}selected{% endif %}>A+</option>
-                        <option value="A-" {% if blood_group == 'A-' %}selected{% endif %}>A-</option>
-                        <option value="B+" {% if blood_group == 'B+' %}selected{% endif %}>B+</option>
-                        <option value="B-" {% if blood_group == 'B-' %}selected{% endif %}>B-</option>
-                        <option value="O+" {% if blood_group == 'O+' %}selected{% endif %}>O+</option>
-                        <option value="O-" {% if blood_group == 'O-' %}selected{% endif %}>O-</option>
-                        <option value="AB+" {% if blood_group == 'AB+' %}selected{% endif %}>AB+</option>
-                        <option value="AB-" {% if blood_group == 'AB-' %}selected{% endif %}>AB-</option>
-                    </select>
-                    <button type="submit" class="btn btn-sm btn-primary rounded-pill">
-                        <i class="fas fa-search me-1"></i> Filter
-                    </button>
-                    <a href="{% url 'doctor_patients' %}" class="btn btn-sm btn-secondary rounded-pill">
-                        <i class="fas fa-sync-alt me-1"></i> Reset
-                    </a>
+    <div class="filter-bar mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-md-7">
+                <form method="GET" class="d-flex gap-2">
+                    <input type="text" name="search" class="form-control search-input rounded-pill"
+                           placeholder="🔍 Search by name, phone or ID..." value="{{ search }}">
                 </form>
+            </div>
+            <div class="col-md-3">
+                <select name="blood_group" class="form-select rounded-pill" onchange="this.form.submit()" style="padding: 10px 16px;">
+                    <option value="">🩸 All Blood Groups</option>
+                    <option value="A+" {% if blood_group == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if blood_group == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if blood_group == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if blood_group == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="O+" {% if blood_group == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if blood_group == 'O-' %}selected{% endif %}>O-</option>
+                    <option value="AB+" {% if blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'doctor_patients' %}" class="btn btn-secondary rounded-pill w-100 btn-custom">
+                    <i class="fas fa-sync-alt me-2"></i>Reset
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Patients Grid View -->
+    <!-- Patients Grid -->
     <div class="row g-4">
         {% if patients %}
             {% for patient in patients %}
             <div class="col-md-6 col-lg-4">
-                <div class="bg-white rounded-3 shadow-sm patient-card h-100">
-                    <div class="p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="avatar-circle gradient-primary me-3">
-                                <i class="fas fa-user fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-0">{{ patient.full_name }}</h5>
-                                <p class="text-muted small mb-0">Patient ID: #{{ patient.id }}</p>
-                                <!-- ✅ রেফারেল ব্যাজ (যদি থাকে) -->
-                                {% if patient.referred_by_name %}
-                                    <span class="badge bg-info text-white mt-1">
-                                        <i class="fas fa-share-alt"></i> Referred by Dr. {{ patient.referred_by_name }}
-                                    </span>
-                                {% endif %}
+                <div class="patient-card p-4" data-bs-toggle="modal" data-bs-target="#patientModal{{ patient.id }}">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="avatar-circle gradient-primary me-3">
+                            <i class="fas fa-user fa-2x text-white"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold mb-0 text-dark">{{ patient.full_name }}</h5>
+                            <p class="text-muted small mb-1"><i class="fas fa-id-card me-1"></i>ID: #{{ patient.id }}</p>
+                            <div class="mt-2">
+                                <span class="stat-badge"><i class="fas fa-calendar-alt me-1"></i> {{ patient.age|default:"N/A" }} yrs</span>
+                                <span class="stat-badge ms-1"><i class="fas fa-tint me-1 text-danger"></i> {{ patient.blood_group|default:"N/A" }}</span>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <div class="row">
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted d-block">Age</small>
-                                    <span class="fw-semibold">{{ patient.age|default:"N/A" }} years</span>
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted d-block">Blood Group</small>
-                                    <span class="badge bg-danger">{{ patient.blood_group|default:"N/A" }}</span>
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted d-block">Gender</small>
-                                    <span>{{ patient.get_gender_display|default:"N/A" }}</span>
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted d-block">Phone</small>
-                                    <span>{{ patient.phone|default:"N/A" }}</span>
-                                </div>
-                            </div>
+                    <div class="row text-center mb-3 pt-2 border-top border-bottom py-2">
+                        <div class="col-4">
+                            <div class="visit-count">{{ patient.total_visits|default:0 }}</div>
+                            <small class="text-muted">Total Visits</small>
                         </div>
+                        <div class="col-4">
+                            <div class="visit-count text-success">{{ patient.completed_visits|default:0 }}</div>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="visit-count text-warning">{{ patient.pending_visits|default:0 }}</div>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <small class="text-muted d-block">Emergency Contact</small>
-                            <span>{{ patient.emergency_contact|default:"N/A" }}</span>
-                        </div>
+                    {% if patient.last_visit_date %}
+                    <div class="text-center mb-2">
+                        <small class="text-muted"><i class="fas fa-clock me-1"></i> Last visit: {{ patient.last_visit_date|date:"d M Y" }}</small>
+                    </div>
+                    {% endif %}
 
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1"
-                                    data-bs-toggle="modal" data-bs-target="#viewModal{{ patient.id }}">
-                                <i class="fas fa-eye me-1"></i> View Details
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill flex-grow-1"
-                                    data-bs-toggle="modal" data-bs-target="#historyModal{{ patient.id }}">
-                                <i class="fas fa-history me-1"></i> History
-                            </button>
-                        </div>
+                    <div class="text-center mt-2">
+                        <small class="text-primary"><i class="fas fa-mouse-pointer me-1"></i> Click to view full record <i class="fas fa-arrow-right ms-1"></i></small>
                     </div>
                 </div>
             </div>
 
-            <!-- View Patient Modal -->
-            <div class="modal fade" id="viewModal{{ patient.id }}" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content rounded-4">
-                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+            <!-- Modal for each patient - Direct data rendering (no AJAX) -->
+            <div class="modal fade" id="patientModal{{ patient.id }}" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
                             <h5 class="modal-title fw-bold">
-                                <i class="fas fa-user-circle me-2"></i>Patient Details
+                                <i class="fas fa-user-circle me-2"></i>Patient Medical Record - {{ patient.full_name }}
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="text-center mb-3">
-                                <div class="avatar-circle gradient-primary mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
-                                    <i class="fas fa-user"></i>
+                            <!-- Profile Header -->
+                            <div class="text-center mb-4">
+                                <div class="avatar-circle gradient-primary mx-auto mb-3" style="width: 100px; height: 100px;">
+                                    <i class="fas fa-user fa-3x text-white"></i>
                                 </div>
-                                <h4 class="fw-bold mb-0">{{ patient.full_name }}</h4>
-                                <p class="text-muted">Patient ID: #{{ patient.id }}</p>
+                                <h2 class="fw-bold mb-0">{{ patient.full_name }}</h2>
+                                <p class="text-muted">
+                                    <i class="fas fa-id-card me-1"></i>Patient ID: #{{ patient.id }}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-calendar-alt me-1"></i>Registered: {{ patient.created_at|date:"M d, Y" }}
+                                </p>
+                                <span class="badge-status badge-confirmed">
+                                    <i class="fas fa-tint me-1"></i> {{ patient.blood_group|default:"Blood Group N/A" }}
+                                </span>
                             </div>
 
-                            <div class="row">
-                                <!-- ✅ পুরো নাম (এক লাইনে) -->
-                                <div class="col-12 mb-3">
-                                    <label class="text-muted small">Full Name</label>
-                                    <p class="fw-semibold mb-0">{{ patient.full_name }}</p>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-muted small">Date of Birth</label>
-                                    <p class="fw-semibold mb-0">{{ patient.date_of_birth|date:"M d, Y"|default:"N/A" }}</p>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-muted small">Age</label>
-                                    <p class="fw-semibold mb-0">{{ patient.age|default:"N/A" }} years</p>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-muted small">Gender</label>
-                                    <p class="fw-semibold mb-0">{{ patient.get_gender_display|default:"N/A" }}</p>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-muted small">Blood Group</label>
-                                    <p class="fw-semibold mb-0">{{ patient.blood_group|default:"N/A" }}</p>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label class="text-muted small">Phone</label>
-                                    <p class="fw-semibold mb-0">{{ patient.phone|default:"N/A" }}</p>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label class="text-muted small">Emergency Contact</label>
-                                    <p class="fw-semibold mb-0">{{ patient.emergency_contact|default:"N/A" }}</p>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <label class="text-muted small">Address</label>
-                                    <p class="fw-semibold mb-0">{{ patient.address|default:"Not provided" }}</p>
-                                </div>
-                                <!-- ✅ রেফারেল তথ্য দেখানো -->
-                                <div class="col-12 mb-3">
-                                    <label class="text-muted small">Referred By</label>
-                                    <p class="fw-semibold mb-0">
-                                        {% if patient.referred_by_name %}
-                                            Dr. {{ patient.referred_by_name }}
-                                        {% else %}
-                                            <span class="text-muted">Direct (self registered)</span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                                <div class="col-12">
-                                    <label class="text-muted small">Registered On</label>
-                                    <p class="fw-semibold mb-0">{{ patient.created_at|date:"M d, Y h:i A" }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
-                            <a href="{% url 'doctor_add_prescription' patient.id %}" class="btn btn-primary rounded-pill">
-                                <i class="fas fa-prescription me-1"></i> Add Prescription
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Patient History Modal -->
-            <div class="modal fade" id="historyModal{{ patient.id }}" tabindex="-1">
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                    <div class="modal-content rounded-4">
-                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                            <h5 class="modal-title fw-bold">
-                                <i class="fas fa-history me-2"></i>Medical History - {{ patient.full_name }}
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <ul class="nav nav-tabs mb-3" role="tablist">
-                                <li class="nav-item">
-                                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#appointments{{ patient.id }}" type="button" role="tab">
-                                        <i class="fas fa-calendar-check me-1"></i> Appointments
-                                    </button>
-                                </li>
-                                <li class="nav-item">
-                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reports{{ patient.id }}" type="button" role="tab">
-                                        <i class="fas fa-flask me-1"></i> Test Reports
-                                    </button>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content">
-                                <!-- Appointments Tab -->
-                                <div class="tab-pane fade show active" id="appointments{{ patient.id }}" role="tabpanel">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for apt in patient.appointments.all|dictsortreversed:"appointment_date" %}
-                                                <tr>
-                                                    <td>{{ apt.appointment_date|date:"M d, Y h:i A" }}</td>
-                                                    <td>
-                                                        {% if apt.status == 'confirmed' %}
-                                                            <span class="badge bg-success">Confirmed</span>
-                                                        {% elif apt.status == 'pending' %}
-                                                            <span class="badge bg-warning">Pending</span>
-                                                        {% elif apt.status == 'completed' %}
-                                                            <span class="badge bg-info">Completed</span>
-                                                        {% else %}
-                                                            <span class="badge bg-danger">Cancelled</span>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% empty %}
-                                                <tr><td colspan="2" class="text-center text-muted">No appointments found</td></tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
+                            <!-- Stats Row -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3 col-6">
+                                    <div class="info-card text-center">
+                                        <i class="fas fa-calendar-check fa-2x text-primary mb-2 d-block"></i>
+                                        <h3 class="fw-bold text-primary mb-0">{{ patient.total_visits|default:0 }}</h3>
+                                        <small class="text-muted">Total Visits</small>
                                     </div>
                                 </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="info-card text-center">
+                                        <i class="fas fa-check-circle fa-2x text-success mb-2 d-block"></i>
+                                        <h3 class="fw-bold text-success mb-0">{{ patient.completed_visits|default:0 }}</h3>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="info-card text-center">
+                                        <i class="fas fa-clock fa-2x text-warning mb-2 d-block"></i>
+                                        <h3 class="fw-bold text-warning mb-0">{{ patient.pending_visits|default:0 }}</h3>
+                                        <small class="text-muted">Pending</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6">
+                                    <div class="info-card text-center">
+                                        <i class="fas fa-check-double fa-2x text-info mb-2 d-block"></i>
+                                        <h3 class="fw-bold text-info mb-0">{{ patient.confirmed_visits|default:0 }}</h3>
+                                        <small class="text-muted">Confirmed</small>
+                                    </div>
+                                </div>
+                            </div>
 
-                                <!-- Test Reports Tab -->
-                                <div class="tab-pane fade" id="reports{{ patient.id }}" role="tabpanel">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Report Type</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for report in patient.test_reports.all|dictsortreversed:"created_at" %}
-                                                <tr>
-                                                    <td>{{ report.created_at|date:"M d, Y" }}</td>
-                                                    <td>{{ report.get_report_type_display }}</td>
-                                                    <td>
-                                                        {% if report.status == 'completed' %}
-                                                            <span class="badge bg-success">Completed</span>
-                                                        {% else %}
-                                                            <span class="badge bg-warning">Pending</span>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% empty %}
-                                                <tr><td colspan="3" class="text-center text-muted">No test reports found</td></tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
+                            <!-- Personal & Contact Info -->
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="info-card">
+                                        <h6 class="fw-bold mb-3"><i class="fas fa-user-circle text-primary me-2"></i>Personal Information</h6>
+                                        <div class="detail-row"><span class="detail-label">Full Name</span><span class="detail-value">{{ patient.full_name }}</span></div>
+                                        <div class="detail-row"><span class="detail-label">Age</span><span class="detail-value">{{ patient.age|default:"N/A" }} years</span></div>
+                                        <div class="detail-row"><span class="detail-label">Gender</span><span class="detail-value">{{ patient.get_gender_display|default:"N/A" }}</span></div>
+                                        <div class="detail-row"><span class="detail-label">Blood Group</span><span class="detail-value"><span class="badge bg-danger">{{ patient.blood_group|default:"N/A" }}</span></span></div>
+                                        <div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-value">{{ patient.date_of_birth|date:"M d, Y"|default:"N/A" }}</span></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-card">
+                                        <h6 class="fw-bold mb-3"><i class="fas fa-address-card text-primary me-2"></i>Contact Information</h6>
+                                        <div class="detail-row"><span class="detail-label">Phone Number</span><span class="detail-value">{{ patient.phone|default:"N/A" }}</span></div>
+                                        <div class="detail-row"><span class="detail-label">Email Address</span><span class="detail-value">{{ patient.user.email|default:"N/A" }}</span></div>
+                                        <div class="detail-row"><span class="detail-label">Emergency Contact</span><span class="detail-value">{{ patient.emergency_contact|default:"N/A" }}</span></div>
+                                        <div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">{{ patient.address|default:"N/A" }}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Appointment History -->
+                            <div class="info-card mt-3">
+                                <h6 class="fw-bold mb-3"><i class="fas fa-history text-primary me-2"></i>Appointment History</h6>
+
+                                <!-- Timeline View -->
+                                <div class="timeline mb-4">
+                                    {% for apt in patient.appointments.all|dictsortreversed:"appointment_date"|slice:":5" %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-badge {% if apt.status == 'completed' %}bg-success{% elif apt.status == 'pending' %}bg-warning{% elif apt.status == 'confirmed' %}bg-info{% else %}bg-danger{% endif %}">
+                                            <i class="fas {% if apt.status == 'completed' %}fa-check-double{% elif apt.status == 'pending' %}fa-clock{% elif apt.status == 'confirmed' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                                                <div>
+                                                    <div class="timeline-date"><i class="fas fa-calendar-alt me-1"></i>{{ apt.appointment_date|date:"l, F d, Y" }}</div>
+                                                    <div class="timeline-time"><i class="fas fa-clock me-1"></i>{{ apt.appointment_date|date:"h:i A" }}</div>
+                                                </div>
+                                                <div>
+                                                    <span class="badge-status {% if apt.status == 'confirmed' %}badge-confirmed{% elif apt.status == 'pending' %}badge-pending{% elif apt.status == 'completed' %}badge-completed{% else %}badge-cancelled{% endif %}">
+                                                        <i class="fas {% if apt.status == 'confirmed' %}fa-check-circle{% elif apt.status == 'pending' %}fa-clock{% elif apt.status == 'completed' %}fa-check-double{% else %}fa-times-circle{% endif %} me-1"></i>
+                                                        {{ apt.status|title }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {% if apt.symptoms %}
+                                            <div class="mt-2"><i class="fas fa-stethoscope me-1 text-muted"></i><small>{{ apt.symptoms|truncatechars:100 }}</small></div>
+                                            {% endif %}
+                                            <div class="mt-2 pt-2 border-top">
+                                                <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                    <i class="fas fa-eye me-1"></i> View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="text-center py-4"><i class="fas fa-calendar-times fa-3x text-muted mb-2"></i><p class="text-muted mb-0">No appointments found</p></div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Table View -->
+                                <div class="table-responsive">
+                                    <table class="table table-modern">
+                                        <thead>
+                                            <tr><th>Date</th><th>Time</th><th>Status</th><th>Symptoms</th><th>Action</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for apt in patient.appointments.all|dictsortreversed:"appointment_date"|slice:":10" %}
+                                            <tr>
+                                                <td class="fw-semibold">{{ apt.appointment_date|date:"M d, Y" }}</td>
+                                                <td>{{ apt.appointment_date|date:"h:i A" }}</td>
+                                                <td><span class="badge-status {% if apt.status == 'confirmed' %}badge-confirmed{% elif apt.status == 'pending' %}badge-pending{% elif apt.status == 'completed' %}badge-completed{% else %}badge-cancelled{% endif %}">{{ apt.status|title }}</span></td>
+                                                <td>{{ apt.symptoms|truncatechars:40|default:"-" }}</td>
+                                                <td><a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-eye"></i></a></td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="5" class="text-center text-muted py-4">No appointments found</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Visit Summary -->
+                            <div class="row g-3 mt-2">
+                                <div class="col-6">
+                                    <div class="info-card text-center">
+                                        <small class="text-muted d-block mb-2"><i class="fas fa-calendar-plus me-1"></i> First Visit</small>
+                                        <p class="fw-bold mb-0 h5">
+                                            {% with first=patient.appointments.all|dictsortreversed:"appointment_date"|last %}
+                                                {{ first.appointment_date|date:"M d, Y"|default:"N/A" }}
+                                            {% endwith %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-card text-center">
+                                        <small class="text-muted d-block mb-2"><i class="fas fa-calendar-check me-1"></i> Last Visit</small>
+                                        <p class="fw-bold mb-0 h5">
+                                            {% with last=patient.appointments.all|dictsortreversed:"appointment_date"|first %}
+                                                {{ last.appointment_date|date:"M d, Y"|default:"N/A" }}
+                                            {% endwith %}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary rounded-pill btn-custom" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Close</button>
+                            <a href="{% url 'doctor_add_prescription' patient.id %}" class="btn gradient-primary rounded-pill btn-custom text-white"><i class="fas fa-prescription me-2"></i>Write Prescription</a>
                         </div>
                     </div>
                 </div>
@@ -404,21 +705,21 @@
             {% endfor %}
         {% else %}
         <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-4x text-muted mb-3 opacity-25"></i>
-                <h5 class="text-muted">No Patients Found</h5>
-                <p class="text-muted">You don't have any patients yet. When patients book appointments with you, they will appear here.</p>
-            </div>
+            <div class="text-center py-5"><i class="fas fa-users fa-5x text-muted opacity-25 mb-4 d-block"></i><h4 class="text-muted mb-2">No Patients Found</h4><p class="text-muted">You don't have any patients yet. When patients book appointments, they will appear here.</p><a href="{% url 'doctor_appointments' %}" class="btn gradient-primary text-white rounded-pill btn-custom mt-3"><i class="fas fa-calendar-alt me-2"></i>View Appointments</a></div>
         </div>
         {% endif %}
     </div>
 </div>
 
 <script>
-    // Initialize Bootstrap modals
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    function printModalContent(button) {
+        var modalBody = button.closest('.modal').querySelector('.modal-body');
+        var printContent = modalBody.cloneNode(true);
+        printContent.querySelectorAll('.btn, .btn-custom, a').forEach(el => el.remove());
+        var printWindow = window.open('', '_blank');
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>Patient Medical Record</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><style>body{padding:40px;font-family:Arial,sans-serif}@media print{body{padding:20px}}</style></head><body><div class="text-center mb-4"><h2>CareFusion</h2><p>Patient Medical Record</p><hr></div>${printContent.innerHTML}<div class="text-center mt-4"><small>Printed on: ${new Date().toLocaleString()}</small></div></body></html>`);
+        printWindow.document.close();
+        printWindow.print();
+    }
 </script>
 {% endblock %}

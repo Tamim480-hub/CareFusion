@@ -25,7 +25,6 @@
         --border: #e5e7eb;
     }
 
-    /* Welcome Banner */
     .welcome-banner {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 28px;
@@ -44,18 +43,7 @@
         background: rgba(255,255,255,0.1);
         border-radius: 50%;
     }
-    .welcome-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -30%;
-        left: -10%;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.08);
-        border-radius: 50%;
-    }
 
-    /* Stats Cards */
     .stat-card {
         background: white;
         border-radius: 24px;
@@ -63,22 +51,6 @@
         transition: all 0.3s;
         border: 1px solid var(--border);
         cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-    .stat-card:hover::before {
-        opacity: 1;
     }
     .stat-card:hover {
         transform: translateY(-4px);
@@ -93,7 +65,6 @@
         justify-content: center;
     }
 
-    /* Next Appointment */
     .next-appointment {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         border-radius: 24px;
@@ -103,14 +74,11 @@
         overflow: hidden;
     }
 
-    /* Emergency Alert */
     .emergency-alert {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         border-radius: 24px;
         padding: 20px 28px;
         margin-bottom: 32px;
-        position: relative;
-        overflow: hidden;
         cursor: pointer;
         transition: all 0.3s;
     }
@@ -118,41 +86,13 @@
         transform: translateY(-3px);
         box-shadow: 0 15px 30px rgba(239,68,68,0.3);
     }
-    .emergency-alert::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 200px;
-        height: 200px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-    .emergency-btn {
-        background: white;
-        color: #dc2626;
-        border: none;
-        padding: 12px 28px;
-        border-radius: 50px;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    .emergency-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
 
-    /* Section Cards */
     .section-card {
         background: white;
         border-radius: 24px;
         overflow: hidden;
         border: 1px solid var(--border);
         margin-bottom: 28px;
-        transition: all 0.3s;
-    }
-    .section-card:hover {
-        box-shadow: 0 10px 25px -12px rgba(0,0,0,0.1);
     }
     .section-header {
         background: white;
@@ -163,7 +103,6 @@
         padding: 20px 24px;
     }
 
-    /* Appointment Items */
     .appointment-item {
         border-bottom: 1px solid var(--border);
         padding: 16px 0;
@@ -178,83 +117,49 @@
         border-radius: 16px;
     }
 
-    /* ICU Booking Card */
-    .icu-card {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        border-radius: 18px;
-        padding: 16px 20px;
-        color: white;
-        margin-bottom: 14px;
+    .prescription-card {
+        background: #f0fdf4;
+        border-left: 4px solid var(--success);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
         transition: all 0.3s;
     }
-    .icu-card:hover {
+    .prescription-card:hover {
         transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(16,185,129,0.1);
     }
 
-    /* Order Item */
-    .order-item {
-        border-bottom: 1px solid var(--border);
-        padding: 12px 0;
+    .test-card {
+        background: #fef3c7;
+        border-left: 4px solid var(--warning);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
         transition: all 0.3s;
     }
-    .order-item:last-child {
-        border-bottom: none;
-    }
-    .order-item:hover {
-        background: var(--light-gray);
-        padding-left: 12px;
-        border-radius: 16px;
-    }
-    .order-status {
-        font-size: 11px;
-        padding: 3px 10px;
-        border-radius: 30px;
-        font-weight: 600;
-    }
-    .status-delivered {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    .status-pending {
-        background: #fed7aa;
-        color: #9a3412;
-    }
-    .status-processing {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-    .status-cancelled {
-        background: #fee2e2;
-        color: #991b1b;
+    .test-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(245,158,11,0.1);
     }
 
-    /* Badges */
-    .badge-confirmed {
-        background: #d1fae5;
-        color: #065f46;
-        padding: 4px 12px;
-        border-radius: 30px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .badge-pending {
-        background: #fed7aa;
-        color: #9a3412;
-        padding: 4px 12px;
-        border-radius: 30px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .badge-completed {
-        background: var(--border);
-        color: var(--gray);
-        padding: 4px 12px;
-        border-radius: 30px;
-        font-size: 11px;
-        font-weight: 600;
+    .badge-confirmed { background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+    .badge-pending { background: #fed7aa; color: #9a3412; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+    .badge-completed { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+
+    .medicine-tag {
+        background: white;
+        padding: 2px 8px;
+        border-radius: 15px;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--success);
+        border: 1px solid #d1fae5;
+        display: inline-block;
+        margin: 2px 4px 2px 0;
     }
 
-    /* Quick Actions */
     .quick-action-btn {
         background: white;
         border: 1px solid var(--border);
@@ -272,13 +177,11 @@
         box-shadow: 0 10px 20px -10px rgba(79,70,229,0.2);
     }
 
-    /* Empty State */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
     }
 
-    /* Flash Animation for Emergency */
     @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
@@ -325,9 +228,6 @@
             <li class="nav-item mb-2">
                 <a class="nav-link" href="{% url 'pharmacy_cart' %}">
                     <i class="fas fa-shopping-cart me-3"></i> Cart
-                    {% if cart_items_count > 0 %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ cart_items_count }}</span>
-                    {% endif %}
                 </a>
             </li>
             <li class="nav-item mb-2">
@@ -375,7 +275,7 @@
         </div>
     </div>
 
-    <!-- Emergency Alert Section -->
+    <!-- Emergency Alert -->
     <div class="emergency-alert" onclick="location.href='{% url 'emergency' %}'">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
@@ -392,7 +292,7 @@
                 </div>
             </div>
             <div>
-                <button class="emergency-btn">
+                <button class="btn btn-light rounded-pill px-4">
                     <i class="fas fa-phone-alt me-2"></i>Call Emergency
                 </button>
             </div>
@@ -408,12 +308,12 @@
                     <i class="fas fa-bell"></i>
                     <span class="text-white-80 small">UPCOMING APPOINTMENT</span>
                 </div>
-                <h4 class="mb-1 fw-bold">
+                <h4 class="mb-1 fw-bold text-white">
                     <i class="fas fa-calendar-alt me-2"></i>{{ next_appointment.appointment_date|date:"l, d M Y" }} at {{ next_appointment.appointment_date|date:"h:i A" }}
                 </h4>
-                <p class="mb-0 opacity-75">Dr. {{ next_appointment.doctor.user.get_full_name }} • {{ next_appointment.doctor.get_specialization_display }}</p>
+                <p class="mb-0 opacity-75 text-white">Dr. {{ next_appointment.doctor.full_name }} • {{ next_appointment.doctor.get_specialization_display }}</p>
             </div>
-            <a href="{% url 'patient_my_appointments' %}" class="btn btn-light rounded-pill px-4">
+            <a href="{% url 'patient_appointment_detail' next_appointment.id %}" class="btn btn-light rounded-pill px-4">
                 <i class="fas fa-eye me-2"></i>View Details
             </a>
         </div>
@@ -436,14 +336,14 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card" onclick="location.href='{% url 'patient_my_appointments' %}?status=upcoming'">
+            <div class="stat-card">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-muted small text-uppercase mb-1">Upcoming</p>
-                        <h2 class="fw-bold mb-0" style="color: var(--success);">{{ upcoming_appointments|default:0 }}</h2>
+                        <p class="text-muted small text-uppercase mb-1">Prescriptions</p>
+                        <h2 class="fw-bold mb-0" style="color: var(--success);">{{ prescriptions_count|default:0 }}</h2>
                     </div>
                     <div class="stat-icon" style="background: #d1fae5;">
-                        <i class="fas fa-clock fa-2x" style="color: var(--success);"></i>
+                        <i class="fas fa-prescription-bottle fa-2x" style="color: var(--success);"></i>
                     </div>
                 </div>
             </div>
@@ -462,14 +362,14 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="stat-card" onclick="location.href='{% url 'patient_orders' %}'">
+            <div class="stat-card" onclick="location.href='{% url 'patient_test_reports' %}'">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <p class="text-muted small text-uppercase mb-1">Total Orders</p>
-                        <h2 class="fw-bold mb-0" style="color: var(--warning);">{{ total_orders|default:0 }}</h2>
+                        <p class="text-muted small text-uppercase mb-1">Test Reports</p>
+                        <h2 class="fw-bold mb-0" style="color: var(--warning);">{{ test_reports_count|default:0 }}</h2>
                     </div>
                     <div class="stat-icon" style="background: #fed7aa;">
-                        <i class="fas fa-shopping-cart fa-2x" style="color: var(--warning);"></i>
+                        <i class="fas fa-flask fa-2x" style="color: var(--warning);"></i>
                     </div>
                 </div>
             </div>
@@ -477,7 +377,7 @@
     </div>
 
     <div class="row g-4">
-        <!-- Left Column - Appointments & ICU -->
+        <!-- Left Column -->
         <div class="col-lg-6">
             <!-- Recent Appointments -->
             <div class="section-card">
@@ -496,13 +396,15 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <strong class="text-dark">Dr. {{ apt.doctor.user.get_full_name }}</strong>
+                                        <strong class="text-dark">Dr. {{ apt.doctor.full_name }}</strong>
                                         {% if apt.status == 'confirmed' %}
                                             <span class="badge-confirmed">✓ Confirmed</span>
                                         {% elif apt.status == 'pending' %}
                                             <span class="badge-pending">⏳ Pending</span>
-                                        {% else %}
+                                        {% elif apt.status == 'completed' %}
                                             <span class="badge-completed">✓ Completed</span>
+                                        {% else %}
+                                            <span class="badge-cancelled">✗ Cancelled</span>
                                         {% endif %}
                                     </div>
                                     <div class="text-muted small">
@@ -530,110 +432,106 @@
                     {% endif %}
                 </div>
             </div>
+<!-- Recent Prescriptions -->
+<div class="section-card">
+    <div class="section-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold">
+                <i class="fas fa-prescription-bottle me-2" style="color: var(--success);"></i>Recent Prescriptions
+            </h5>
+            <a href="{% url 'patient_my_appointments' %}" class="text-decoration-none small">View All →</a>
+        </div>
+    </div>
+    <div class="section-body">
+        {% if recent_prescriptions %}
+            {% for pres in recent_prescriptions %}
+            <div class="prescription-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <strong class="text-success">Prescription</strong>
+                            <small class="text-muted">{{ pres.created_at|date:"d M Y" }}</small>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Diagnosis:</strong> {{ pres.diagnosis|truncatechars:50 }}
+                        </div>
+                        <div>
+                            <strong>Medicines:</strong>
+                            {% for medicine in pres.medicines.splitlines|slice:":3" %}
+                                <span class="medicine-tag">{{ medicine|truncatechars:25 }}</span>
+                            {% endfor %}
+                            {% if pres.medicines.splitlines|length > 3 %}
+                                <small class="text-muted">+{{ pres.medicines.splitlines|length|add:"-3" }} more</small>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Dr. {{ pres.appointment.doctor.full_name }}</small>
+                        </div>
+                    </div>
+                    <a href="{% url 'patient_appointment_detail' pres.appointment.id %}" class="btn btn-sm btn-outline-success rounded-pill">
+                        <i class="fas fa-eye me-1"></i> View
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-prescription fa-3x text-muted mb-3 opacity-25"></i>
+                <p class="text-muted mb-3">No prescriptions yet</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+        </div>
 
-            <!-- ICU Bookings -->
+        <!-- Right Column -->
+        <div class="col-lg-6">
+            <!-- Recent Test Reports -->
             <div class="section-card">
-                <div class="section-header" style="border-bottom-color: #fee2e2;">
+                <div class="section-header" style="border-bottom-color: #fef3c7;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-semibold">
-                            <i class="fas fa-bed me-2" style="color: var(--danger);"></i>ICU Bookings
-                            {% if icu_bookings_count > 0 %}
-                            <span class="badge bg-danger text-white ms-2">{{ icu_bookings_count }} Active</span>
-                            {% endif %}
+                            <i class="fas fa-flask me-2" style="color: var(--warning);"></i>Recent Test Reports
                         </h5>
-                        <a href="{% url 'patient_icu_bookings' %}" class="text-decoration-none small">View All →</a>
+                        <a href="{% url 'patient_test_reports' %}" class="text-decoration-none small">View All →</a>
                     </div>
                 </div>
                 <div class="section-body">
-                    {% if recent_icu_bookings %}
-                        {% for booking in recent_icu_bookings %}
-                        <div class="icu-card">
+                    {% if recent_test_reports %}
+                        {% for report in recent_test_reports %}
+                        <div class="test-card">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1 fw-bold">Bed #{{ booking.bed.bed_number }}</h6>
-                                    <p class="small mb-1 opacity-90">
-                                        <i class="fas fa-building me-1"></i>{{ booking.bed.hospital.name }}
-                                    </p>
-                                    <div class="mt-2">
-                                        <small class="opacity-75">
-                                            <i class="far fa-calendar-alt me-1"></i>Admitted: {{ booking.admission_date|date:"d M Y" }}
-                                        </small>
-                                        {% if booking.is_active %}
-                                        <small class="ms-3 opacity-75">
-                                            <i class="fas fa-circle me-1" style="font-size: 8px;"></i>Active
-                                        </small>
+                                    <strong>{{ report.get_report_type_display }}</strong>
+                                    <small class="text-muted d-block">{{ report.test_date|date:"d M Y" }}</small>
+                                    {% if report.report_title %}
+                                    <div class="mt-1"><small>{{ report.report_title }}</small></div>
+                                    {% endif %}
+                                    <div class="mt-1">
+                                        <span class="badge bg-{% if report.status == 'completed' %}success{% else %}warning{% endif %} px-2 py-1">
+                                            {{ report.get_status_display }}
+                                        </span>
+                                        {% if report.is_urgent %}
+                                        <span class="badge bg-danger ms-1">Urgent</span>
                                         {% endif %}
                                     </div>
                                 </div>
-                                <a href="{% url 'patient_icu_bookings' %}" class="btn btn-sm btn-light rounded-pill">
-                                    <i class="fas fa-eye me-1"></i> Details
+                                {% if report.report_file %}
+                                <a href="{{ report.report_file.url }}" class="btn btn-sm btn-outline-primary rounded-pill" target="_blank">
+                                    <i class="fas fa-download me-1"></i>
                                 </a>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-bed fa-3x text-muted mb-3 opacity-25"></i>
-                            <p class="text-muted mb-3">No ICU bookings</p>
-                            <a href="{% url 'patient_icu_beds' %}" class="btn btn-danger rounded-pill px-4">
-                                <i class="fas fa-plus-circle me-2"></i>Book ICU Bed
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column - Orders & Quick Actions -->
-        <div class="col-lg-6">
-            <!-- Recent Orders -->
-            <div class="section-card">
-                <div class="section-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-semibold">
-                            <i class="fas fa-shopping-cart me-2" style="color: var(--success);"></i>Recent Orders
-                        </h5>
-                        <a href="{% url 'patient_orders' %}" class="text-decoration-none small">View All →</a>
-                    </div>
-                </div>
-                <div class="section-body">
-                    {% if recent_orders %}
-                        {% for order in recent_orders %}
-                        <div class="order-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <strong class="text-dark">Order #{{ order.order_number }}</strong>
-                                        <span class="order-status
-                                            {% if order.status == 'delivered' %}status-delivered
-                                            {% elif order.status == 'pending' %}status-pending
-                                            {% elif order.status == 'processing' %}status-processing
-                                            {% elif order.status == 'cancelled' %}status-cancelled
-                                            {% endif %}">
-                                            {{ order.get_status_display }}
-                                        </span>
-                                    </div>
-                                    <div class="text-muted small">
-                                        <i class="far fa-calendar-alt me-1"></i>{{ order.created_at|date:"d M Y" }}
-                                        <i class="fas fa-taka-sign ms-2 me-1"></i>৳{{ order.total_amount|floatformat:2 }}
-                                    </div>
-                                    <div class="text-muted small mt-1">
-                                        <i class="fas fa-box me-1"></i>{{ order.items.count }} item(s)
-                                    </div>
-                                </div>
-                                <a href="{% url 'patient_order_detail' order.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                {% else %}
+                                <a href="{% url 'patient_test_report_detail' report.id %}" class="btn btn-sm btn-outline-warning rounded-pill">
                                     <i class="fas fa-eye me-1"></i> View
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}
                     {% else %}
                         <div class="empty-state">
-                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3 opacity-25"></i>
-                            <p class="text-muted mb-3">No orders yet</p>
-                            <a href="{% url 'patient_products' %}" class="btn btn-primary rounded-pill px-4">
-                                <i class="fas fa-plus-circle me-2"></i>Start Shopping
-                            </a>
+                            <i class="fas fa-flask fa-3x text-muted mb-3 opacity-25"></i>
+                            <p class="text-muted mb-3">No test reports yet</p>
                         </div>
                     {% endif %}
                 </div>
@@ -677,33 +575,6 @@
                                 <small class="text-muted">Emergency admission</small>
                             </a>
                         </div>
-                        <div class="col-md-4">
-                            <a href="{% url 'pharmacy_cart' %}" class="quick-action-btn">
-                                <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: #fed7aa; border-radius: 50%;">
-                                    <i class="fas fa-shopping-cart fa-xl" style="color: var(--warning);"></i>
-                                </div>
-                                <h6 class="mb-0 fw-semibold">My Cart</h6>
-                                <small class="text-muted">{{ cart_items_count }} item(s)</small>
-                            </a>
-                        </div>
-                        <div class="col-md-4">
-                            <a href="{% url 'patient_test_reports' %}" class="quick-action-btn">
-                                <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: #e0f2fe; border-radius: 50%;">
-                                    <i class="fas fa-flask fa-xl" style="color: var(--info);"></i>
-                                </div>
-                                <h6 class="mb-0 fw-semibold">Test Reports</h6>
-                                <small class="text-muted">View lab results</small>
-                            </a>
-                        </div>
-                        <div class="col-md-4">
-                            <a href="{% url 'patient_orders' %}" class="quick-action-btn" style="border-color: #d1fae5;">
-                                <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; background: #d1fae5; border-radius: 50%;">
-                                    <i class="fas fa-shopping-cart fa-xl" style="color: var(--success);"></i>
-                                </div>
-                                <h6 class="mb-0 fw-semibold" style="color: var(--success);">My Orders</h6>
-                                <small class="text-muted">Track your orders</small>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -715,7 +586,10 @@
     function displayCurrentDate() {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const today = new Date();
-        document.getElementById('currentDate').innerHTML = today.toLocaleDateString('en-US', options);
+        const dateSpan = document.getElementById('currentDate');
+        if (dateSpan) {
+            dateSpan.innerHTML = today.toLocaleDateString('en-US', options);
+        }
     }
     displayCurrentDate();
 </script>

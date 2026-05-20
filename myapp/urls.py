@@ -1,6 +1,7 @@
 # myapp/urls.py - সম্পূর্ণ সঠিক ফাইল
 
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
@@ -10,7 +11,7 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('logout/', views.logout_view, name='logout'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
-
+path('doctor/patient/<int:patient_id>/', views.doctor_patient_detail, name='doctor_patient_detail'),
     # ==================== Super Admin URLs ====================
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/hospitals/', views.admin_manage_hospitals, name='admin_manage_hospitals'),
@@ -27,6 +28,7 @@ urlpatterns = [
     path('hospital/profile/', views.hospital_profile, name='hospital_profile'),
     path('hospital/doctors/', views.hospital_doctors, name='hospital_doctors'),
     path('hospital/patients/', views.hospital_patients, name='hospital_patients'),
+    path('hospital/patient/<int:patient_id>/', views.hospital_patient_detail, name='hospital_patient_detail'),
     path('hospital/appointments/', views.hospital_appointments, name='hospital_appointments'),
     path('hospital/beds/', views.hospital_beds, name='hospital_beds'),
     path('hospital/products/', views.hospital_products, name='hospital_products'),
@@ -35,7 +37,8 @@ urlpatterns = [
     path('hospital/test-reports/', views.hospital_test_reports, name='hospital_test_reports'),
     path('hospital/emergencies/', views.hospital_emergencies, name='hospital_emergencies'),
     path('hospital/doctor-login-info/<int:doctor_id>/', views.doctor_login_info, name='doctor_login_info'),
-
+# myapp/urls.py
+path('doctor/appointment/update-advice/<int:appointment_id>/', views.update_doctor_advice, name='update_doctor_advice'),
     # ==================== Patient URLs ====================
     path('patient/dashboard/', views.patient_dashboard, name='patient_dashboard'),
     path('patient/profile/', views.patient_profile, name='patient_profile'),
@@ -132,4 +135,5 @@ path('remove-from-cart/<int:item_id>/', views.remove_from_cart, name='remove_fro
 path('doctor/add-prescription/<int:appointment_id>/', views.doctor_add_prescription, name='doctor_add_prescription'),
 path('doctor/add-test-report/<int:appointment_id>/', views.doctor_add_test_report, name='doctor_add_test_report'),
 path('doctor/refer-patient/<int:appointment_id>/', views.doctor_refer_patient, name='doctor_refer_patient'),
+path('doctor/patient-details-ajax/<int:patient_id>/', views.doctor_patient_details_ajax, name='doctor_patient_details_ajax'),
 ]

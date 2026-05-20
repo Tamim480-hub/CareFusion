@@ -1,0 +1,344 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Patient Details - {{ patient.full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 24px;
+    }
+    .info-card .card-header {
+        background: transparent;
+        border-bottom: 2px solid #f0f2f5;
+        padding: 18px 24px;
+        font-weight: 700;
+    }
+    .advice-card {
+        background: #f0fdf4;
+        border-left: 4px solid #22c55e;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .prescription-card {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .doctor-note-card {
+        background: #e0f2fe;
+        border-left: 4px solid #0284c7;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    .info-label {
+        font-size: 13px;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .status-completed { background: #dbeafe; color: #1e40af; }
+</style>
+{% endblock %}
+
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
+            </div>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Doctor Portal</small>
+        </div>
+
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'doctor_patients' %}">
+                    <i class="fas fa-users me-3"></i> My Patients
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'doctor_profile' %}">
+                    <i class="fas fa-user-md me-3"></i> My Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{% url 'doctor_patients' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i> Back to Patients
+        </a>
+    </div>
+
+    <!-- Patient Header -->
+    <div class="info-card">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-1">{{ patient.full_name }}</h2>
+                    <p class="text-muted">Patient ID: #{{ patient.id }}</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-primary">{{ patient.blood_group|default:"Blood Group N/A" }}</span>
+                        <span class="badge bg-secondary">{{ patient.age|default:"N/A" }} years</span>
+                        <span class="badge bg-info">{{ patient.get_gender_display|default:"N/A" }}</span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="bg-light rounded-3 p-2 d-inline-block">
+                        <strong>Total Visits:</strong> {{ total_visits|default:0 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Doctor's Advice & Notes -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-stethoscope me-2 text-primary"></i> Doctor's Advice & Prescriptions
+                </div>
+                <div class="card-body p-4">
+                    {% for apt in appointments %}
+                        {% if apt.doctor_notes or apt.doctor_advice %}
+                        <div class="doctor-note-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="text-primary">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    {{ apt.appointment_date|date:"M d, Y" }}
+                                </strong>
+                                <span class="status-badge status-completed">{{ apt.status|title }}</span>
+                            </div>
+                            {% if apt.doctor_notes %}
+                            <div class="mb-2">
+                                <strong>Clinical Notes:</strong>
+                                <p class="mb-0 mt-1">{{ apt.doctor_notes|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                            {% if apt.doctor_advice %}
+                            <div class="mt-2 pt-2 border-top">
+                                <strong class="text-success"><i class="fas fa-prescription me-1"></i> Advice Given:</strong>
+                                <p class="mb-0 mt-1">{{ apt.doctor_advice|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-stethoscope fa-3x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No doctor's notes found</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Prescriptions -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-prescription-bottle me-2 text-primary"></i> Prescriptions
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Diagnosis</th>
+                                    <th>Medicines</th>
+                                    <th>Instructions</th>
+                                    <th>Next Visit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pres in prescriptions %}
+                                <tr>
+                                    <td>{{ pres.created_at|date:"M d, Y" }}<br><small>{{ pres.created_at|date:"h:i A" }}</small></td>
+                                    <td>{{ pres.diagnosis|truncatechars:40 }}</br>
+                                        {% if pres.diagnosis_details %}
+                                        <small class="text-muted">{{ pres.diagnosis_details|truncatechars:30 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for medicine in pres.medicines.splitlines|slice:":2" %}
+                                            <span class="badge bg-light text-dark me-1 mb-1">{{ medicine }}</span>
+                                        {% endfor %}
+                                        {% if pres.medicines.splitlines|length > 2 %}
+                                            <small class="text-muted">+{{ pres.medicines.splitlines|length|add:"-2" }} more</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ pres.instructions|truncatechars:40|default:"-" }}</br>
+                                        {% if pres.duration %}
+                                        <small class="text-muted">Duration: {{ pres.duration }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ pres.next_visit_date|date:"M d, Y"|default:"-" }}<br>
+                                        {% if pres.next_visit_date %}
+                                        <small class="text-warning">Follow-up needed</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <td><td colspan="5" class="text-center py-4">No prescriptions found</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment History -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-history me-2 text-primary"></i> Appointment History
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Symptoms</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for apt in appointments %}
+                                <tr>
+                                    <td>{{ apt.appointment_date|date:"M d, Y h:i A" }}<br><small class="text-muted">Booked: {{ apt.created_at|date:"M d, Y" }}</small></td>
+                                    <td>
+                                        <span class="badge {% if apt.status == 'confirmed' %}bg-success{% elif apt.status == 'pending' %}bg-warning{% elif apt.status == 'completed' %}bg-info{% else %}bg-danger{% endif %}">
+                                            {{ apt.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ apt.symptoms|truncatechars:50|default:"-" }}</br>
+                                        {% if apt.doctor_advice %}
+                                        <small class="text-success"><i class="fas fa-comment"></i> Advice given</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'doctor_appointment_detail' apt.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </td>
+                                {% empty %}
+                                <td><td colspan="4" class="text-center py-4">No appointments found</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Statistics -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line me-2 text-primary"></i> Statistics
+                </div>
+                <div class="card-body p-4">
+                    <div class="row text-center g-3">
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <h3 class="fw-bold text-primary mb-0">{{ total_visits|default:0 }}</h3>
+                                <small class="text-muted">Total Visits</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <h3 class="fw-bold text-success mb-0">{{ completed_visits|default:0 }}</h3>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="bg-light rounded-3 p-3">
+                                <div class="info-row">
+                                    <span class="info-label">First Visit</span>
+                                    <span class="info-value">{{ first_visit.appointment_date|date:"M d, Y"|default:"N/A" }}</span>
+                                </div>
+                                <div class="info-row mb-0">
+                                    <span class="info-label">Last Visit</span>
+                                    <span class="info-value">{{ last_visit.appointment_date|date:"M d, Y"|default:"N/A" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Info -->
+            <div class="info-card">
+                <div class="card-header">
+                    <i class="fas fa-user-circle me-2 text-primary"></i> Contact Info
+                </div>
+                <div class="card-body p-4">
+                    <div class="info-row">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">{{ patient.phone|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">{{ patient.user.email|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Emergency</span>
+                        <span class="info-value">{{ patient.emergency_contact|default:"N/A" }}</span>
+                    </div>
+                    <div class="info-row mb-0">
+                        <span class="info-label">Address</span>
+                        <span class="info-value">{{ patient.address|default:"N/A"|truncatechars:30 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

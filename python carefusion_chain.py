@@ -1163,4 +1163,3 @@ if __name__ == "__main__":
     finally:
         input("\n  Press ENTER to close browser…")
         cf.quit()
-

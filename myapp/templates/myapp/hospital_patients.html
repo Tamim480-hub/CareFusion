@@ -1,340 +1,427 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareFusion - Manage Patients</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
-        }
+{% extends 'myapp/base.html' %}
+{% load static %}
 
-        .sidebar {
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-        }
+{% block title %}Manage Patients - Hospital Dashboard{% endblock %}
 
-        .nav-link {
-            border-radius: 12px;
-            padding: 12px 15px;
-            color: rgba(255,255,255,0.8) !important;
-        }
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --secondary: #7c3aed;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #06b6d4;
+    }
 
-        .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            color: white !important;
-        }
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
 
-        .nav-link.active {
-            background: linear-gradient(135deg, #4a90e2, #357abd);
-            color: white !important;
-        }
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .avatar-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .table-hover tbody tr {
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .table-hover tbody tr:hover {
+        background: #f8fafc;
+    }
 
-        .stat-card {
-            background: white;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
+    .btn-sm {
+        transition: all 0.2s;
+    }
+    .btn-sm:hover {
+        transform: translateY(-2px);
+    }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
+    .search-input {
+        border-radius: 30px;
+        padding: 10px 18px;
+        border: 1px solid #e5e7eb;
+    }
+    .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
 
-        .table tbody tr:hover {
-            background: #f8f9fa;
-            transform: scale(1.01);
-        }
+    .action-buttons form {
+        display: inline-block;
+    }
 
-        .btn-sm {
-            transition: all 0.3s;
-        }
+    .patient-link {
+        text-decoration: none;
+        color: inherit;
+    }
+    .patient-link:hover {
+        text-decoration: none;
+        color: var(--primary);
+    }
+</style>
+{% endblock %}
 
-        .btn-sm:hover {
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                min-height: auto;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<div class="container-fluid p-0">
-    <div class="row g-0">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 sidebar">
-            <div class="p-3">
-                <div class="text-center mb-4">
-                    <i class="fas fa-hospital-user" style="font-size: 45px; color: #4a90e2;"></i>
-                    <h5 class="text-white mt-2 mb-1">CareFusion</h5>
-                    <small class="text-white-50">Hospital Admin</small>
-                </div>
-
-                <ul class="nav nav-pills flex-column">
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_dashboard' %}">
-                            <i class="fas fa-tachometer-alt me-3"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_doctors' %}">
-                            <i class="fas fa-user-md me-3"></i> Doctors
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link active" href="{% url 'hospital_patients' %}">
-                            <i class="fas fa-users me-3"></i> Patients
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_appointments' %}">
-                            <i class="fas fa-calendar-check me-3"></i> Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a class="nav-link" href="{% url 'hospital_beds' %}">
-                            <i class="fas fa-bed me-3"></i> ICU Beds
-                        </a>
-                    </li>
-                    <li class="nav-item mt-4 pt-3 border-top border-secondary">
-                        <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
-                            <i class="fas fa-sign-out-alt me-3"></i> Logout
-                        </a>
-                    </li>
-                </ul>
+{% block sidebar %}
+<div class="sidebar">
+    <div class="p-3">
+        <div class="text-center mb-4">
+            <div class="bg-white bg-opacity-10 rounded-circle p-2 d-inline-block mb-2">
+                <i class="fas fa-hospital-user" style="font-size: 35px; color: var(--primary);"></i>
             </div>
+            <h5 class="text-white mt-2 mb-1">CareFusion</h5>
+            <small class="text-white-50">Hospital Admin</small>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10 p-4">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold">
-                        <i class="fas fa-users text-primary me-2"></i>
-                        Manage Patients
-                    </h2>
-                    <p class="text-muted mb-0">{{ hospital.name }}</p>
-                </div>
-                <a href="{% url 'hospital_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
-                    <i class="fas fa-arrow-left me-2"></i> Back
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-3"></i> Dashboard
                 </a>
-            </div>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_doctors' %}">
+                    <i class="fas fa-user-md me-3"></i> Doctors
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link active" href="{% url 'hospital_patients' %}">
+                    <i class="fas fa-users me-3"></i> Patients
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_appointments' %}">
+                    <i class="fas fa-calendar-check me-3"></i> Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_beds' %}">
+                    <i class="fas fa-bed me-3"></i> ICU Beds
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link" href="{% url 'hospital_profile' %}">
+                    <i class="fas fa-building me-3"></i> Hospital Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4 pt-3 border-top border-secondary">
+                <a class="nav-link" href="{% url 'logout' %}" style="background: rgba(220, 53, 69, 0.2);">
+                    <i class="fas fa-sign-out-alt me-3"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
 
-            <!-- Statistics -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Total Patients</small>
-                                <h3 class="mb-0 fw-bold">{{ patients|length }}</h3>
-                            </div>
-                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                                <i class="fas fa-users fa-2x text-primary"></i>
-                            </div>
-                        </div>
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-users me-2" style="color: var(--primary);"></i>
+                Manage Patients
+            </h2>
+            <p class="text-muted mb-0">{{ hospital.name }} - View and manage all patients</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill">
+                <i class="fas fa-calendar-alt me-2"></i> {% now "F d, Y" %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold">Total Patients</small>
+                        <h3 class="mb-0 fw-bold text-primary mt-1">{{ total_patients|default:patients|length }}</h3>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Active</small>
-                                <h3 class="mb-0 fw-bold text-success">
-                                    {% for p in patients %}{% if p.is_active %}{{ forloop.counter }}{% endif %}{% endfor %}
-                                </h3>
-                            </div>
-                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                                <i class="fas fa-check-circle fa-2x text-success"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">Inactive</small>
-                                <h3 class="mb-0 fw-bold text-danger">
-                                    {% for p in patients %}{% if not p.is_active %}{{ forloop.counter }}{% endif %}{% endfor %}
-                                </h3>
-                            </div>
-                            <div class="bg-danger bg-opacity-10 rounded-3 p-3">
-                                <i class="fas fa-user-slash fa-2x text-danger"></i>
-                            </div>
-                        </div>
+                    <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                        <i class="fas fa-users fa-2x text-primary"></i>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold">Active Patients</small>
+                        <h3 class="mb-0 fw-bold text-success mt-1">{{ active_count|default:0 }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                        <i class="fas fa-user-check fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold">Inactive Patients</small>
+                        <h3 class="mb-0 fw-bold text-danger mt-1">{{ inactive_count|default:0 }}</h3>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 rounded-3 p-3">
+                        <i class="fas fa-user-slash fa-2x text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Search & Filter -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-body p-3">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search by name or phone...">
+    <!-- Search & Filter -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 rounded-pill">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control search-input border-start-0 rounded-pill"
+                                       placeholder="Search by name, phone or ID...">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <select id="statusFilter" class="form-select">
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select rounded-pill">
                                 <option value="">All Status</option>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <button class="btn btn-outline-secondary w-100 rounded-pill" onclick="clearFilters()">
-                                <i class="fas fa-eraser me-1"></i> Clear
+                            <select id="bloodGroupFilter" class="form-select rounded-pill">
+                                <option value="">All Blood Groups</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary rounded-pill w-100" onclick="clearFilters()">
+                                <i class="fas fa-eraser me-1"></i> Clear All
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Patients Table -->
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-0 pt-4 px-4">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="fas fa-list me-2 text-primary"></i>
-                        Patients List
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="patientsTable">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Patient</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Gender</th>
-                                    <th>Blood Group</th>
-                                    <th>Registered</th>
-                                    <th>Status</th>
-                                    <th class="text-center pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for patient in patients %}
-                                <tr data-status="{% if patient.is_active %}active{% else %}inactive{% endif %}">
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-2">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <div>
-                                                <strong>{{ patient.full_name }}</strong><br>
-                                                <small class="text-muted">ID: #{{ patient.id }}</small>
-                                            </div>
+    <!-- Patients Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-list me-2 text-primary"></i>
+                Patients List
+                <span class="badge bg-primary ms-2" id="rowCount">{{ patients|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="patientsTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Patient</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Gender / Age</th>
+                            <th>Blood Group</th>
+                            <th>Registered On</th>
+                            <th>Status</th>
+                            <th class="text-center pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr data-status="{% if patient.is_active %}active{% else %}inactive{% endif %}"
+                            data-blood="{{ patient.blood_group|default:'' }}"
+                            data-name="{{ patient.full_name|lower }}"
+                            data-phone="{{ patient.phone|default:'' }}">
+                            <td class="ps-4">
+                                <a href="{% url 'hospital_patient_detail' patient.id %}" class="patient-link">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary">
+                                            <i class="fas fa-user"></i>
                                         </div>
-                                    </td>
-                                    <td class="align-middle">{{ patient.phone|default:"N/A" }}</br><small>{{ patient.emergency_contact|default:"No emergency" }}</small></td>
-                                    <td class="align-middle">{{ patient.user.email|default:"N/A" }}</td>
-                                    <td class="align-middle">{{ patient.get_gender_display }}</br><small>{{ patient.age }} yrs</small></td>
-                                    <td class="align-middle">{{ patient.blood_group|default:"N/A" }}</td>
-                                    <td class="align-middle">{{ patient.created_at|date:"M d, Y" }}<br><small>{{ patient.created_at|date:"g:i A" }}</small></td>
-                                    <td class="align-middle">
-                                        {% if patient.is_active %}
-                                            <span class="badge bg-success rounded-pill px-3 py-2">
-                                                <i class="fas fa-check-circle me-1"></i> Active
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-danger rounded-pill px-3 py-2">
-                                                <i class="fas fa-times-circle me-1"></i> Inactive
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center pe-4 align-middle">
-                                        <form method="POST" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="patient_id" value="{{ patient.id }}">
-                                            {% if patient.is_active %}
-                                                <button type="submit" name="action" value="toggle" class="btn btn-sm btn-warning rounded-pill mb-1"
-                                                        onclick="return confirm('Deactivate this patient?')">
-                                                    <i class="fas fa-ban me-1"></i> Deactivate
-                                                </button>
-                                            {% else %}
-                                                <button type="submit" name="action" value="toggle" class="btn btn-sm btn-success rounded-pill mb-1"
-                                                        onclick="return confirm('Activate this patient?')">
-                                                    <i class="fas fa-check me-1"></i> Activate
-                                                </button>
-                                            {% endif %}
-                                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger rounded-pill"
-                                                    onclick="return confirm('Delete this patient?')">
-                                                <i class="fas fa-trash me-1"></i> Delete
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="8" class="text-center py-5">
-                                        <i class="fas fa-users fa-4x text-muted mb-3"></i>
-                                        <h5 class="text-muted">No Patients Found</h5>
-                                        <p class="text-muted">No patients found for this hospital.</p>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                        <div>
+                                            <strong>{{ patient.full_name }}</strong><br>
+                                            <small class="text-muted">ID: #{{ patient.id }}</small>
+                                        </div>
+                                    </div>
+                                </a>
+                              </td>
+                            <td>
+                                <i class="fas fa-phone-alt me-1 text-muted small"></i> {{ patient.phone|default:"N/A" }}<br>
+                                {% if patient.emergency_contact %}
+                                <small class="text-muted"><i class="fas fa-ambulance me-1"></i> {{ patient.emergency_contact }}</small>
+                                {% endif %}
+                              </td>
+                            <td>
+                                {{ patient.user.email|default:"N/A" }}<br>
+                                {% if patient.user.last_login %}
+                                <small class="text-muted">Last login: {{ patient.user.last_login|date:"M d, Y" }}</small>
+                                {% endif %}
+                              </td>
+                            <td>
+                                {{ patient.get_gender_display|default:"N/A" }}<br>
+                                <small class="text-muted">{{ patient.age|default:"N/A" }} years</small>
+                              </td>
+                            <td>
+                                {% if patient.blood_group %}
+                                <span class="badge bg-danger">{{ patient.blood_group }}</span>
+                                {% else %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                              </td>
+                            <td>
+                                {{ patient.created_at|date:"M d, Y" }}<br>
+                                <small class="text-muted">{{ patient.created_at|date:"g:i A" }}</small>
+                              </td>
+                            <td>
+                                {% if patient.is_active %}
+                                    <span class="badge bg-success rounded-pill px-3 py-2">
+                                        <i class="fas fa-check-circle me-1"></i> Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">
+                                        <i class="fas fa-times-circle me-1"></i> Inactive
+                                    </span>
+                                {% endif %}
+                              </td>
+                            <td class="text-center pe-4 action-buttons">
+                                <form method="POST" action="{% url 'hospital_patients' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="patient_id" value="{{ patient.id }}">
+                                    {% if patient.is_active %}
+                                        <button type="submit" name="action" value="toggle"
+                                                class="btn btn-sm btn-warning rounded-pill mb-1"
+                                                onclick="return confirm('Are you sure you want to deactivate this patient?')">
+                                            <i class="fas fa-ban me-1"></i> Deactivate
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" name="action" value="toggle"
+                                                class="btn btn-sm btn-success rounded-pill mb-1"
+                                                onclick="return confirm('Are you sure you want to activate this patient?')">
+                                            <i class="fas fa-check me-1"></i> Activate
+                                        </button>
+                                    {% endif %}
+                                    <button type="submit" name="action" value="delete"
+                                            class="btn btn-sm btn-danger rounded-pill"
+                                            onclick="return confirm('⚠️ Are you sure you want to delete this patient?\n\nThis action cannot be undone and will permanently remove all patient data.')">
+                                        <i class="fas fa-trash me-1"></i> Delete
+                                    </button>
+                                </form>
+                              </td>
+                          </tr>
+                        {% empty %}
+                          <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="fas fa-users fa-4x text-muted mb-3 d-block"></i>
+                                <h5 class="text-muted">No Patients Found</h5>
+                                <p class="text-muted">No patients registered in this hospital yet.</p>
+                                {% if search %}
+                                <a href="{% url 'hospital_patients' %}" class="btn btn-primary rounded-pill mt-3">
+                                    <i class="fas fa-sync-alt me-2"></i> Clear Filters
+                                </a>
+                                {% endif %}
+                              </td>
+                          </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        let value = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#patientsTable tbody tr');
-        rows.forEach(row => {
-            let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(value) ? '' : 'none';
-        });
-    });
+    // Get DOM elements
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const bloodGroupFilter = document.getElementById('bloodGroupFilter');
+    const rows = document.querySelectorAll('#patientsTable tbody tr');
+    const rowCountSpan = document.getElementById('rowCount');
 
-    // Status filter
-    document.getElementById('statusFilter').addEventListener('change', function() {
-        let status = this.value;
-        let rows = document.querySelectorAll('#patientsTable tbody tr');
+    function filterTable() {
+        if (!rows.length) return;
+
+        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const statusValue = statusFilter ? statusFilter.value : '';
+        const bloodValue = bloodGroupFilter ? bloodGroupFilter.value : '';
+        let visibleCount = 0;
+
         rows.forEach(row => {
-            if (!status || row.dataset.status === status) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
+            let show = true;
+
+            // Skip if row is empty state row
+            if (row.querySelector('td[colspan]')) {
+                return;
             }
-        });
-    });
 
-    // Clear filters
-    function clearFilters() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('statusFilter').value = '';
-        let rows = document.querySelectorAll('#patientsTable tbody tr');
-        rows.forEach(row => {
-            row.style.display = '';
+            // Status filter
+            if (statusValue && row.dataset.status !== statusValue) {
+                show = false;
+            }
+
+            // Blood group filter
+            if (bloodValue && row.dataset.blood !== bloodValue) {
+                show = false;
+            }
+
+            // Search filter
+            if (searchTerm) {
+                const name = row.dataset.name || '';
+                const phone = row.dataset.phone || '';
+                if (!name.includes(searchTerm) && !phone.includes(searchTerm)) {
+                    show = false;
+                }
+            }
+
+            row.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
         });
+
+        if (rowCountSpan) {
+            rowCountSpan.textContent = visibleCount;
+        }
+    }
+
+    // Add event listeners
+    if (searchInput) searchInput.addEventListener('keyup', filterTable);
+    if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    if (bloodGroupFilter) bloodGroupFilter.addEventListener('change', filterTable);
+
+    function clearFilters() {
+        if (searchInput) searchInput.value = '';
+        if (statusFilter) statusFilter.value = '';
+        if (bloodGroupFilter) bloodGroupFilter.value = '';
+        filterTable();
     }
 </script>
-</body>
-</html>
+{% endblock %}
